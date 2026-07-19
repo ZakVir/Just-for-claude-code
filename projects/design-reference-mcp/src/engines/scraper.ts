@@ -17,9 +17,9 @@ import * as cheerio from "cheerio";
 import { sourcesByEngine, sourceForUrl, type Source } from "../config.js";
 import { fetchWithBackoff } from "../util/robots.js";
 import { withRateLimit } from "../util/ratelimit.js";
-import { toBase64 } from "../util/image.js";
+import { toBase64, mimeFromUrl } from "../util/image.js";
 import { type SearchResult, type DetailResult, terms, scoreMatch } from "./types.js";
-import { getCached, setCached } from "../cache/urlcache.js";
+import { getCached, getCachedMeta, setCached } from "../cache/urlcache.js";
 
 function absolutize(base: string, maybeRelative: string): string | null {
   try {
@@ -234,14 +234,15 @@ export async function getDetail(url: string): Promise<DetailResult> {
       try {
         const cachedImg = await getCached(abs);
         let buf: Buffer;
-        let contentType = "image/png";
+        let contentType: string;
         if (cachedImg) {
           buf = cachedImg;
+          contentType = (await getCachedMeta(abs))?.content_type ?? mimeFromUrl(abs);
         } else {
           const res = await withRateLimit(host(abs), "scraper", () => fetchWithBackoff(abs));
           buf = Buffer.from(await res.arrayBuffer());
-          contentType = res.headers.get("content-type") ?? contentType;
-          await setCached(abs, buf);
+          contentType = res.headers.get("content-type") ?? mimeFromUrl(abs);
+          await setCached(abs, buf, contentType);
         }
         image_base64 = toBase64(buf);
         image_mime = contentType;

@@ -16,7 +16,7 @@ import { fetchWithBackoff } from "../util/robots.js";
 import { withRateLimit } from "../util/ratelimit.js";
 import { toBase64 } from "../util/image.js";
 import { type SearchResult, type DetailResult, terms, scoreMatch } from "./types.js";
-import { getCached, setCached } from "../cache/urlcache.js";
+import { getCached, getCachedMeta, setCached } from "../cache/urlcache.js";
 
 function githubOwnerRepo(url: string): { owner: string; repo: string } | null {
   try {
@@ -147,7 +147,7 @@ export async function getDetail(url: string): Promise<DetailResult> {
       const cachedImg = await getCached(thumbUrl);
       if (cachedImg) {
         image_base64 = toBase64(cachedImg);
-        image_mime = "image/png";
+        image_mime = (await getCachedMeta(thumbUrl))?.content_type ?? "image/png";
       } else {
         const res = await withRateLimit("opengraph.githubassets.com", "repo", () =>
           fetchWithBackoff(thumbUrl, { ignoreRobots: true }),

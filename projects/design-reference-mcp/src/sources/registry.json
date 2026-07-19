@@ -75,7 +75,7 @@
     { "id": "carbon-docs", "name": "Carbon", "engine": "repo", "url": "https://carbondesignsystem.com", "good_for": "Tokens + components (docs)", "license": "Apache-2.0", "category": "design-system-docs" },
     { "id": "atlassian-docs", "name": "Atlassian", "engine": "repo", "url": "https://atlassian.design", "good_for": "Tokens + components (docs)", "license": "Apache-2.0", "category": "design-system-docs" },
     { "id": "primer-docs", "name": "Primer", "engine": "repo", "url": "https://primer.style", "good_for": "Tokens + components (docs)", "license": "MIT", "category": "design-system-docs" },
-    { "id": "coolors", "name": "Coolors", "engine": "repo", "url": "https://coolors.co/palettes/trending", "good_for": "Color palettes — parse hex directly from URL/path", "license": "n/a", "category": "color", "parse_hex_from_url": true },
+    { "id": "coolors", "name": "Coolors", "engine": "repo", "url": "https://coolors.co", "good_for": "Color palettes — parse hex directly from URL/path (browse trending at coolors.co/palettes/trending)", "license": "n/a", "category": "color", "parse_hex_from_url": true },
 
     { "id": "land-book", "name": "Land-book", "engine": "scraper", "url": "https://land-book.com", "good_for": "Landing pages", "license": "editorial" },
     { "id": "lapa-ninja", "name": "Lapa Ninja", "engine": "scraper", "url": "https://www.lapa.ninja/best/", "good_for": "Landing pages (full-page previews)", "license": "editorial" },

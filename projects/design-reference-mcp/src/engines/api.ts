@@ -17,7 +17,7 @@ import { fetchWithBackoff } from "../util/robots.js";
 import { withRateLimit } from "../util/ratelimit.js";
 import { toBase64 } from "../util/image.js";
 import { type SearchResult, type DetailResult } from "./types.js";
-import { getCached, setCached } from "../cache/urlcache.js";
+import { getCached, getCachedMeta, setCached } from "../cache/urlcache.js";
 
 const BEHANCE_HOST = "api.behance.net";
 const FONTS_HOST = "www.googleapis.com";
@@ -104,7 +104,7 @@ export async function getBehanceDetail(url: string): Promise<DetailResult> {
       const cached = await getCached(firstImage);
       if (cached) {
         image_base64 = toBase64(cached);
-        image_mime = "image/jpeg";
+        image_mime = (await getCachedMeta(firstImage))?.content_type ?? "image/jpeg";
       } else {
         const imgRes = await fetchWithBackoff(firstImage, { ignoreRobots: true });
         if (imgRes.ok) {
