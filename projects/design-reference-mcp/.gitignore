@@ -1,0 +1,9 @@
+node_modules/
+dist/
+.env
+
+# Runtime cache — keep the folders, ignore their contents
+src/cache/urlcache/*
+!src/cache/urlcache/.gitkeep
+src/cache/keepers/*
+!src/cache/keepers/.gitkeep
