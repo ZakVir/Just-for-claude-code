@@ -92,17 +92,81 @@ node dist/index.js --cli save_reference '{"url":"https://stripe.com","tags":["sa
 node dist/index.js --cli retrieve_saved '{"query":"saas"}'
 ```
 
-## Install into the agent runtime
+## Install into any MCP-compatible agent
+
+This is a standard MCP server communicating over stdio — it isn't tied to
+one client. It runs the same way in Claude Code, Codex, Claude Desktop,
+Cursor, or any other agent/IDE that speaks the Model Context Protocol. The
+only two things every client needs are the launch command and, optionally,
+the three env vars.
 
 ```bash
 node >= 18
 npx playwright install chromium        # screenshot engine
+```
+
+Launch command (what every client below wraps):
+
+```bash
+node /path/to/design-reference-mcp/dist/index.js
+```
+
+Env vars (all optional — see `.env.example`): `BEHANCE_API_KEY`,
+`GOOGLE_FONTS_KEY`, `PARSE_BOT_KEY`.
+
+### Claude Code
+
+```bash
 claude mcp add design-reference \
   -e BEHANCE_API_KEY=your_key \
   -e GOOGLE_FONTS_KEY=your_key \
   -e PARSE_BOT_KEY=your_key \
   -- node /path/to/design-reference-mcp/dist/index.js
 ```
+
+### Codex CLI
+
+```bash
+codex mcp add design-reference \
+  --env BEHANCE_API_KEY=your_key \
+  --env GOOGLE_FONTS_KEY=your_key \
+  --env PARSE_BOT_KEY=your_key \
+  -- node /path/to/design-reference-mcp/dist/index.js
+```
+
+Or add it directly to `~/.codex/config.toml`:
+
+```toml
+[mcp_servers.design-reference]
+command = "node"
+args = ["/path/to/design-reference-mcp/dist/index.js"]
+env = { BEHANCE_API_KEY = "your_key", GOOGLE_FONTS_KEY = "your_key", PARSE_BOT_KEY = "your_key" }
+```
+
+### Any other MCP client (Claude Desktop, Cursor, Windsurf, …)
+
+Most clients use the same `mcpServers` JSON block, typically in a
+`claude_desktop_config.json`, `mcp.json`, or equivalent settings file:
+
+```json
+{
+  "mcpServers": {
+    "design-reference": {
+      "command": "node",
+      "args": ["/path/to/design-reference-mcp/dist/index.js"],
+      "env": {
+        "BEHANCE_API_KEY": "your_key",
+        "GOOGLE_FONTS_KEY": "your_key",
+        "PARSE_BOT_KEY": "your_key"
+      }
+    }
+  }
+}
+```
+
+Consult that client's docs for the exact config file location — the
+`command`/`args`/`env` shape above is the de facto standard across MCP
+clients.
 
 ## Project structure
 
