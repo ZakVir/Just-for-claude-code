@@ -7,7 +7,7 @@
  *   3. a concurrency cap (max simultaneous in-flight requests).
  *
  * Screenshots use concurrency 1 -> fully serialized. Scrapers use a 2-5s
- * min delay + concurrency 1. Behance stays under 120/hr.
+ * min delay + concurrency 1.
  */
 import { RATE_POLICIES, type Engine, type RatePolicy } from "../config.js";
 

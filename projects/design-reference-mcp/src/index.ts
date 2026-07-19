@@ -3,7 +3,7 @@
  * index.ts — MCP server entry: tool registration + engine routing.
  *
  * Six tools, routed across four engines (api, repo, scraper, screenshot) and
- * one wrapper (cosmos via parse.bot). The auth engine is never imported here —
+ * one wrapper (SearXNG, self-hosted). The auth engine is never imported here —
  * gated sources are handled inline with a "not available free" message.
  *
  * Guardrails enforced at this layer:
@@ -32,7 +32,6 @@ import {
 } from "./config.js";
 import * as repoEngine from "./engines/repo.js";
 import * as scraperEngine from "./engines/scraper.js";
-import * as apiEngine from "./engines/api.js";
 import * as wrapperEngine from "./engines/wrapper.js";
 import * as screenshotEngine from "./engines/screenshot.js";
 import { extractTokens } from "./engines/tokens.js";
@@ -95,7 +94,8 @@ async function routeSearch(args: {
 
     switch (src.engine) {
       case "api":
-        return src.id === "behance" ? apiEngine.searchBehance(query, limit) : [];
+        // Google Fonts is a lookup/hydration helper, not a design_search source.
+        return [];
       case "wrapper":
         return wrapperEngine.search(query, limit, color);
       case "repo":
@@ -135,15 +135,10 @@ async function routeSearch(args: {
   if (engines.has("repo")) results.push(...repoEngine.search(query, limit, idsFor("repo")));
   if (engines.has("scraper")) results.push(...(await scraperEngine.search(query, limit, idsFor("scraper"))));
   if (engines.has("screenshot")) results.push(...screenshotEngine.search(query, limit, idsFor("screenshot")));
-  // Behance/Cosmos are visual inspiration, not real components — only worth
+  // SearXNG is visual inspiration, not real components — only worth
   // layering in for marketing-kind requests.
-  if (siteType.kind === "marketing") {
-    if (apiEngine.behanceAvailable()) {
-      results.push(...(await apiEngine.searchBehance(query, limit).catch(() => [])));
-    }
-    if (results.length < limit && wrapperEngine.available()) {
-      results.push(...(await wrapperEngine.search(query, limit - results.length, color).catch(() => [])));
-    }
+  if (siteType.kind === "marketing" && results.length < limit && wrapperEngine.available()) {
+    results.push(...(await wrapperEngine.search(query, limit - results.length, color).catch(() => [])));
   }
   return results.slice(0, limit);
 }
@@ -154,8 +149,7 @@ async function routeDetail(url: string): Promise<DetailResult> {
   if (src?.gated) {
     return { source_url: url, source: src.id, note: GATED_MESSAGE(src), license: "n/a" };
   }
-  if (src?.id === "behance") return apiEngine.getBehanceDetail(url);
-  if (src?.id === "cosmos") return wrapperEngine.getDetail(url);
+  if (src?.id === "searxng") return wrapperEngine.getDetail(url);
   if (repoEngine.handles(url)) return repoEngine.getDetail(url);
   if (screenshotEngine.handles(url)) return screenshotEngine.getDetail(url);
   if (scraperEngine.handles(url)) return scraperEngine.getDetail(url);
@@ -229,7 +223,7 @@ const SITE_TYPE_DESCRIPTION =
 
 server.tool(
   "design_search",
-  "Search design references across galleries, repos, design systems, Behance, and Cosmos. " +
+  "Search design references across galleries, repos, design systems, and a SearXNG wrapper. " +
     "Returns up to `limit` (default 5, max 20) results with thumbnail, source URL, tags, and license. " +
     "site_type is required — see its description for the full list of what to pick from.",
   {
@@ -237,7 +231,7 @@ server.tool(
     site_type: z.enum(SITE_TYPE_IDS).describe(SITE_TYPE_DESCRIPTION),
     category: z.string().optional().describe("Further narrow within site_type, e.g. 'pricing', 'dark', 'color'"),
     source: z.string().optional().describe("Restrict to one registry source id (see list_sources), overrides site_type"),
-    color: z.string().optional().describe("Color hint, passed through to sources that support it (e.g. Cosmos)"),
+    color: z.string().optional().describe("Color hint, passed through to sources that support it (e.g. SearXNG)"),
     limit: z.number().int().optional().describe("Max results, default 5, max 20"),
   },
   async ({ query, site_type, category, source, color, limit }) => {

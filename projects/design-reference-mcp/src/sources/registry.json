@@ -5,15 +5,13 @@
     {
       "id": "behance",
       "name": "Behance",
-      "engine": "api",
+      "engine": "gated",
       "url": "https://www.behance.net",
-      "good_for": "Curated design projects, case studies, branding, UI concepts",
-      "endpoint": "GET https://api.behance.net/v2/projects?q={query}&api_key={KEY}",
-      "detail_endpoint": "GET https://api.behance.net/v2/projects/{id} -> modules[].src",
-      "register": "https://www.behance.net/dev",
-      "rate_cap_per_hr": 150,
-      "requires_key": "BEHANCE_API_KEY",
-      "license": "editorial"
+      "good_for": "Curated design projects, case studies, branding, UI concepts (gated — not accessed)",
+      "gated": true,
+      "alternative": "Dribbble single pages, Awwwards, or SearXNG image search",
+      "note": "Adobe deprecated the public API in 2018 (no new keys issued, permanent). behance.net/robots.txt also explicitly disallows anthropic-ai/Claude-Web/ClaudeBot sitewide — not scraped for that reason either.",
+      "license": "n/a"
     },
     {
       "id": "google-fonts",
@@ -26,16 +24,16 @@
       "license": "OFL / Apache (per family)"
     },
     {
-      "id": "cosmos",
-      "name": "Cosmos",
+      "id": "searxng",
+      "name": "SearXNG",
       "engine": "wrapper",
-      "url": "https://www.cosmos.so",
-      "good_for": "Visual mood/inspiration search across curated boards",
-      "endpoint": "POST https://api.parse.bot/scraper/{id}/search_elements {query,color,content_type}",
-      "register": "https://parse.bot",
-      "requires_key": "PARSE_BOT_KEY",
+      "url": "https://docs.searxng.org/",
+      "good_for": "Visual/image search across whatever engines your self-hosted instance federates",
+      "endpoint": "GET {SEARXNG_URL}/search?q={query}&format=json&categories=images",
+      "register": "https://docs.searxng.org/admin/installation.html",
+      "requires_key": "SEARXNG_URL",
       "optional": true,
-      "note": "Third-party wrapper; may break — treat as optional.",
+      "note": "Self-hosted, no vendor API key — point SEARXNG_URL at your own instance (needs search.formats: [json] enabled).",
       "license": "editorial"
     },
 
@@ -106,8 +104,8 @@
     { "id": "dribbble", "name": "Dribbble", "engine": "screenshot", "url": "https://dribbble.com", "good_for": "Design shots — SINGLE PAGE ONLY, screenshot, no feed crawl (anti-bot)", "license": "editorial", "single_page_only": true },
     { "id": "nicelydone", "name": "Nicelydone", "engine": "screenshot", "url": "https://nicelydone.club", "good_for": "App flows — SINGLE PAGE ONLY, public flow pages render", "license": "editorial", "single_page_only": true },
 
-    { "id": "savee", "name": "Savee", "engine": "gated", "url": "https://savee.it", "gated": true, "alternative": "Cosmos / Dribbble single pages", "good_for": "Visual bookmarking (gated — not scraped)" },
-    { "id": "pinterest", "name": "Pinterest", "engine": "gated", "url": "https://www.pinterest.com", "gated": true, "alternative": "Cosmos / Muzli", "good_for": "Mood boards (gated — not scraped)" },
+    { "id": "savee", "name": "Savee", "engine": "gated", "url": "https://savee.it", "gated": true, "alternative": "SearXNG / Dribbble single pages", "good_for": "Visual bookmarking (gated — not scraped)" },
+    { "id": "pinterest", "name": "Pinterest", "engine": "gated", "url": "https://www.pinterest.com", "gated": true, "alternative": "SearXNG / Muzli", "good_for": "Mood boards (gated — not scraped)" },
     { "id": "mobbin", "name": "Mobbin (full)", "engine": "gated", "url": "https://mobbin.com", "gated": true, "alternative": "Screenlane / Refero / Nicelydone", "good_for": "Mobile/web app UI patterns (gated — not scraped)" },
     { "id": "pageflows", "name": "Page Flows", "engine": "gated", "url": "https://pageflows.com", "gated": true, "alternative": "Pablooo.club, Refero, UXArchive", "good_for": "User-flow recordings (gated — not scraped)" }
   ]

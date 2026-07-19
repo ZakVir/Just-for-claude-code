@@ -99,12 +99,21 @@ export function sourceForUrl(url: string): Source | undefined {
   return best;
 }
 
-/** API keys — read once, referenced everywhere. */
+/**
+ * API keys — read once, referenced everywhere.
+ *
+ * No Behance key here on purpose: Adobe deprecated the public Behance API
+ * in 2018 (registration is gone, not just rate-limited), and behance.net's
+ * robots.txt separately, explicitly disallows anthropic-ai/Claude-Web/
+ * ClaudeBot sitewide. Behance is registered as a `gated` source instead —
+ * see registry.json and README.md's "A note on Behance".
+ */
 export const KEYS = {
-  behance: process.env.BEHANCE_API_KEY?.trim() || "",
   googleFonts: process.env.GOOGLE_FONTS_KEY?.trim() || "",
-  parseBot: process.env.PARSE_BOT_KEY?.trim() || "",
-  parseBotCosmosId: process.env.PARSE_BOT_COSMOS_ID?.trim() || "cosmos",
+  /** Base URL of a SearXNG instance with `search.formats: [json]` enabled, e.g. http://localhost:8080 */
+  searxngUrl: (process.env.SEARXNG_URL?.trim() || "").replace(/\/+$/, ""),
+  /** Optional — only needed if the instance sits behind an auth proxy expecting a bearer token. */
+  searxngKey: process.env.SEARXNG_KEY?.trim() || "",
 } as const;
 
 export function hasKey(name?: string): boolean {
@@ -117,7 +126,6 @@ export function hasKey(name?: string): boolean {
  * Per-source rate-limit policy. Token-bucket parameters live here so the
  * limiter is entirely config-driven.
  *
- * - Behance: <= 120 req/hr (cap is 150/hr/IP — stay under).
  * - Scrapers: 2-5s min delay, concurrency 1-2 per host.
  * - Screenshots: serialized, one at a time.
  */
@@ -139,8 +147,6 @@ export const RATE_POLICIES: Record<Engine, RatePolicy> = {
   gated: { perHour: 0, minDelayMs: 0, concurrency: 0 },
 };
 
-/** Behance-specific override to respect its documented cap explicitly. */
-export const BEHANCE_MAX_PER_HOUR = 120;
 
 /** Realistic User-Agent used for all outbound scraping/screenshotting. */
 export const USER_AGENT =

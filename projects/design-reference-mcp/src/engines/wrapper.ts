@@ -1,30 +1,47 @@
 /**
- * wrapper engine — Cosmos via parse.bot.
+ * wrapper engine — SearXNG (self-hosted metasearch).
  *
- * POST https://api.parse.bot/scraper/{id}/search_elements
- *   body: { query, color, content_type }
+ * GET {SEARXNG_URL}/search?q={query}&format=json&categories=images
  *
- * Third-party wrapper around Cosmos; treated as optional per the spec — if
- * it 4xxs/5xxs or the key is missing, we degrade gracefully rather than
- * treating it as a hard failure of design_search as a whole.
+ * Requires a SearXNG instance with `search.formats: [json]` enabled in its
+ * settings.yml — most public instances disable JSON output by default to
+ * discourage scraping, so this is expected to point at a self-hosted or
+ * otherwise trusted instance the operator controls. No vendor API key or
+ * account is needed; SEARXNG_URL is the only required configuration.
+ *
+ * Treated as optional per the original wrapper-engine spec — if the
+ * instance is unreachable or misconfigured, we degrade gracefully rather
+ * than treating it as a hard failure of design_search as a whole.
  */
 import { KEYS, hasKey } from "../config.js";
 import { fetchWithBackoff } from "../util/robots.js";
 import { withRateLimit } from "../util/ratelimit.js";
 import { type SearchResult, type DetailResult } from "./types.js";
 
-const PARSE_BOT_HOST = "api.parse.bot";
-
-interface CosmosElement {
+interface SearxngResult {
   url?: string;
-  image_url?: string;
-  thumbnail_url?: string;
   title?: string;
-  tags?: string[];
+  content?: string;
+  img_src?: string;
+  thumbnail_src?: string;
+  engine?: string;
+  category?: string;
+}
+
+interface SearxngResponse {
+  results?: SearxngResult[];
 }
 
 export function available(): boolean {
-  return hasKey("PARSE_BOT_KEY");
+  return hasKey("SEARXNG_URL") && KEYS.searxngUrl.length > 0;
+}
+
+function host(): string {
+  try {
+    return new URL(KEYS.searxngUrl).hostname;
+  } catch {
+    return "searxng";
+  }
 }
 
 export async function search(query: string, limit: number, color?: string): Promise<SearchResult[]> {
@@ -32,66 +49,62 @@ export async function search(query: string, limit: number, color?: string): Prom
     return [
       {
         thumb_url: "",
-        source_url: "https://parse.bot",
-        title: "Cosmos wrapper key not configured",
+        source_url: "https://docs.searxng.org/",
+        title: "SearXNG not configured — set SEARXNG_URL to a self-hosted instance",
         tags: ["not-available"],
-        source: "cosmos",
+        source: "searxng",
         license: "n/a",
       },
     ];
   }
 
-  const url = `https://api.parse.bot/scraper/${encodeURIComponent(KEYS.parseBotCosmosId)}/search_elements`;
+  // Color hints don't map to a SearXNG query param — fold them into the
+  // search text instead, same spirit as the original wrapper contract.
+  const q = color ? `${query} ${color}` : query;
+  const params = new URLSearchParams({ q, format: "json", categories: "images" });
+  const url = `${KEYS.searxngUrl}/search?${params.toString()}`;
+
   try {
-    const res = await withRateLimit(PARSE_BOT_HOST, "wrapper", async () => {
-      const controller = new AbortController();
-      const timer = setTimeout(() => controller.abort(), 20_000);
-      try {
-        return await fetch(url, {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${KEYS.parseBot}`,
-          },
-          body: JSON.stringify({ query, color, content_type: "design" }),
-          signal: controller.signal,
-        });
-      } finally {
-        clearTimeout(timer);
-      }
-    });
+    const res = await withRateLimit(host(), "wrapper", () =>
+      fetchWithBackoff(url, {
+        ignoreRobots: true, // our own configured instance's API, not a scraped page
+        headers: KEYS.searxngKey ? { Authorization: `Bearer ${KEYS.searxngKey}` } : undefined,
+      }),
+    );
 
     if (!res.ok) {
       return [
         {
           thumb_url: "",
-          source_url: "https://www.cosmos.so",
-          title: `Cosmos wrapper unavailable (HTTP ${res.status})`,
+          source_url: KEYS.searxngUrl,
+          title: `SearXNG instance unavailable (HTTP ${res.status})`,
           tags: ["not-available"],
-          source: "cosmos",
+          source: "searxng",
           license: "n/a",
         },
       ];
     }
 
-    const json = (await res.json()) as { elements?: CosmosElement[] };
-    const elements = (json.elements ?? []).slice(0, limit);
-    return elements.map((e) => ({
-      thumb_url: e.thumbnail_url ?? e.image_url ?? "",
-      source_url: e.url ?? "https://www.cosmos.so",
-      title: e.title ?? "Untitled",
-      tags: e.tags ?? [],
-      source: "cosmos",
+    const json = (await res.json()) as SearxngResponse;
+    const results = (json.results ?? []).slice(0, limit);
+    if (!results.length) return [];
+
+    return results.map((r) => ({
+      thumb_url: r.thumbnail_src || r.img_src || "",
+      source_url: r.url ?? KEYS.searxngUrl,
+      title: r.title ?? "Untitled",
+      tags: [r.engine, r.category].filter((t): t is string => Boolean(t)),
+      source: "searxng",
       license: "editorial",
     }));
   } catch (err) {
     return [
       {
         thumb_url: "",
-        source_url: "https://www.cosmos.so",
-        title: `Cosmos wrapper error: ${(err as Error).message}`,
+        source_url: KEYS.searxngUrl,
+        title: `SearXNG request failed: ${(err as Error).message}`,
         tags: ["not-available"],
-        source: "cosmos",
+        source: "searxng",
         license: "n/a",
       },
     ];
@@ -101,8 +114,8 @@ export async function search(query: string, limit: number, color?: string): Prom
 export async function getDetail(url: string): Promise<DetailResult> {
   return {
     source_url: url,
-    source: "cosmos",
-    note: "Cosmos is a search wrapper, not a page host — use design_get_detail on the underlying source_url from a search result instead.",
+    source: "searxng",
+    note: "SearXNG is a search wrapper, not a page host — use design_get_detail on the underlying source_url from a search result instead.",
     license: "editorial",
   };
 }

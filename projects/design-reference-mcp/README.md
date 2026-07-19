@@ -2,8 +2,8 @@
 
 A local MCP server that gives an agent (Maya) fast, cache-first access to
 design references: component libraries, design systems, curated galleries,
-Behance, Cosmos, and live-site screenshots — plus a self-growing local index
-of saved keepers.
+a self-hosted SearXNG search wrapper, and live-site screenshots — plus a
+self-growing local index of saved keepers.
 
 Node 18+, TypeScript, the official [`@modelcontextprotocol/sdk`](https://github.com/modelcontextprotocol/typescript-sdk).
 
@@ -57,7 +57,8 @@ whatever `site_type` selected.
 
 Engines:
 
-- **`api`** — Behance, Google Fonts (official APIs, keyed).
+- **`api`** — Google Fonts (official API, keyed). Behance is **not** in this
+  engine — see the note below.
 - **`repo`** — 30 GitHub component/design-system repos + 6 design-system doc
   sites + Coolors URL parsing (no network needed for search).
 - **`scraper`** — 14 curated galleries (Land-book, Lapa Ninja, Refero, …),
@@ -65,18 +66,47 @@ Engines:
 - **`screenshot`** — 12 "the value is the live site" sources (Awwwards,
   SiteInspire, single-page-only Dribbble/Nicelydone, …), captured with
   headless Playwright.
-- **`wrapper`** — Cosmos via the third-party [parse.bot](https://parse.bot)
-  API. Optional; treated as best-effort.
+- **`wrapper`** — [SearXNG](https://docs.searxng.org/), a self-hosted
+  metasearch engine (`categories=images`). No vendor API key — point
+  `SEARXNG_URL` at your own instance. Optional; treated as best-effort.
 - **`auth`** — **stub only, disabled in v1.** Gated sources (Savee,
-  Pinterest, Mobbin full, Page Flows) return a free alternative instead of
-  being scraped or logged into.
+  Pinterest, Mobbin full, Page Flows, **Behance**) return a free alternative
+  instead of being scraped or logged into.
+
+### A note on Behance
+
+Behance is **gated**, not part of the `api` engine. Two independent, decisive
+reasons:
+
+1. Adobe deprecated the public Behance API in 2018. It is no longer possible
+   to register an app or obtain an API key — this isn't a rate limit or an
+   outage, the registration path (`behance.net/dev`) is gone.
+2. `behance.net/robots.txt` explicitly lists `anthropic-ai`, `Claude-Web`,
+   and `ClaudeBot` (alongside GPTBot, Bytespider, and other AI crawlers)
+   under `Disallow: /` for the entire site. That's a specific, named block on
+   exactly the kind of agent this server is built to run as — not an
+   ambiguous ToS question. This server will not evade that by spoofing a
+   different User-Agent.
+
+Both `design_search` with `source: "behance"` **and** `design_get_detail` on
+any `behance.net` URL return the same
+`"Not available free — try {alternative}"` message — `routeDetail()` checks
+`gated` before any fetch, with no carve-out for "but a person supplied this
+URL." A robots.txt block naming Claude specifically doesn't distinguish
+between a URL this tool discovered and one a person handed it; the fetch is
+still this agent accessing a site that named it and said no. If you want to
+look at a Behance project yourself, do it in your own browser — this tool
+just won't do it on your behalf.
+
+The `wrapper` (SearXNG) engine will still surface Behance work indirectly,
+since it federates from search engines Behance does permit (Google, Bing,
+DuckDuckGo) — the same way Googling would turn up a Behance thumbnail.
 
 ## Guardrails
 
 - **Rate limits** (`src/util/ratelimit.ts`): per-host token bucket + min
-  delay + concurrency cap. Behance stays under 120/hr (cap is 150/hr/IP).
-  Scrapers wait 2–5s between requests, concurrency 1 per host. Screenshots
-  are fully serialized (concurrency 1, globally).
+  delay + concurrency cap. Scrapers wait 2–5s between requests, concurrency 1
+  per host. Screenshots are fully serialized (concurrency 1, globally).
 - **Cache-first**: `retrieve_saved` and the on-disk `cache/urlcache/` are
   always checked before a network call. A URL already in the cache is never
   re-fetched.
@@ -105,9 +135,11 @@ npm run build
 
 | Var | Used by | Required? |
 | --- | --- | --- |
-| `BEHANCE_API_KEY` | `api` engine (Behance) | No — degrades to "not configured" |
 | `GOOGLE_FONTS_KEY` | `api` engine (Google Fonts font hydration) | No |
-| `PARSE_BOT_KEY` | `wrapper` engine (Cosmos) | No — optional, third-party |
+| `SEARXNG_URL` | `wrapper` engine (SearXNG) | No — optional, self-hosted |
+| `SEARXNG_KEY` | `wrapper` engine, only if your instance requires a bearer token | No |
+
+There is no Behance key — see [the note above](#a-note-on-behance).
 
 Without any keys, `design_search`/`design_get_detail` still work great over
 the `repo` and `scraper` engines (30 repos, 6 design-system docs, 14
@@ -146,16 +178,15 @@ Launch command (what every client below wraps):
 node /path/to/design-reference-mcp/dist/index.js
 ```
 
-Env vars (all optional — see `.env.example`): `BEHANCE_API_KEY`,
-`GOOGLE_FONTS_KEY`, `PARSE_BOT_KEY`.
+Env vars (all optional — see `.env.example`): `GOOGLE_FONTS_KEY`,
+`SEARXNG_URL`, `SEARXNG_KEY`.
 
 ### Claude Code
 
 ```bash
 claude mcp add design-reference \
-  -e BEHANCE_API_KEY=your_key \
   -e GOOGLE_FONTS_KEY=your_key \
-  -e PARSE_BOT_KEY=your_key \
+  -e SEARXNG_URL=http://localhost:8080 \
   -- node /path/to/design-reference-mcp/dist/index.js
 ```
 
@@ -163,9 +194,8 @@ claude mcp add design-reference \
 
 ```bash
 codex mcp add design-reference \
-  --env BEHANCE_API_KEY=your_key \
   --env GOOGLE_FONTS_KEY=your_key \
-  --env PARSE_BOT_KEY=your_key \
+  --env SEARXNG_URL=http://localhost:8080 \
   -- node /path/to/design-reference-mcp/dist/index.js
 ```
 
@@ -175,7 +205,7 @@ Or add it directly to `~/.codex/config.toml`:
 [mcp_servers.design-reference]
 command = "node"
 args = ["/path/to/design-reference-mcp/dist/index.js"]
-env = { BEHANCE_API_KEY = "your_key", GOOGLE_FONTS_KEY = "your_key", PARSE_BOT_KEY = "your_key" }
+env = { GOOGLE_FONTS_KEY = "your_key", SEARXNG_URL = "http://localhost:8080" }
 ```
 
 ### Any other MCP client (Claude Desktop, Cursor, Windsurf, …)
@@ -190,9 +220,8 @@ Most clients use the same `mcpServers` JSON block, typically in a
       "command": "node",
       "args": ["/path/to/design-reference-mcp/dist/index.js"],
       "env": {
-        "BEHANCE_API_KEY": "your_key",
         "GOOGLE_FONTS_KEY": "your_key",
-        "PARSE_BOT_KEY": "your_key"
+        "SEARXNG_URL": "http://localhost:8080"
       }
     }
   }
@@ -216,11 +245,11 @@ design-reference-mcp/
 │   ├── index.ts              # MCP server entry, tool registration, CLI routing
 │   ├── config.ts              # keys, rate limits, registry loader
 │   ├── engines/
-│   │   ├── api.ts             # Behance + Google Fonts
+│   │   ├── api.ts             # Google Fonts (Behance is gated — see README note)
 │   │   ├── repo.ts            # GitHub repos, design systems, Coolors URL parse
 │   │   ├── scraper.ts         # HTML fetch + parse inline preview images (cheerio)
 │   │   ├── screenshot.ts      # Playwright headless capture of live sites
-│   │   ├── wrapper.ts         # Cosmos via parse.bot
+│   │   ├── wrapper.ts         # SearXNG, self-hosted
 │   │   ├── tokens.ts          # extract_tokens: computed-style extraction
 │   │   └── auth.ts            # OFF by default. Stub only. Not wired in v1.
 │   ├── sources/registry.json  # full source list
@@ -239,8 +268,10 @@ design-reference-mcp/
 - **v0**: `repo` + `scraper` engines + `design_search` / `design_get_detail`
   / `save_reference` / `retrieve_saved`. Covers all 30 repos + design systems
   + galleries.
-- **v1**: `api` (Behance, Google Fonts) + `wrapper` (Cosmos) + rate limiter +
-  URL cache.
+- **v1**: `api` (Google Fonts) + `wrapper` (SearXNG) + rate limiter + URL
+  cache. (Behance was originally planned for the `api` engine — moved to
+  `gated` once its API was confirmed permanently dead and its robots.txt
+  found to explicitly block AI/Claude crawlers — see the note above.)
 - **v2**: `screenshot` engine (Awwwards, Godly, award galleries, single
   Dribbble/Nicelydone pages) + `extract_tokens`.
 
