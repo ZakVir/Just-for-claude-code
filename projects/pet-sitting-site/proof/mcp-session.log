@@ -1,0 +1,178 @@
+design-reference-mcp — live MCP session log for the Pawsome Pet Sitting demo build
+Generated: 2026-07-19T18:52:06Z
+Server: node dist/index.js (commit 8ce50c7, includes the category-routing fix found during this session)
+Protocol: real MCP JSON-RPC 2.0 over stdio (initialize -> tools/call), not a shortcut
+======================================================================
+
+### Call 1 — design_search: general pet-sitting query (v0 repo+scraper engines, zero API keys)
+REQUEST tools/call design_search {"query":"pet sitting dog walking landing page","limit":5}
+RESPONSE id=1:
+{
+  "result": {
+    "protocolVersion": "2024-11-05",
+    "capabilities": {
+      "tools": {
+        "listChanged": true
+      }
+    },
+    "serverInfo": {
+      "name": "design-reference-mcp",
+      "version": "0.1.0"
+    }
+  },
+  "jsonrpc": "2.0",
+  "id": 1
+}
+RESPONSE id=4:
+{
+  "result": {
+    "content": [
+      {
+        "type": "text",
+        "text": "[\n  {\n    \"thumb_url\": \"https://opengraph.githubassets.com/1/shadcn-ui/ui\",\n    \"source_url\": \"https://github.com/shadcn-ui/ui\",\n    \"title\": \"shadcn/ui\",\n    \"tags\": [\n      \"component-lib\",\n      \"Copy-paste React components\",\n      \"tokens\",\n      \"Tailwind patterns\"\n    ],\n    \"source\": \"shadcn-ui\",\n    \"license\": \"MIT\"\n  }\n]"
+      }
+    ]
+  },
+  "jsonrpc": "2.0",
+  "id": 4
+}
+RESPONSE id=2:
+{
+  "result": {
+    "content": [
+      {
+        "type": "text",
+        "text": "[\n  {\n    \"thumb_url\": \"https://opengraph.githubassets.com/1/cruip/open-react-template\",\n    \"source_url\": \"https://github.com/cruip/open-react-template\",\n    \"title\": \"cruip open-react-template\",\n    \"tags\": [\n      \"template\",\n      \"Full landing page React template\"\n    ],\n    \"source\": \"cruip-open-react-template\",\n    \"license\": \"GPL-3.0\"\n  },\n  {\n    \"thumb_url\": \"https://opengraph.githubassets.com/1/markmead/hyperui\",\n    \"source_url\": \"https://github.com/markmead/hyperui\",\n    \"title\": \"hyperui\",\n    \"tags\": [\n      \"component-lib\",\n      \"Free Tailwind component snippets\"\n    ],\n    \"source\": \"hyperui\",\n    \"license\": \"MIT\"\n  },\n  {\n    \"thumb_url\": \"https://cdn.land-book.com/image/0x0:3456x5184/600x0/website/91059/a7c2f888f13b03e5-www-squarespace-com.webp?signature=fc459919c6a0673f51b30ee4afde3a9eb15139266864482ab250ae89d40d77cb\",\n    \"source_url\": \"https://land-book.com/websites/91059-website-builder-easily-create-your-own-website-squarespace\",\n    \"title\": \"Website Builder \u2013 Easily Create Your Own Website \u2014 Squarespace - Landing design inspiration\",\n    \"tags\": [\n      \"Landing pages\"\n    ],\n    \"source\": \"land-book\",\n    \"license\": \"editorial\"\n  },\n  {\n    \"thumb_url\": \"https://cdn.land-book.com/image/0x0:3456x5184/600x0/website/91788/b99a6254e5e0d3f8-vcass-vic-edu-au.webp?signature=b41f6a4f02fdaf59e233e9aad72115000f73286efc8c7766a2b0c9387ce729fc\",\n    \"source_url\": \"https://land-book.com/websites/91788-home-victorian-college-of-the-arts-secondary-school-vcass\",\n    \"title\": \"Victorian College of the Arts Secondary School | VCASS - Landing design inspiration\",\n    \"tags\": [\n      \"Landing pages\"\n    ],\n    \"source\": \"land-book\",\n    \"license\": \"editorial\"\n  },\n  {\n    \"thumb_url\": \"https://cdn.land-book.com/image/0x0:3456x5184/600x0/filters:format(webp)/website/95841/fa21d576baadea40-screenshot-upload?signature=3209f470ac3eb710d450ee3f81d50c2600265dc7938d752d4ba464f8594e0a6e\",\n    \"source_url\": \"https://land-book.com/websites/95841-adyen-fintech-platform-for-enterprises-adyen\",\n    \"title\": \"Adyen: Fintech platform for enterprises - Adyen - Landing design inspiration\",\n    \"tags\": [\n      \"Landing pages\"\n    ],\n    \"source\": \"land-book\",\n    \"license\": \"editorial\"\n  }\n]"
+      }
+    ]
+  },
+  "jsonrpc": "2.0",
+  "id": 2
+}
+RESPONSE id=3:
+{
+  "result": {
+    "content": [
+      {
+        "type": "text",
+        "text": "[\n  {\n    \"thumb_url\": \"https://opengraph.githubassets.com/1/cruip/open-react-template\",\n    \"source_url\": \"https://github.com/cruip/open-react-template\",\n    \"title\": \"cruip open-react-template\",\n    \"tags\": [\n      \"template\",\n      \"Full landing page React template\"\n    ],\n    \"source\": \"cruip-open-react-template\",\n    \"license\": \"GPL-3.0\"\n  },\n  {\n    \"thumb_url\": \"https://cdn.land-book.com/image/0x0:3456x5184/600x0/filters:format(webp)/website/93513/ac17eae25d1f4d3c-screenshot-upload?signature=55138fa868f24b2d98428b4c019ee3b4f4e85e2d382cecf596efffb6ef702f50\",\n    \"source_url\": \"https://land-book.com/websites/93513-hyperice-recovery-and-wellness-technology\",\n    \"title\": \"Hyperice | Recovery & Wellness Technology - Ecommerce design inspiration\",\n    \"tags\": [\n      \"Landing pages\"\n    ],\n    \"source\": \"land-book\",\n    \"license\": \"editorial\"\n  },\n  {\n    \"thumb_url\": \"https://cdn.land-book.com/image/0x0:3456x5184/600x0/website/91059/a7c2f888f13b03e5-www-squarespace-com.webp?signature=fc459919c6a0673f51b30ee4afde3a9eb15139266864482ab250ae89d40d77cb\",\n    \"source_url\": \"https://land-book.com/websites/91059-website-builder-easily-create-your-own-website-squarespace\",\n    \"title\": \"Website Builder \u2013 Easily Create Your Own Website \u2014 Squarespace - Landing design inspiration\",\n    \"tags\": [\n      \"Landing pages\"\n    ],\n    \"source\": \"land-book\",\n    \"license\": \"editorial\"\n  },\n  {\n    \"thumb_url\": \"https://cdn.land-book.com/image/0x0:3456x5184/600x0/website/91788/b99a6254e5e0d3f8-vcass-vic-edu-au.webp?signature=b41f6a4f02fdaf59e233e9aad72115000f73286efc8c7766a2b0c9387ce729fc\",\n    \"source_url\": \"https://land-book.com/websites/91788-home-victorian-college-of-the-arts-secondary-school-vcass\",\n    \"title\": \"Victorian College of the Arts Secondary School | VCASS - Landing design inspiration\",\n    \"tags\": [\n      \"Landing pages\"\n    ],\n    \"source\": \"land-book\",\n    \"license\": \"editorial\"\n  },\n  {\n    \"thumb_url\": \"https://cdn.land-book.com/image/0x0:2400x3600/600x0/filters:format(webp)/website/97441/6cb14741f6871472-screenshot-upload?signature=501ae17373db56c7d968c3122657d037efee8007581051513977a9f2a08a4fb1\",\n    \"source_url\": \"https://land-book.com/websites/97441-guidy-a-a-modern-brand-book-template-for-framer\",\n    \"title\": \"Guidy - A Modern Brand Book Template for Framer - Template design inspiration\",\n    \"tags\": [\n      \"Landing pages\"\n    ],\n    \"source\": \"land-book\",\n    \"license\": \"editorial\"\n  }\n]"
+      }
+    ]
+  },
+  "jsonrpc": "2.0",
+  "id": 3
+}
+
+### Call 2 — design_get_detail: pull real screenshot for layout/hierarchy inspiration
+{
+  "source_url": "https://land-book.com/websites/93513-hyperice-recovery-and-wellness-technology",
+  "source": "land-book",
+  "title": "Hyperice | Recovery & Wellness Technology",
+  "image_mime": "image/webp",
+  "license": "editorial",
+  "metadata": {
+    "good_for": "Landing pages"
+  }
+}
+
+### Call 3 — design_get_detail: real Coolors hex-parsing (trending listing is JS-rendered like other galleries; using a real published palette URL directly)
+{
+  "source_url": "https://coolors.co/cb997e-ddbea9-ffe8d6-b7b7a4-a5a58d",
+  "source": "coolors",
+  "title": "Coolors palette",
+  "palette": [
+    "#CB997E",
+    "#DDBEA9",
+    "#FFE8D6",
+    "#B7B7A4",
+    "#A5A58D"
+  ],
+  "license": "n/a",
+  "metadata": {
+    "hex_count": 5
+  }
+}
+
+### Call 4 — save_reference: persist both into the self-growing keeper index (cache/keepers/)
+{
+  "source_url": "https://land-book.com/websites/93513-hyperice-recovery-and-wellness-technology",
+  "local_screenshot": "cache/keepers/a78343d2-fc51-4bad-9532-9880a8c5edb7.webp",
+  "source": "land-book",
+  "type": "reference",
+  "tags": [
+    "saas",
+    "wellness",
+    "landing-page"
+  ],
+  "patterns": [],
+  "why_good": "Confident hero hierarchy and generous whitespace for a care/wellness brand; adapting the layout rhythm for a pet-sitting hero section — pet-sitting-site demo reference",
+  "palette": [],
+  "license": "editorial",
+  "saved_at": "2026-07-19T18:56:29.302Z"
+}
+{
+  "source_url": "https://coolors.co/cb997e-ddbea9-ffe8d6-b7b7a4-a5a58d",
+  "local_screenshot": "cache/keepers/abf688d7-d40b-441c-a0ea-1e3c56d80d42.png",
+  "source": "coolors",
+  "type": "reference",
+  "tags": [
+    "palette",
+    "warm",
+    "earthy",
+    "pet-friendly"
+  ],
+  "patterns": [],
+  "why_good": "Warm terracotta/cream/olive palette reads friendly and grounded rather than clinical — pet-sitting-site demo reference",
+  "palette": [
+    "#CB997E",
+    "#DDBEA9",
+    "#FFE8D6",
+    "#B7B7A4",
+    "#A5A58D"
+  ],
+  "license": "n/a",
+  "saved_at": "2026-07-19T18:56:30.031Z"
+}
+
+### Call 5 — retrieve_saved: confirm the local index now finds both without any network call
+[
+  {
+    "source_url": "https://land-book.com/websites/93513-hyperice-recovery-and-wellness-technology",
+    "local_screenshot": "cache/keepers/a78343d2-fc51-4bad-9532-9880a8c5edb7.webp",
+    "source": "land-book",
+    "type": "reference",
+    "tags": [
+      "saas",
+      "wellness",
+      "landing-page"
+    ],
+    "patterns": [],
+    "why_good": "Confident hero hierarchy and generous whitespace for a care/wellness brand; adapting the layout rhythm for a pet-sitting hero section — pet-sitting-site demo reference",
+    "palette": [],
+    "license": "editorial",
+    "saved_at": "2026-07-19T18:56:29.302Z"
+  },
+  {
+    "source_url": "https://coolors.co/cb997e-ddbea9-ffe8d6-b7b7a4-a5a58d",
+    "local_screenshot": "cache/keepers/abf688d7-d40b-441c-a0ea-1e3c56d80d42.png",
+    "source": "coolors",
+    "type": "reference",
+    "tags": [
+      "palette",
+      "warm",
+      "earthy",
+      "pet-friendly"
+    ],
+    "patterns": [],
+    "why_good": "Warm terracotta/cream/olive palette reads friendly and grounded rather than clinical — pet-sitting-site demo reference",
+    "palette": [
+      "#CB997E",
+      "#DDBEA9",
+      "#FFE8D6",
+      "#B7B7A4",
+      "#A5A58D"
+    ],
+    "license": "n/a",
+    "saved_at": "2026-07-19T18:56:30.031Z"
+  }
+]
