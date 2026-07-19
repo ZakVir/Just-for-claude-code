@@ -19,6 +19,26 @@ export function mimeFromUrl(url: string): string {
   return "image/png";
 }
 
+/** Inverse of mimeFromUrl — the on-disk extension that actually matches the bytes. */
+export function extFromMime(mime?: string): string {
+  switch ((mime ?? "image/png").split(";")[0].trim().toLowerCase()) {
+    case "image/jpeg":
+    case "image/jpg":
+      return "jpg";
+    case "image/webp":
+      return "webp";
+    case "image/gif":
+      return "gif";
+    case "image/svg+xml":
+      return "svg";
+    case "image/avif":
+      return "avif";
+    case "image/png":
+    default:
+      return "png";
+  }
+}
+
 export function toBase64(buf: Buffer | Uint8Array): string {
   return Buffer.from(buf).toString("base64");
 }

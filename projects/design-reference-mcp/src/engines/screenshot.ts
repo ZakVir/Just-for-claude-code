@@ -86,17 +86,19 @@ export function handles(url: string): boolean {
 export function search(query: string, limit: number, sourceFilter?: string): SearchResult[] {
   let pool = sourcesByEngine("screenshot");
   if (sourceFilter) pool = pool.filter((s) => s.id === sourceFilter || s.name === sourceFilter);
-  const q = query.toLowerCase();
+  const q = query.trim().toLowerCase();
   const scored = pool
     .map((s) => ({
       s,
       score: [s.name, s.good_for, s.id].join(" ").toLowerCase().includes(q) ? 1 : 0,
     }))
     .sort((a, b) => b.score - a.score);
-  const anyMatch = scored.some((x) => x.score > 0);
-  return (anyMatch ? scored.filter((x) => x.score > 0) : scored)
-    .slice(0, limit)
-    .map(({ s }) => sourceToResult(s));
+  // An explicit sourceFilter means the caller already chose this source —
+  // return it regardless of query score. A blank query browses the pool; a
+  // real query that matches nothing returns empty rather than padding with
+  // unrelated screenshot sources.
+  const chosen = sourceFilter || q === "" ? scored : scored.filter((x) => x.score > 0);
+  return chosen.slice(0, limit).map(({ s }) => sourceToResult(s));
 }
 
 function sourceToResult(s: Source): SearchResult {

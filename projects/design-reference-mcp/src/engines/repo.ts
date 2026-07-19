@@ -71,17 +71,22 @@ export function search(query: string, limit: number, sourceFilter?: string): Sea
   let pool = sourcesByEngine("repo");
   if (sourceFilter) pool = pool.filter((s) => s.id === sourceFilter || s.name === sourceFilter);
 
-  // Coolors: if the query is itself a coolors URL, surface the parsed palette entry.
   const scored = pool
     .map((s) => ({
       s,
       score: scoreMatch(`${s.name} ${s.good_for ?? ""} ${s.category ?? ""} ${s.id}`, qterms),
     }))
-    // If no query terms match anything, fall back to returning the whole (capped) index.
     .sort((a, b) => b.score - a.score);
 
-  const anyMatch = scored.some((x) => x.score > 0);
-  const chosen = (anyMatch ? scored.filter((x) => x.score > 0) : scored).slice(0, limit);
+  // An explicit sourceFilter means the caller already chose this repo —
+  // return it regardless of query score, since the query is scored only
+  // against thin registry metadata, not real repo contents. Otherwise, a
+  // degenerate query (no usable terms) browses the pool; a real query that
+  // matches nothing returns empty so the caller can try other engines
+  // instead of padding results with irrelevant repos.
+  const chosen = (
+    sourceFilter || qterms.length === 0 ? scored : scored.filter((x) => x.score > 0)
+  ).slice(0, limit);
   return chosen.map((x) => toResult(x.s));
 }
 

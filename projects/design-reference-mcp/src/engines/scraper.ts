@@ -53,49 +53,86 @@ async function fetchHtml(url: string): Promise<string> {
  * pulling the first N as candidate cards. Works reasonably across the
  * gallery-style sites in the registry without per-site selectors.
  */
-function extractCards(html: string, baseUrl: string, cap: number): SearchResult[] {
+/**
+ * Path depth (non-empty segments, ignoring query/hash) of an href. Gallery
+ * sites near-universally put top nav/category links one segment deep
+ * ("/sections", "/motion") and actual item/detail pages two or more
+ * ("/websites/93513-hyperice-..."). Traversal cost is free here — the page
+ * is already fetched and in memory — so we scan every anchor rather than
+ * bailing out early, which previously stopped at whatever nav icons happen
+ * to appear first in document order and never reached real content.
+ */
+function pathDepth(href: string, baseUrl: string): number {
+  try {
+    const u = new URL(href, baseUrl);
+    return u.pathname.split("/").filter(Boolean).length;
+  } catch {
+    return 0;
+  }
+}
+
+function extractCards(html: string, baseUrl: string): SearchResult[] {
   const $ = cheerio.load(html);
-  const out: SearchResult[] = [];
+  const candidates: Array<SearchResult & { depth: number }> = [];
   const seen = new Set<string>();
+  const baseHost = new URL(baseUrl).hostname;
 
   $("a").each((_, el) => {
-    if (out.length >= cap * 4) return; // gather extra candidates for ranking, still bounded
     const $a = $(el);
     const href = $a.attr("href");
     if (!href) return;
     const $img = $a.find("img").first();
-    const img = $img.length ? $img : $a.closest("*").find("img").first();
-    if (!img || !img.length) return;
+    if (!$img.length) return;
 
     const src =
-      img.attr("src") ||
-      img.attr("data-src") ||
-      img.attr("data-lazy-src") ||
-      (img.attr("srcset") ?? "").split(",")[0]?.trim().split(" ")[0];
+      $img.attr("src") ||
+      $img.attr("data-src") ||
+      $img.attr("data-lazy-src") ||
+      ($img.attr("srcset") ?? "").split(",")[0]?.trim().split(" ")[0];
     if (!src) return;
 
     const absHref = absolutize(baseUrl, href);
     const absSrc = absolutize(baseUrl, src);
     if (!absHref || !absSrc) return;
+
+    // Cross-domain links from a gallery's own listing page are almost always
+    // sponsor/affiliate slots, not curated content — skip them. This also
+    // means a JS-rendered gallery whose static HTML is mostly ads correctly
+    // yields nothing here instead of surfacing those ads as design references.
+    let hrefHost: string;
+    try {
+      hrefHost = new URL(absHref).hostname;
+    } catch {
+      return;
+    }
+    if (hrefHost !== baseHost) return;
+    // Site chrome (logo/icon/favicon/avatar), not a design reference.
+    if (/logo|favicon|\bicon\b|avatar/i.test(src) || /logo|favicon|\bicon\b|avatar/i.test(href)) return;
+
     if (seen.has(absHref)) return;
     seen.add(absHref);
 
     const title =
-      img.attr("alt")?.trim() ||
+      $img.attr("alt")?.trim() ||
       $a.attr("title")?.trim() ||
       $a.text().trim().slice(0, 120) ||
       "Untitled";
 
-    out.push({
+    candidates.push({
       thumb_url: absSrc,
       source_url: absHref,
       title,
       tags: [],
       source: "",
+      depth: pathDepth(href, baseUrl),
     });
   });
 
-  return out;
+  // Prefer deep (item/detail-page) links over shallow nav/category links;
+  // fall back to shallow links only if nothing deeper was found at all.
+  const deep = candidates.filter((c) => c.depth >= 2);
+  const pool = deep.length ? deep : candidates;
+  return pool.slice(0, 60).map(({ depth, ...rest }) => rest);
 }
 
 export function handles(url: string): boolean {
@@ -108,12 +145,23 @@ export async function search(
   limit: number,
   sourceFilter?: string,
 ): Promise<SearchResult[]> {
-  const pool = sourcesByEngine("scraper").filter(
+  let pool = sourcesByEngine("scraper").filter(
     (s) => !sourceFilter || s.id === sourceFilter || s.name === sourceFilter,
   );
   if (!pool.length) return [];
 
   const qterms = terms(query);
+
+  // Pattern queries ("pricing table", "login form") almost never appear
+  // literally in a screenshot's alt text — the real signal is which gallery
+  // specializes in that pattern (e.g. Collect UI's good_for mentions
+  // "pricing"). Query those galleries first so a small `limit` doesn't run
+  // out before reaching the source that actually matches.
+  const sourceScore = new Map(
+    pool.map((s) => [s.id, qterms.length ? scoreMatch(s.good_for ?? "", qterms) : 0]),
+  );
+  pool = [...pool].sort((a, b) => (sourceScore.get(b.id) ?? 0) - (sourceScore.get(a.id) ?? 0));
+
   const results: SearchResult[] = [];
 
   // Query one gallery at a time, stopping once we have enough candidates.
@@ -122,7 +170,7 @@ export async function search(
     if (results.length >= limit * 3) break;
     try {
       const html = await fetchHtml(s.url);
-      const cards = extractCards(html, s.url, limit);
+      const cards = extractCards(html, s.url);
       for (const c of cards) {
         c.source = s.id;
         c.license = "editorial";
@@ -137,10 +185,24 @@ export async function search(
   }
 
   const scored = results
-    .map((r) => ({ r, score: qterms.length ? scoreMatch(`${r.title} ${r.source}`, qterms) : 1 }))
+    .map((r) => {
+      if (!qterms.length) return { r, score: 1 };
+      // A card scores on its own title/source match, plus a boost carried
+      // over from its gallery's good_for match — so cards from a gallery
+      // that specializes in the requested pattern surface even when the
+      // individual screenshot's alt text says nothing about it.
+      const titleScore = scoreMatch(`${r.title} ${r.source}`, qterms);
+      const gallerySourceScore = sourceScore.get(r.source) ?? 0;
+      return { r, score: titleScore + gallerySourceScore };
+    })
     .sort((a, b) => b.score - a.score);
-  const anyMatch = scored.some((x) => x.score > 0);
-  return (anyMatch ? scored.filter((x) => x.score > 0) : scored).slice(0, limit).map((x) => x.r);
+  // An explicit sourceFilter means the caller already chose this gallery —
+  // return its cards regardless of query score. Otherwise, a degenerate
+  // query (no usable terms) browses the fetched cards; a real query that
+  // matches nothing (no title AND no gallery specialization) returns empty
+  // rather than padding with irrelevant cards.
+  const chosen = sourceFilter || qterms.length === 0 ? scored : scored.filter((x) => x.score > 0);
+  return chosen.slice(0, limit).map((x) => x.r);
 }
 
 export async function getDetail(url: string): Promise<DetailResult> {

@@ -28,6 +28,7 @@ import * as wrapperEngine from "./engines/wrapper.js";
 import * as screenshotEngine from "./engines/screenshot.js";
 import { extractTokens } from "./engines/tokens.js";
 import { type SearchResult, type DetailResult } from "./engines/types.js";
+import { extFromMime } from "./util/image.js";
 import * as keepers from "./cache/keepers.js";
 import { closeBrowser } from "./engines/screenshot.js";
 
@@ -183,7 +184,7 @@ async function saveReference(args: {
     why_good: args.why_good,
     notes: args.notes,
     image,
-    image_ext: (detail.image_mime ?? "image/png").includes("png") ? "png" : "jpg",
+    image_ext: extFromMime(detail.image_mime),
     palette: detail.palette,
     license: detail.license,
   });
