@@ -88,17 +88,28 @@ async function routeSearch(args: {
   }
 
   // Category filter: gather sources whose category/good_for matches, then
-  // fan out to only those engines (bounded — never "all sources").
+  // fan out to only those engines (bounded — never "all sources"). Normalize
+  // punctuation so "landing-page" matches a good_for of "Landing pages" —
+  // categories and good_for text don't share a punctuation convention.
   if (category) {
-    const cat = category.toLowerCase();
+    const normalize = (s: string) => s.toLowerCase().replace(/[^a-z0-9]+/g, " ").trim();
+    const cat = normalize(category);
     const matches = SOURCES.filter(
-      (s) => !s.gated && (s.category?.toLowerCase().includes(cat) || s.good_for?.toLowerCase().includes(cat)),
+      (s) =>
+        !s.gated &&
+        ((s.category && normalize(s.category).includes(cat)) ||
+          (s.good_for && normalize(s.good_for).includes(cat))),
     );
+    const idsFor = (engine: string) => matches.filter((s) => s.engine === engine).map((s) => s.id);
     const engines = new Set(matches.map((s) => s.engine));
     const results: SearchResult[] = [];
-    if (engines.has("repo")) results.push(...repoEngine.search(query, limit));
-    if (engines.has("scraper")) results.push(...(await scraperEngine.search(query, limit)));
-    if (engines.has("screenshot")) results.push(...screenshotEngine.search(query, limit));
+    // Pass the category-matched source ids down so each engine restricts to
+    // (and always returns from) exactly those sources — the category match
+    // itself is the signal, not a further query-term match against thin
+    // per-source metadata.
+    if (engines.has("repo")) results.push(...repoEngine.search(query, limit, idsFor("repo")));
+    if (engines.has("scraper")) results.push(...(await scraperEngine.search(query, limit, idsFor("scraper"))));
+    if (engines.has("screenshot")) results.push(...screenshotEngine.search(query, limit, idsFor("screenshot")));
     if (engines.has("api") && apiEngine.behanceAvailable()) {
       results.push(...(await apiEngine.searchBehance(query, limit).catch(() => [])));
     }

@@ -83,9 +83,14 @@ export function handles(url: string): boolean {
  * on demand via design_get_detail, which triggers capture(). This keeps
  * search() fast and avoids launching a browser per query.
  */
-export function search(query: string, limit: number, sourceFilter?: string): SearchResult[] {
+export function search(
+  query: string,
+  limit: number,
+  sourceFilter?: string | string[],
+): SearchResult[] {
+  const filterIds = typeof sourceFilter === "string" ? [sourceFilter] : sourceFilter;
   let pool = sourcesByEngine("screenshot");
-  if (sourceFilter) pool = pool.filter((s) => s.id === sourceFilter || s.name === sourceFilter);
+  if (filterIds?.length) pool = pool.filter((s) => filterIds.includes(s.id) || filterIds.includes(s.name));
   const q = query.trim().toLowerCase();
   const scored = pool
     .map((s) => ({
@@ -93,11 +98,12 @@ export function search(query: string, limit: number, sourceFilter?: string): Sea
       score: [s.name, s.good_for, s.id].join(" ").toLowerCase().includes(q) ? 1 : 0,
     }))
     .sort((a, b) => b.score - a.score);
-  // An explicit sourceFilter means the caller already chose this source —
-  // return it regardless of query score. A blank query browses the pool; a
-  // real query that matches nothing returns empty rather than padding with
-  // unrelated screenshot sources.
-  const chosen = sourceFilter || q === "" ? scored : scored.filter((x) => x.score > 0);
+  // An explicit sourceFilter (single source, or a category-matched set)
+  // means the caller already chose these sources — return them regardless
+  // of query score. A blank query browses the pool; a real query that
+  // matches nothing returns empty rather than padding with unrelated
+  // screenshot sources.
+  const chosen = filterIds?.length || q === "" ? scored : scored.filter((x) => x.score > 0);
   return chosen.slice(0, limit).map(({ s }) => sourceToResult(s));
 }
 

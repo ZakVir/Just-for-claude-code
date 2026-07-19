@@ -66,10 +66,15 @@ export function parseCoolorsUrl(url: string): string[] {
   return [...new Set(hexes)];
 }
 
-export function search(query: string, limit: number, sourceFilter?: string): SearchResult[] {
+export function search(
+  query: string,
+  limit: number,
+  sourceFilter?: string | string[],
+): SearchResult[] {
   const qterms = terms(query);
+  const filterIds = typeof sourceFilter === "string" ? [sourceFilter] : sourceFilter;
   let pool = sourcesByEngine("repo");
-  if (sourceFilter) pool = pool.filter((s) => s.id === sourceFilter || s.name === sourceFilter);
+  if (filterIds?.length) pool = pool.filter((s) => filterIds.includes(s.id) || filterIds.includes(s.name));
 
   const scored = pool
     .map((s) => ({
@@ -78,14 +83,15 @@ export function search(query: string, limit: number, sourceFilter?: string): Sea
     }))
     .sort((a, b) => b.score - a.score);
 
-  // An explicit sourceFilter means the caller already chose this repo —
-  // return it regardless of query score, since the query is scored only
-  // against thin registry metadata, not real repo contents. Otherwise, a
-  // degenerate query (no usable terms) browses the pool; a real query that
-  // matches nothing returns empty so the caller can try other engines
-  // instead of padding results with irrelevant repos.
+  // An explicit sourceFilter (single source, or a category-matched set of
+  // sources) means the caller already chose these repos — return them
+  // regardless of query score, since the query is scored only against thin
+  // registry metadata, not real repo contents. Otherwise, a degenerate query
+  // (no usable terms) browses the pool; a real query that matches nothing
+  // returns empty so the caller can try other engines instead of padding
+  // results with irrelevant repos.
   const chosen = (
-    sourceFilter || qterms.length === 0 ? scored : scored.filter((x) => x.score > 0)
+    filterIds?.length || qterms.length === 0 ? scored : scored.filter((x) => x.score > 0)
   ).slice(0, limit);
   return chosen.map((x) => toResult(x.s));
 }

@@ -143,10 +143,11 @@ export function handles(url: string): boolean {
 export async function search(
   query: string,
   limit: number,
-  sourceFilter?: string,
+  sourceFilter?: string | string[],
 ): Promise<SearchResult[]> {
+  const filterIds = typeof sourceFilter === "string" ? [sourceFilter] : sourceFilter;
   let pool = sourcesByEngine("scraper").filter(
-    (s) => !sourceFilter || s.id === sourceFilter || s.name === sourceFilter,
+    (s) => !filterIds?.length || filterIds.includes(s.id) || filterIds.includes(s.name),
   );
   if (!pool.length) return [];
 
@@ -201,7 +202,7 @@ export async function search(
   // query (no usable terms) browses the fetched cards; a real query that
   // matches nothing (no title AND no gallery specialization) returns empty
   // rather than padding with irrelevant cards.
-  const chosen = sourceFilter || qterms.length === 0 ? scored : scored.filter((x) => x.score > 0);
+  const chosen = filterIds?.length || qterms.length === 0 ? scored : scored.filter((x) => x.score > 0);
   return chosen.slice(0, limit).map((x) => x.r);
 }
 
