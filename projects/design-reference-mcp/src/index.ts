@@ -20,7 +20,16 @@ import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { StdioServerTransport } from "@modelcontextprotocol/sdk/server/stdio.js";
 import { z } from "zod";
 
-import { SOURCES, clampLimit, sourceForUrl, type Source } from "./config.js";
+import {
+  SOURCES,
+  SITE_TYPES,
+  SITE_TYPE_IDS,
+  clampLimit,
+  sourceForUrl,
+  sourcesForSiteType,
+  filterByCategoryText,
+  type Source,
+} from "./config.js";
 import * as repoEngine from "./engines/repo.js";
 import * as scraperEngine from "./engines/scraper.js";
 import * as apiEngine from "./engines/api.js";
@@ -45,17 +54,30 @@ function gatedResult(s: Source): SearchResult {
   };
 }
 
-/** Route design_search across the right engine(s) based on source/category/query. */
+/**
+ * Route design_search across the right engine(s).
+ *
+ * `site_type` is required — every call must say up front whether it's
+ * looking for a public-facing page that advertises/sells the business
+ * ("marketing" kind: routes to the scraper/screenshot galleries + landing
+ * templates) or an actual logged-in user/admin product surface ("product"
+ * kind: routes to component-lib/design-system repos — the real building
+ * blocks, since no gallery here curates "admin dashboard" screenshots).
+ * `source` (an explicit single registry id) overrides site_type entirely.
+ * `category` further narrows the site_type-selected pool by free text.
+ */
 async function routeSearch(args: {
   query: string;
+  site_type: string;
   category?: string;
   source?: string;
   color?: string;
   limit: number;
 }): Promise<SearchResult[]> {
-  const { query, category, source, color, limit } = args;
+  const { query, site_type, category, source, color, limit } = args;
 
-  // Explicit source wins. Gated sources short-circuit — never scraped.
+  // Explicit source wins over site_type — the caller already knows exactly
+  // where to look. Gated sources short-circuit — never scraped.
   if (source) {
     const src = SOURCES.find((s) => s.id === source || s.name === source);
     if (!src) {
@@ -87,48 +109,41 @@ async function routeSearch(args: {
     }
   }
 
-  // Category filter: gather sources whose category/good_for matches, then
-  // fan out to only those engines (bounded — never "all sources"). Normalize
-  // punctuation so "landing-page" matches a good_for of "Landing pages" —
-  // categories and good_for text don't share a punctuation convention.
-  if (category) {
-    const normalize = (s: string) => s.toLowerCase().replace(/[^a-z0-9]+/g, " ").trim();
-    const cat = normalize(category);
-    const matches = SOURCES.filter(
-      (s) =>
-        !s.gated &&
-        ((s.category && normalize(s.category).includes(cat)) ||
-          (s.good_for && normalize(s.good_for).includes(cat))),
-    );
-    const idsFor = (engine: string) => matches.filter((s) => s.engine === engine).map((s) => s.id);
-    const engines = new Set(matches.map((s) => s.engine));
-    const results: SearchResult[] = [];
-    // Pass the category-matched source ids down so each engine restricts to
-    // (and always returns from) exactly those sources — the category match
-    // itself is the signal, not a further query-term match against thin
-    // per-source metadata.
-    if (engines.has("repo")) results.push(...repoEngine.search(query, limit, idsFor("repo")));
-    if (engines.has("scraper")) results.push(...(await scraperEngine.search(query, limit, idsFor("scraper"))));
-    if (engines.has("screenshot")) results.push(...screenshotEngine.search(query, limit, idsFor("screenshot")));
-    if (engines.has("api") && apiEngine.behanceAvailable()) {
-      results.push(...(await apiEngine.searchBehance(query, limit).catch(() => [])));
-    }
-    return results.slice(0, limit);
+  const siteType = SITE_TYPES.find((t) => t.id === site_type);
+  if (!siteType) {
+    return [
+      {
+        thumb_url: "",
+        source_url: "",
+        title: `Unknown site_type "${site_type}". Call list_sources for valid ids, or see the tool description for the full list.`,
+        tags: ["error"],
+        source: "unknown",
+      },
+    ];
   }
 
-  // No source/category: default to the cheap, key-free v0 engines (repo +
-  // scraper) so the tool is useful with zero configuration. Layer in api /
-  // wrapper results only when keys are configured, staying within `limit`.
+  let matches = sourcesForSiteType(site_type);
+  if (category) matches = filterByCategoryText(matches, category);
+
+  const idsFor = (engine: string) => matches.filter((s) => s.engine === engine).map((s) => s.id);
+  const engines = new Set(matches.map((s) => s.engine));
   const results: SearchResult[] = [];
-  results.push(...repoEngine.search(query, limit));
-  if (results.length < limit) {
-    results.push(...(await scraperEngine.search(query, limit - results.length)));
-  }
-  if (results.length < limit && apiEngine.behanceAvailable()) {
-    results.push(...(await apiEngine.searchBehance(query, limit - results.length).catch(() => [])));
-  }
-  if (results.length < limit && wrapperEngine.available()) {
-    results.push(...(await wrapperEngine.search(query, limit - results.length, color).catch(() => [])));
+  // Pass the site_type-matched source ids down so each engine restricts to
+  // (and always returns from) exactly those sources — the site_type/category
+  // match is itself the signal, not a further query-term match against thin
+  // per-source metadata.
+  if (engines.has("repo")) results.push(...repoEngine.search(query, limit, idsFor("repo")));
+  if (engines.has("scraper")) results.push(...(await scraperEngine.search(query, limit, idsFor("scraper"))));
+  if (engines.has("screenshot")) results.push(...screenshotEngine.search(query, limit, idsFor("screenshot")));
+  // Behance/Cosmos are visual inspiration, not real components — only worth
+  // layering in for marketing-kind requests.
+  if (siteType.kind === "marketing") {
+    if (apiEngine.behanceAvailable()) {
+      results.push(...(await apiEngine.searchBehance(query, limit).catch(() => [])));
+    }
+    if (results.length < limit && wrapperEngine.available()) {
+      results.push(...(await wrapperEngine.search(query, limit - results.length, color).catch(() => [])));
+    }
   }
   return results.slice(0, limit);
 }
@@ -156,12 +171,13 @@ async function routeDetail(url: string): Promise<DetailResult> {
  */
 async function designSearch(args: {
   query: string;
+  site_type: string;
   category?: string;
   source?: string;
   color?: string;
   limit?: number;
 }): Promise<SearchResult[]> {
-  const { query, category, source, color, limit } = args;
+  const { query, site_type, category, source, color, limit } = args;
   // Cache-first: always check the local saved index before any network call.
   const saved = await keepers.search(query, category ? [category] : undefined);
   const cap = clampLimit(limit);
@@ -175,7 +191,8 @@ async function designSearch(args: {
   }));
 
   const remaining = cap - savedResults.length;
-  const fresh = remaining > 0 ? await routeSearch({ query, category, source, color, limit: remaining }) : [];
+  const fresh =
+    remaining > 0 ? await routeSearch({ query, site_type, category, source, color, limit: remaining }) : [];
 
   return [...savedResults, ...fresh].slice(0, cap);
 }
@@ -203,19 +220,28 @@ async function saveReference(args: {
 
 const server = new McpServer({ name: "design-reference-mcp", version: "0.1.0" });
 
+const SITE_TYPE_DESCRIPTION =
+  "REQUIRED. What kind of thing are you looking for — a public-facing page that " +
+  "advertises/sells the business, or an actual logged-in user/admin product surface? " +
+  "Each maps to a different part of the registry (marketing kinds → galleries + landing " +
+  "templates; product kinds → component libraries + design-system tokens). One of: " +
+  SITE_TYPES.map((t) => `'${t.id}' (${t.kind}: ${t.description})`).join("; ");
+
 server.tool(
   "design_search",
   "Search design references across galleries, repos, design systems, Behance, and Cosmos. " +
-    "Returns up to `limit` (default 5, max 20) results with thumbnail, source URL, tags, and license.",
+    "Returns up to `limit` (default 5, max 20) results with thumbnail, source URL, tags, and license. " +
+    "site_type is required — see its description for the full list of what to pick from.",
   {
     query: z.string().describe("Free-text search query"),
-    category: z.string().optional().describe("Filter by category, e.g. 'landing-page', 'component-lib', 'color'"),
-    source: z.string().optional().describe("Restrict to one registry source id (see list_sources)"),
+    site_type: z.enum(SITE_TYPE_IDS).describe(SITE_TYPE_DESCRIPTION),
+    category: z.string().optional().describe("Further narrow within site_type, e.g. 'pricing', 'dark', 'color'"),
+    source: z.string().optional().describe("Restrict to one registry source id (see list_sources), overrides site_type"),
     color: z.string().optional().describe("Color hint, passed through to sources that support it (e.g. Cosmos)"),
     limit: z.number().int().optional().describe("Max results, default 5, max 20"),
   },
-  async ({ query, category, source, color, limit }) => {
-    const combined = await designSearch({ query, category, source, color, limit });
+  async ({ query, site_type, category, source, color, limit }) => {
+    const combined = await designSearch({ query, site_type, category, source, color, limit });
     return { content: [{ type: "text", text: JSON.stringify(combined, null, 2) }] };
   },
 );
@@ -250,8 +276,9 @@ server.tool(
 
 server.tool(
   "list_sources",
-  "List the full source registry: every gallery, repo, design system, and API this server knows " +
-    "about, what it's good for, and which engine handles it.",
+  "List the full source registry (every gallery, repo, design system, and API this server " +
+    "knows about, what it's good for, and which engine handles it) plus the full list of valid " +
+    "site_type values for design_search.",
   {},
   async () => {
     const summary = SOURCES.map((s) => ({
@@ -264,7 +291,13 @@ server.tool(
       gated: s.gated ?? false,
       alternative: s.alternative,
     }));
-    return { content: [{ type: "text", text: JSON.stringify(summary, null, 2) }] };
+    const site_types = SITE_TYPES.map((t) => ({
+      id: t.id,
+      label: t.label,
+      kind: t.kind,
+      description: t.description,
+    }));
+    return { content: [{ type: "text", text: JSON.stringify({ sources: summary, site_types }, null, 2) }] };
   },
 );
 
@@ -301,10 +334,17 @@ server.tool(
 async function runCli(toolName: string, jsonArgs: string): Promise<void> {
   const args = jsonArgs ? JSON.parse(jsonArgs) : {};
   const handlers: Record<string, (a: unknown) => Promise<unknown>> = {
-    design_search: async (a: any) => designSearch({ query: a.query, category: a.category, source: a.source, color: a.color, limit: a.limit }),
+    design_search: async (a: any) => {
+      if (!a.site_type) {
+        throw new Error(
+          `design_search requires "site_type". Valid ids: ${SITE_TYPE_IDS.join(", ")}`,
+        );
+      }
+      return designSearch({ query: a.query, site_type: a.site_type, category: a.category, source: a.source, color: a.color, limit: a.limit });
+    },
     design_get_detail: async (a: any) => routeDetail(a.url),
     extract_tokens: async (a: any) => extractTokens(a.url),
-    list_sources: async () => SOURCES,
+    list_sources: async () => ({ sources: SOURCES, site_types: SITE_TYPES }),
     save_reference: async (a: any) => saveReference({ url: a.url, tags: a.tags, why_good: a.why_good, notes: a.notes }),
     retrieve_saved: async (a: any) => keepers.search(a.query, a.tags),
   };

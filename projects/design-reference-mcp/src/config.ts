@@ -160,3 +160,163 @@ export function clampLimit(limit?: number): number {
   if (typeof limit !== "number" || Number.isNaN(limit)) return SEARCH_LIMIT_DEFAULT;
   return Math.max(1, Math.min(SEARCH_LIMIT_MAX, Math.floor(limit)));
 }
+
+/**
+ * site_type — the required classifier every design_search call must answer:
+ * "is this a public-facing page that advertises/sells the business, or is it
+ * an actual logged-in user/admin product surface?" Those two draw from
+ * completely different parts of the registry:
+ *   - "marketing" site types route to the scraper/screenshot galleries
+ *     (visual inspiration for a public page) plus landing-page template repos.
+ *   - "product" site types route to the repo engine's component-lib and
+ *     design-system sources (the actual building blocks you'd use to build a
+ *     working admin/user app), since no gallery in this registry curates
+ *     screenshots specifically labeled "admin dashboard" or "checkout flow."
+ */
+export type SiteTypeKind = "marketing" | "product";
+
+export interface SiteType {
+  id: string;
+  label: string;
+  description: string;
+  kind: SiteTypeKind;
+  /** Exact Source.category values (repo-engine sources only) this draws from. */
+  categories?: string[];
+  /** Free-text terms matched against name/good_for (normalized, substring). */
+  terms?: string[];
+}
+
+export const SITE_TYPES: SiteType[] = [
+  // --- marketing / public-facing: advertises or sells the business ---
+  {
+    id: "marketing-landing-page",
+    label: "Marketing landing page",
+    kind: "marketing",
+    description: "A public page whose job is to advertise the business and drive a signup or purchase.",
+    terms: ["landing page", "landing pages", "single page", "one page"],
+  },
+  {
+    id: "saas-landing-page",
+    label: "SaaS landing page",
+    kind: "marketing",
+    description: "A marketing page for a software product specifically.",
+    terms: ["saas", "landing page"],
+  },
+  {
+    id: "pricing-page",
+    label: "Pricing page",
+    kind: "marketing",
+    description: "A page or section presenting plans, tiers, or pricing.",
+    terms: ["pricing"],
+  },
+  {
+    id: "portfolio-site",
+    label: "Portfolio / personal site",
+    kind: "marketing",
+    description: "A personal, agency, or freelancer portfolio.",
+    terms: ["portfolio", "minimal", "typographic"],
+  },
+  {
+    id: "blog-content-site",
+    label: "Blog / content site",
+    kind: "marketing",
+    description: "An editorial, blog, or content-first public site.",
+    terms: ["blog", "type in use", "typographic"],
+  },
+  {
+    id: "ecommerce-storefront",
+    label: "E-commerce storefront",
+    kind: "marketing",
+    description: "A public product-browsing storefront (not the checkout flow itself).",
+    terms: ["ecommerce", "e-commerce", "shop", "store"],
+  },
+
+  // --- product / logged-in application: the actual user or admin backend ---
+  {
+    id: "admin-dashboard",
+    label: "Admin / internal dashboard",
+    kind: "product",
+    description: "An internal tool for staff — data tables, filters, bulk actions.",
+    categories: ["component-lib", "design-system", "design-system-docs"],
+  },
+  {
+    id: "user-dashboard",
+    label: "End-user account dashboard",
+    kind: "product",
+    description: "A logged-in customer's account/home screen.",
+    categories: ["component-lib", "design-system", "design-system-docs"],
+  },
+  {
+    id: "saas-app-ui",
+    label: "SaaS in-app UI",
+    kind: "product",
+    description: "General in-product screens beyond the marketing site.",
+    categories: ["component-lib", "design-system", "design-system-docs"],
+  },
+  {
+    id: "checkout-flow",
+    label: "Checkout / payment flow",
+    kind: "product",
+    description: "Cart, payment, and order-confirmation screens.",
+    categories: ["component-lib"],
+  },
+  {
+    id: "onboarding-flow",
+    label: "Onboarding / signup flow",
+    kind: "product",
+    description: "A multi-step signup or first-run setup wizard.",
+    categories: ["component-lib"],
+  },
+  {
+    id: "settings-panel",
+    label: "Settings / preferences panel",
+    kind: "product",
+    description: "Account settings, preferences, and configuration screens.",
+    categories: ["component-lib"],
+  },
+  {
+    id: "mobile-app-screen",
+    label: "Mobile app screen",
+    kind: "product",
+    description: "A native or responsive mobile app UI reference.",
+    categories: ["component-lib", "icons", "animation"],
+  },
+  {
+    id: "component-library",
+    label: "Just components / design tokens",
+    kind: "product",
+    description: "Not a specific page — browsing components, icons, or tokens directly.",
+    categories: ["component-lib", "design-system", "design-system-docs", "icons", "animation"],
+  },
+];
+
+export const SITE_TYPE_IDS = SITE_TYPES.map((t) => t.id) as [string, ...string[]];
+
+function normalizeText(s: string): string {
+  return s.toLowerCase().replace(/[^a-z0-9]+/g, " ").trim();
+}
+
+/** Sources this site_type routes to, per its categories/terms definition above. */
+export function sourcesForSiteType(siteTypeId: string): Source[] {
+  const st = SITE_TYPES.find((t) => t.id === siteTypeId);
+  if (!st) return [];
+  return SOURCES.filter((s) => {
+    if (s.gated) return false;
+    if (st.categories && s.category && st.categories.includes(s.category)) return true;
+    if (st.terms) {
+      const hay = normalizeText(`${s.name} ${s.good_for ?? ""}`);
+      return st.terms.some((t) => hay.includes(normalizeText(t)));
+    }
+    return false;
+  });
+}
+
+/** Further narrow a source list by free-text category (same matching as the legacy `category` param). */
+export function filterByCategoryText(sources: Source[], category: string): Source[] {
+  const cat = normalizeText(category);
+  return sources.filter(
+    (s) =>
+      (s.category && normalizeText(s.category).includes(cat)) ||
+      (s.good_for && normalizeText(s.good_for).includes(cat)),
+  );
+}

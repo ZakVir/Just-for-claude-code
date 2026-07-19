@@ -13,12 +13,47 @@ Six tools, routed across four engines + one wrapper:
 
 | Tool | What it does |
 | --- | --- |
-| `design_search` | Search across sources by query/category/source/color. Returns ≤ `limit` (default 5, max 20) results. |
+| `design_search` | Search across sources by query + **required** `site_type` (see below), optionally narrowed by `category`/`source`/`color`. Returns ≤ `limit` (default 5, max 20) results. |
 | `design_get_detail` | Fetch the full image (base64) + metadata for a result URL. Screenshots live-site sources. |
 | `extract_tokens` | Pull colors/fonts/spacing/radius/shadows from a live URL via computed styles. |
-| `list_sources` | Return the full source registry and what each source is good for. |
+| `list_sources` | Return the full source registry (what each source is good for) plus the full `site_type` list. |
 | `save_reference` | Save a reference into the local keeper index (`cache/keepers/`). |
 | `retrieve_saved` | Search the local keeper index — always checked before any network call. |
+
+### `site_type` — required on every `design_search` call
+
+Every search has to say up front what it's actually looking for: a public
+page that **advertises or sells the business**, or an actual **logged-in
+user/admin product surface**. Those draw from completely different parts of
+the registry — no gallery here has screenshots labeled "admin dashboard" —
+so the tool won't guess; the MCP protocol layer rejects the call outright if
+`site_type` is missing or invalid (see `src/config.ts`'s `SITE_TYPES` for the
+full definitions).
+
+| `site_type` | kind | What it's for |
+| --- | --- | --- |
+| `marketing-landing-page` | marketing | A public page that advertises the business and drives a signup/purchase |
+| `saas-landing-page` | marketing | A marketing page for a software product specifically |
+| `pricing-page` | marketing | Plans/tiers/pricing presentation |
+| `portfolio-site` | marketing | Personal/agency/freelancer portfolio |
+| `blog-content-site` | marketing | Editorial or blog-style content site |
+| `ecommerce-storefront` | marketing | Public product-browsing storefront |
+| `admin-dashboard` | product | Internal staff tool — tables, filters, bulk actions |
+| `user-dashboard` | product | Logged-in customer's account/home screen |
+| `saas-app-ui` | product | General in-product screens beyond the marketing site |
+| `checkout-flow` | product | Cart, payment, order-confirmation screens |
+| `onboarding-flow` | product | Multi-step signup / first-run wizard |
+| `settings-panel` | product | Account settings / preferences / configuration |
+| `mobile-app-screen` | product | Native or responsive mobile app UI reference |
+| `component-library` | product | Not a page — just browsing components/icons/tokens directly |
+
+`marketing` kinds route to the scraper/screenshot galleries + landing-page
+template repos (visual inspiration for a public page). `product` kinds route
+to the `repo` engine's component-lib and design-system sources — the actual
+building blocks you'd use to build a working admin/user app, since this
+registry's galleries don't curate app-UI screenshots. Passing an explicit
+`source` overrides `site_type` entirely; `category` further narrows within
+whatever `site_type` selected.
 
 Engines:
 
@@ -84,8 +119,8 @@ Every tool can be invoked directly without an MCP client:
 
 ```bash
 node dist/index.js --cli list_sources
-node dist/index.js --cli design_search '{"query":"saas landing page","limit":3}'
-node dist/index.js --cli design_search '{"query":"button","source":"shadcn-ui"}'
+node dist/index.js --cli design_search '{"query":"saas landing page","site_type":"marketing-landing-page","limit":3}'
+node dist/index.js --cli design_search '{"query":"button","site_type":"admin-dashboard","source":"shadcn-ui"}'
 node dist/index.js --cli design_get_detail '{"url":"https://github.com/shadcn-ui/ui"}'
 node dist/index.js --cli extract_tokens '{"url":"https://stripe.com"}'
 node dist/index.js --cli save_reference '{"url":"https://stripe.com","tags":["saas","dark"],"why_good":"Clear hierarchy, restrained color"}'
