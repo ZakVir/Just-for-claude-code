@@ -107,6 +107,20 @@ AI-generated site. Counter this explicitly:
 
 - If a design-quality skill is installed in this session (check `/help`
   or the available-skills list), invoke it before generating anything.
+  Two free, open-source, no-signup options built specifically for AI
+  coding agents (both confirmed via their own repo/site, not just a
+  video's word for it):
+  - **Impeccable** (Apache 2.0) — `npx skills add pbakaus/impeccable`.
+    23 commands (`audit`, `polish`, `critique`, `animate`, etc.) plus 60
+    deterministic detector rules that catch specific AI design
+    tells — overused fonts, purple-to-blue gradients, gray text on
+    colored backgrounds — without needing an API call to check. Works
+    with Claude Code, Cursor, Gemini CLI, Codex CLI, and more.
+  - **Taste Skill** (open-source) — `npx skills add Leonxlnx/taste-skill`.
+    Multiple style-specific skills (brutalist, minimalist, soft) plus
+    image-to-code and design-audit skills. Works with any SKILL.md-
+    compatible tool (Claude Code, Cursor, Codex, Gemini CLI, v0,
+    Lovable, and others).
 - If none exists, write your own short design-principles note (spacing
   scale, type scale, motion restraint, "no default purple/violet gradient
   hero unless the brand calls for it") and put it in `CLAUDE.md` or a
