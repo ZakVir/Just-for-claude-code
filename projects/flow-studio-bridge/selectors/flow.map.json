@@ -1,0 +1,93 @@
+{
+  "_comment": "Logical UI element -> ordered fallback strategies. Tried in order by resolve.ts; first strategy resolving to exactly one visible element wins. css_class strategies are forbidden. This initial map is a best-effort starting point based on Flow's documented behavior and common Material/React accessibility patterns — run `npm run doctor` against a live, signed-in Flow session and correct any MISS before relying on it.",
+  "promptInput": {
+    "strategies": [
+      { "type": "role", "role": "textbox", "name": "(describe|write|enter).*(prompt|image)|^prompt$" },
+      { "type": "label", "name": "prompt" },
+      { "type": "testid", "testId": "prompt-input" },
+      { "type": "structural", "anchor": "generateButton", "up": 4, "role": "textbox" }
+    ]
+  },
+  "generateButton": {
+    "strategies": [
+      { "type": "role", "role": "button", "name": "^generate$" },
+      { "type": "testid", "testId": "generate-button" },
+      { "type": "structural", "anchor": "promptInput", "up": 4, "role": "button", "name": "generate" }
+    ]
+  },
+  "modelSelector": {
+    "strategies": [
+      { "type": "role", "role": "combobox", "name": "model" },
+      { "type": "role", "role": "button", "name": "model" },
+      { "type": "label", "name": "model" },
+      { "type": "testid", "testId": "model-selector" }
+    ]
+  },
+  "modelOption": {
+    "strategies": [
+      { "type": "role", "role": "option", "name": "{param}" },
+      { "type": "role", "role": "menuitem", "name": "{param}" },
+      { "type": "text", "name": "{param}" }
+    ]
+  },
+  "agentToggle": {
+    "strategies": [
+      { "type": "role", "role": "switch", "name": "agent" },
+      { "type": "role", "role": "tab", "name": "agent" },
+      { "type": "label", "name": "agent mode" },
+      { "type": "testid", "testId": "agent-toggle" }
+    ]
+  },
+  "aspectRatioSelector": {
+    "strategies": [
+      { "type": "role", "role": "combobox", "name": "aspect ratio" },
+      { "type": "role", "role": "button", "name": "aspect ratio" },
+      { "type": "label", "name": "aspect ratio" },
+      { "type": "testid", "testId": "aspect-ratio-selector" }
+    ]
+  },
+  "aspectRatioOption": {
+    "strategies": [
+      { "type": "role", "role": "option", "name": "^{param}$" },
+      { "type": "role", "role": "menuitem", "name": "^{param}$" },
+      { "type": "text", "name": "^{param}$" }
+    ]
+  },
+  "outputCountSelector": {
+    "strategies": [
+      { "type": "role", "role": "combobox", "name": "(number of |output )?(images|outputs|variations|count)" },
+      { "type": "role", "role": "button", "name": "(number of |output )?(images|outputs|variations|count)" },
+      { "type": "label", "name": "(output count|number of images|number of outputs)" },
+      { "type": "testid", "testId": "output-count-selector" }
+    ]
+  },
+  "resultTile": {
+    "strategies": [
+      { "type": "role", "role": "img", "name": "(generated|result)" },
+      { "type": "testid", "testId": "result-tile" },
+      { "type": "structural", "anchor": "generateButton", "up": 6, "role": "img" }
+    ]
+  },
+  "resultDownloadButton": {
+    "strategies": [
+      { "type": "role", "role": "button", "name": "download" },
+      { "type": "label", "name": "download" },
+      { "type": "testid", "testId": "download-button" }
+    ]
+  },
+  "quotaIndicator": {
+    "strategies": [
+      { "type": "text", "name": "\\d+\\s*/\\s*\\d+" },
+      { "type": "label", "name": "(daily )?(limit|quota|usage)" },
+      { "type": "testid", "testId": "quota-indicator" }
+    ]
+  },
+  "limitReachedNotice": {
+    "strategies": [
+      { "type": "text", "name": "(daily )?limit reached" },
+      { "type": "text", "name": "you.?ve reached your (daily )?limit" },
+      { "type": "role", "role": "alert", "name": "limit" },
+      { "type": "testid", "testId": "limit-reached-notice" }
+    ]
+  }
+}

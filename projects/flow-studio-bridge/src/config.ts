@@ -8,7 +8,16 @@
  */
 import { readFileSync, existsSync } from "node:fs";
 import { resolve } from "node:path";
+import { fileURLToPath } from "node:url";
 import { z } from "zod";
+
+/**
+ * Absolute path to the project root, resolved relative to this module's own
+ * location rather than process.cwd() — so static assets like
+ * selectors/flow.map.json resolve the same way whether run from src/ (ts)
+ * or dist/ (compiled), regardless of the caller's working directory.
+ */
+export const PROJECT_ROOT = fileURLToPath(new URL("..", import.meta.url));
 
 const ConfigSchema = z.object({
   /** Directory for the isolated Playwright persistent context. Never the user's default Chrome profile. */
