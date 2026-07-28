@@ -1,7 +1,7 @@
 ---
 name: polished-landing-page
-version: "0.1.0"
-description: Guide a coding agent through a 7-stage process for building a landing page or marketing site that looks like a designed product, not generic AI output. Covers scoping, design taste, self-verification, brand visual system, original imagery, layout reference, and component-level polish.
+version: "0.2.0"
+description: Guide a coding agent through a 7-stage process for building a landing page or marketing site that looks like a designed product, not generic AI output. Covers scoping, design taste, self-verification, brand visual system, original imagery, layout reference, and component-level polish. Includes a vetted list of free-to-use design/component resources.
 argument-hint: "[project description]"
 allowed-tools: Bash, Read, Write, Edit, WebFetch, AskUserQuestion
 user-invocable: true
@@ -23,10 +23,14 @@ the project; this is a checklist to adapt, not a rigid pipeline.
 
 ## Origin
 
-Adapted from a public tutorial on using OpenAI Codex to build landing
-pages (a 7-stage process built by the "AI Labs" channel). The underlying
-ideas are general to any coding agent — this version reframes them for
-Claude Code specifically and is meant to be edited as you find what works.
+Adapted from three short-form videos on building landing pages with an AI
+coding agent: a 7-stage OpenAI Codex tutorial (the backbone of this
+skill), and two follow-up clips covering an alternative agent (Manus)
+plus a resource roundup. The underlying ideas are general to any coding
+agent — this version reframes them for Claude Code specifically and is
+meant to be edited as you find what works. The resource list below was
+independently checked for actual free-tier access before being added
+here — see [Resources](#resources-checked-for-free-access).
 
 ## Stage 1 — Scope it before you design anything
 
@@ -50,6 +54,15 @@ things they're fully capable of doing themselves (starting a dev server,
 checking the result); naming this once in `CLAUDE.md` removes a lot of
 friction.
 
+**For anything beyond a single page, write a short PRD first.** A
+paragraph brief is enough for a one-page site; for a multi-page site or
+app, put the brief, the page/route list, and any brand material into a
+real spec file (a `PRD.md`, or separate files per concern) and have the
+agent read all of it before starting, rather than describing everything
+inline in one prompt. This is the same idea as the `CLAUDE.md` context
+file above, just scaled up — more files, reviewed once, instead of one
+long prompt re-explained every session.
+
 ## Stage 2 — Load real design taste, not defaults
 
 Left alone, most models converge on the same handful of layouts and color
@@ -66,6 +79,11 @@ AI-generated site. Counter this explicitly:
   instructions ("don't use a generic vendor site-builder skill/template
   for the actual design work") are as important as positive ones, since
   agents default to whatever's fastest.
+- **React Bits** (reactbits.dev) is a free, open-source (MIT) library of
+  animated React components — no signup, no paid tier. If the project is
+  React-based and needs polished motion/interaction without hand-rolling
+  it, point the agent at it directly instead of letting it default to
+  static/generic components.
 
 ## Stage 3 — Make the agent verify its own work
 
@@ -90,8 +108,17 @@ concrete visual system for *this* brand — color palette (with hex
 values), type scale, spacing scale, corner radii, shadow style.
 
 - Write your own, or start from an existing open design-system reference
-  (several public collections of `design.md`-style files exist for
-  well-known products) and adapt it.
+  and adapt it:
+  - **getdesign.md** — a free, no-signup catalog of 300+ `design.md`
+    write-ups for well-known products (Apple, Figma, Stripe, Tesla,
+    etc.). Some paid add-ons exist (custom private write-ups, a starter
+    kit) but the core catalog is free to browse and use.
+  - **aura.build**'s free design.md library — reportedly free to browse
+    (per third-party sources; the site is a client-rendered app that's
+    hard to verify directly, so do a quick manual check before relying
+    on it). The *builder tool* on the same site is a separate, metered
+    product (10 free prompts/month, paid beyond that) — don't confuse
+    the free reference library with the paid builder.
 - Attach or paste the file, then ask the agent to apply it while
   explicitly preserving the layout, structure, and any animation work
   already done — you're re-skinning, not rebuilding.
@@ -133,9 +160,18 @@ By this point the overall design should be solid; some individual
 components (nav, buttons, a section background) may still feel generic.
 Rather than re-prompting the whole page, fix these in isolation:
 
-- Component libraries (21st.dev, Godly, and similar sites) have
-  drop-in pieces — nav patterns, animated backgrounds/shaders, buttons —
-  you can hand the agent as a reference or literal snippet.
+- Component libraries have drop-in pieces — nav patterns, animated
+  backgrounds/shaders, buttons — you can hand the agent as a reference or
+  literal snippet:
+  - **fancycomponents.dev** and **reactbits.dev** — fully free and
+    open-source, no signup.
+  - **recent.design** (formerly godly.website — the old domain redirects
+    here) — free design-inspiration/component gallery to browse, no
+    signup wall on content.
+  - **21st.dev** — free to browse and copy components without an
+    account, but capped at ~2 copies/day unauthenticated; a paid tier
+    removes the cap and adds AI generation credits. Fine for occasional
+    use, worth knowing the limit exists before relying on it mid-build.
 - Apply component-level changes one at a time so you can evaluate each
   before moving to the next.
 - If the page feels sluggish after adding heavy animation/motion effects,
@@ -153,11 +189,43 @@ Rather than re-prompting the whole page, fix these in isolation:
   Netlify) and make sure sharing is set to public before handing out the
   link. Add a custom domain if this is going to production.
 
+## Resources (checked for free access)
+
+Every link below was independently verified (not just taken from a video)
+to actually be usable for free before being added here — see the
+per-stage notes above for how each fits into the process.
+
+| Resource | Use it for | Free access |
+|---|---|---|
+| [reactbits.dev](https://reactbits.dev) | Animated React components | Fully free & open-source (MIT), no signup |
+| [fancycomponents.dev](https://fancycomponents.dev) | React components/microinteractions | Fully free & open-source, no signup |
+| [recent.design](https://recent.design) | Layout/component inspiration (formerly godly.website) | Free to browse, no signup wall |
+| [21st.dev](https://21st.dev) | Component marketplace | Free to browse/copy, ~2 copies/day unauthenticated cap; paid tier removes it |
+| [getdesign.md](https://getdesign.md) | `design.md` visual-system references for known products | Core catalog (300+) free, no signup; some paid add-ons exist |
+| [aura.build](https://aura.build) | Free `design.md` library (separate from its paid AI builder) | Library reportedly free (third-party sourced, verify manually — SPA blocks automated checks) |
+| Pinterest, Awwwards, Dribbble | Layout/visual reference screenshots (Stage 6) | Free to browse |
+
+**Deliberately left out:** motionsites.ai was mentioned in one of the
+source videos as an animated-website prompt library, but it turned out to
+be mostly paywalled — its homepage literally bills itself as "Premium AI
+Website Prompts," with only a thin free slice and most content behind
+$89–349 one-time/annual purchases. Doesn't meet the free-access bar for
+this list; flagging it here so it doesn't get re-added without noticing.
+If you want prompt-writing help instead, do it yourself using the design
+principles in Stage 2 — you don't need a paid prompt library for that.
+
+**Also worth knowing, not landing-page-specific:** blog.vibecoder.me is a
+free (no signup) set of guides/learning tracks covering the parts of
+AI-assisted coding this skill doesn't — APIs, databases, deployment,
+debugging. Useful once the landing page needs to become a real app.
+
 ## Notes for editing this skill
 
-This is a first pass — edit stages, add your own resource links (design
-system libraries, component libraries, inspiration sources you actually
-use), or split it into a multi-file skill with bundled reference docs as
-it grows. Treat the 7 stages as a checklist to adapt per project, not a
-rule to follow rigidly — skip stages that don't apply (e.g. stage 5 is
-irrelevant if the brand already has a full stock of real photography).
+This is a first pass — edit stages, swap the resource list for sites you
+actually use, or split it into a multi-file skill with bundled reference
+docs as it grows. Treat the 7 stages as a checklist to adapt per project,
+not a rule to follow rigidly — skip stages that don't apply (e.g. stage 5
+is irrelevant if the brand already has a full stock of real photography).
+If you add a new resource link, re-verify it's actually free before
+adding it here — pricing pages change, and "free" in a video isn't the
+same as free today.
