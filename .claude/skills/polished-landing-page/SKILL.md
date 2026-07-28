@@ -23,6 +23,13 @@ yourself, using whatever tools you have (Bash, Read/Write/Edit, browser/
 screenshot tooling if available). Skip stages that don't apply to the
 project; this is a checklist to adapt, not a rigid pipeline.
 
+**Want this outside this repo, in one shot?** `bootstrap-prompt.md` in
+this folder is a self-contained version of this skill plus the MCP/API
+setup — paste its whole contents as a message into any Claude Code chat
+(no dependency on this repo or skill being installed there) and it
+installs the relevant MCPs, then follows the same guidelines for that
+session.
+
 ## Origin
 
 Adapted from three short-form videos on building landing pages with an AI
