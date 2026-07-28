@@ -1,0 +1,12 @@
+{
+  "profileDir": "./.flow-profile",
+  "flowUrl": "https://labs.google/fx/tools/flow",
+  "account": "you@example.com",
+  "dailyBudget": 25,
+  "outputDir": "./output",
+  "logsDir": "./logs",
+  "minActionDelayMs": 900,
+  "maxActionDelayMs": 2000,
+  "maxRetries": 2,
+  "headlessDefault": true
+}
