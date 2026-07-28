@@ -1,0 +1,97 @@
+<!doctype html>
+<html>
+<head><meta charset="utf-8"><title>Flow (fixture)</title></head>
+<body>
+  <header>
+    <button aria-label="you@example.com — account">Account</button>
+  </header>
+  <main>
+    <form>
+      <label for="prompt">Prompt</label>
+      <textarea id="prompt" role="textbox" aria-label="Describe your image"></textarea>
+
+      <button type="button" role="combobox" aria-expanded="false" aria-haspopup="listbox" aria-label="Model" data-dropdown="model-list">Model: Nano Banana Pro</button>
+      <ul role="listbox" id="model-list" hidden>
+        <li role="option">Nano Banana Pro</li>
+        <li role="option">Imagen 4</li>
+      </ul>
+
+      <button type="button" aria-haspopup="listbox" data-dropdown="aspect-list">Aspect ratio: 16:9</button>
+      <ul role="listbox" id="aspect-list" hidden>
+        <li role="option">16:9</li>
+        <li role="option">1:1</li>
+        <li role="option">9:16</li>
+      </ul>
+
+      <button type="button" role="switch" aria-checked="false" data-toggle="agent">Agent mode</button>
+
+      <button type="button" aria-label="output count" data-dropdown="count-list">Outputs: 1</button>
+      <ul role="listbox" id="count-list" hidden>
+        <li role="option">1</li>
+        <li role="option">2</li>
+        <li role="option">3</li>
+        <li role="option">4</li>
+      </ul>
+
+      <button type="button" id="generate-btn">Generate</button>
+    </form>
+    <section>
+      <div class="tile">
+        <img alt="Generated image result 1" src="data:image/png;base64,iVBORw0KGgo=" />
+        <button type="button" aria-label="Download" data-download-name="result-1.png">Download</button>
+      </div>
+      <div class="tile">
+        <img alt="Generated image result 2" src="data:image/png;base64,iVBORw0KGgo=" />
+        <button type="button" aria-label="Download" data-download-name="result-2.png">Download</button>
+      </div>
+      <div>Daily quota: 3 / 25</div>
+    </section>
+  </main>
+  <script>
+    // Minimal, realistic dropdown wiring: click the trigger to open/close its
+    // listbox, click an option to select it and close the list. This is what
+    // makes the fixture representative of a real combobox instead of an
+    // always-open one.
+    document.querySelectorAll("[data-dropdown]").forEach((trigger) => {
+      const list = document.getElementById(trigger.dataset.dropdown);
+      trigger.addEventListener("click", () => {
+        const willOpen = list.hasAttribute("hidden");
+        if (willOpen) list.removeAttribute("hidden");
+        else list.setAttribute("hidden", "");
+        if (trigger.getAttribute("role") === "combobox") {
+          trigger.setAttribute("aria-expanded", String(willOpen));
+        }
+      });
+      list.querySelectorAll('[role="option"]').forEach((opt) => {
+        opt.addEventListener("click", () => {
+          list.setAttribute("hidden", "");
+          if (trigger.getAttribute("role") === "combobox") {
+            trigger.setAttribute("aria-expanded", "false");
+          }
+        });
+      });
+    });
+    document.querySelector('[data-toggle="agent"]').addEventListener("click", (e) => {
+      const el = e.currentTarget;
+      el.setAttribute("aria-checked", String(el.getAttribute("aria-checked") !== "true"));
+    });
+    document.getElementById("generate-btn").addEventListener("click", () => {
+      window.__generateClicked = true;
+    });
+    // Simulate Flow's real download behavior: clicking a tile's Download
+    // button triggers a genuine browser download (a small in-memory PNG),
+    // so tests can exercise the real Playwright download event instead of
+    // a fake in-page stand-in.
+    document.querySelectorAll("[data-download-name]").forEach((btn) => {
+      btn.addEventListener("click", () => {
+        const a = document.createElement("a");
+        a.href = "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNk+A8AAQUBAScY42YAAAAASUVORK5CYII=";
+        a.download = btn.dataset.downloadName;
+        document.body.appendChild(a);
+        a.click();
+        a.remove();
+      });
+    });
+  </script>
+</body>
+</html>

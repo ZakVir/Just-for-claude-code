@@ -1,0 +1,22 @@
+<!doctype html>
+<html>
+<head><meta charset="utf-8"><title>Flow (fixture — form present, limit reached)</title></head>
+<body>
+  <header>
+    <button aria-label="you@example.com — account">Account</button>
+  </header>
+  <main>
+    <form>
+      <label for="prompt">Prompt</label>
+      <textarea id="prompt" role="textbox" aria-label="Describe your image"></textarea>
+      <button type="button" id="generate-btn">Generate</button>
+    </form>
+    <div role="alert">You've reached your daily limit. Try again tomorrow.</div>
+  </main>
+  <script>
+    document.getElementById("generate-btn").addEventListener("click", () => {
+      window.__generateClicked = true;
+    });
+  </script>
+</body>
+</html>
