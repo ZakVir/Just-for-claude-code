@@ -1,7 +1,0 @@
-node_modules/
-dist/
-config.json
-.flow-profile/
-output/
-logs/
-STOP
