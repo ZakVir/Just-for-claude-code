@@ -19,6 +19,39 @@ free on both):
   calling an API uses. Use Iconify for free, ongoing, keyless icon access
   instead.
 
+## Preferred, if you have this repo: `design-reference-mcp`
+
+Before reaching for the external MCPs below, check whether
+`projects/design-reference-mcp/` exists in this repo (it's a sibling
+project, not part of this skill). It's a local MCP server purpose-built
+for design research and is a better single option than stitching
+together several of the external MCPs below — one coherent tool instead
+of many, with real guardrails: per-host rate limiting, robots.txt
+enforcement, a cache-first policy so nothing is re-fetched, a hard
+20-result cap with no "fetch all," and license tagging on every repo
+result. It also documents *why* it won't scrape Behance (dead API +
+explicit `Disallow` for AI crawlers in their robots.txt) instead of
+quietly working around it.
+
+It covers: 30 GitHub component/design-system repos, 6 design-system doc
+sites + Coolors palette parsing, 14 curated inspiration galleries, 12
+live-site screenshot sources, Google Fonts, and a `design_get_detail` /
+`extract_tokens` pair for pulling real colors/fonts/spacing off any live
+URL. That's most of Stage 4 (design.md sourcing), Stage 6 (layout
+inspiration), and part of Stage 7 (component references) in one server.
+It does **not** cover Figma file access, stock photo/icon/3D/audio APIs,
+or site-builder platforms (Webflow/Canva/Framer) — those still need the
+external MCPs below.
+
+Setup: `cd projects/design-reference-mcp && npm install && npx
+playwright install chromium && npm run build`, then
+`claude mcp add design-reference -- node
+projects/design-reference-mcp/dist/index.js` (all env vars optional —
+see its own README for the full client-agnostic install instructions).
+Works without any API keys for the repo/scraper engines; Google Fonts
+hydration and the optional self-hosted SearXNG wrapper need their own
+env vars if you want them.
+
 ## How to add an MCP server to Claude Code
 
 ```
