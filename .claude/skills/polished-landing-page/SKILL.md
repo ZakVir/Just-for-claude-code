@@ -80,6 +80,20 @@ AI-generated site. Counter this explicitly:
 
 - If a design-quality skill is installed in this session (check `/help`
   or the available-skills list), invoke it before generating anything.
+  Two free, open-source, no-signup options built specifically for AI
+  coding agents (both confirmed via their own repo/site, not just a
+  video's word for it):
+  - **Impeccable** (Apache 2.0) — `npx skills add pbakaus/impeccable`.
+    23 commands (`audit`, `polish`, `critique`, `animate`, etc.) plus 60
+    deterministic detector rules that catch specific AI design
+    tells — overused fonts, purple-to-blue gradients, gray text on
+    colored backgrounds — without needing an API call to check. Works
+    with Claude Code, Cursor, Gemini CLI, Codex CLI, and more.
+  - **Taste Skill** (open-source) — `npx skills add Leonxlnx/taste-skill`.
+    Multiple style-specific skills (brutalist, minimalist, soft) plus
+    image-to-code and design-audit skills. Works with any SKILL.md-
+    compatible tool (Claude Code, Cursor, Codex, Gemini CLI, v0,
+    Lovable, and others).
 - If none exists, write your own short design-principles note (spacing
   scale, type scale, motion restraint, "no default purple/violet gradient
   hero unless the brand calls for it") and put it in `CLAUDE.md` or a
@@ -118,6 +132,10 @@ values), type scale, spacing scale, corner radii, shadow style.
 
 - Write your own, or start from an existing open design-system reference
   and adapt it:
+  - If `projects/design-reference-mcp/` exists in this repo, prefer it
+    first — its `repo` engine covers 6 design-system doc sites plus
+    Coolors palette parsing in one call, and `extract_tokens` can pull a
+    real color/type/spacing system straight off any live URL you like.
   - **getdesign.md** — a free, no-signup catalog of 300+ `design.md`
     write-ups for well-known products (Apple, Figma, Stripe, Tesla,
     etc.). Some paid add-ons exist (custom private write-ups, a starter
@@ -162,7 +180,10 @@ don't tell:
 
 - Pull 2-3 real reference screenshots for the section you're unsure about
   (Pinterest boards, Awwwards/Dribbble showcases, or direct competitors
-  are good sources).
+  are good sources). If `projects/design-reference-mcp/` exists in this
+  repo, its `screenshot` engine covers 12 of these live-site sources
+  directly (Awwwards, SiteInspire, and others) — use it instead of
+  fetching manually.
 - Give the agent the screenshot(s) and ask it to use them as
   *composition* inspiration — what goes where, not a pixel copy.
 - Only do this for sections you're actually unhappy with; don't
@@ -186,10 +207,11 @@ Rather than re-prompting the whole page, fix these in isolation:
     account, but capped at ~2 copies/day unauthenticated; a paid tier
     removes the cap and adds AI generation credits. Fine for occasional
     use, worth knowing the limit exists before relying on it mid-build.
-  - If a **Figma MCP server** or **shadcn/ui MCP** is connected to this
-    session, prefer pulling real component/design data through it over
-    guessing from a screenshot — see `reference/design-mcps-and-apis.md`
-    for what's available and how free each one actually is.
+  - If a **Figma MCP server**, **shadcn/ui MCP**, or this repo's own
+    `projects/design-reference-mcp/` is connected to this session, prefer
+    pulling real component/design data through one of them over guessing
+    from a screenshot — see `reference/design-mcps-and-apis.md` for what
+    each covers and how free it actually is.
 - Apply component-level changes one at a time so you can evaluate each
   before moving to the next.
 - If the page feels sluggish after adding heavy animation/motion effects,
