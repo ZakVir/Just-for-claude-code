@@ -66,7 +66,7 @@ async function selectDropdownOption(
  * is a stable native HTML attribute, not a hashed class, so it's targeted
  * directly rather than through resolve.ts.
  */
-async function attachReferenceImages(page: Page, config: FlowConfig, paths: string[]): Promise<void> {
+export async function attachReferenceImages(page: Page, config: FlowConfig, paths: string[]): Promise<void> {
   const fileInput = page.locator('input[type="file"]');
   const count = await fileInput.count();
   if (count === 0) {

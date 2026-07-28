@@ -11,6 +11,7 @@ import { randomUUID } from "node:crypto";
 import type { Page } from "playwright";
 import type { FlowConfig } from "../config.js";
 import { generateImage, type GenerateParams } from "./generate.js";
+import { generateVariations, type VariationsParams } from "./variations.js";
 import { downloadResults, type DownloadedAsset } from "./download.js";
 import { checkBudget, recordUsage, checkFlowLimitNotice, FlowLimitReachedError } from "./quota.js";
 import { resolveAllElements } from "../browser/resolve.js";
@@ -38,31 +39,33 @@ async function waitForResults(page: Page, config: FlowConfig, timeoutMs = 60_000
   throw new Error(`Timed out waiting for generation results after ${timeoutMs}ms`);
 }
 
+interface JobMeta {
+  tool: string;
+  cost: number;
+  prompt: string;
+  model?: string;
+  aspect?: string;
+}
+
 /**
- * Run one real (non-dry-run) generation request end to end. `cost` is the
- * number of budget units this job consumes — 1 for a single generation
- * request, regardless of how many output images it produces (that's the
- * quota-efficiency point of flow_generate_variations, M6).
+ * Shared core: budget check, run the caller's fill-and-click action, wait
+ * for results (or a terminal state), download, record usage, log the
+ * outcome. `cost` is charged once regardless of how many output images the
+ * action produces — that's what makes flow_generate_variations
+ * quota-efficient.
  */
-export async function runGenerateJob(
-  page: Page,
-  config: FlowConfig,
-  params: GenerateParams,
-  opts: { tool?: string; cost?: number } = {},
-): Promise<JobResult> {
+async function runJobCore(page: Page, config: FlowConfig, meta: JobMeta, act: () => Promise<unknown>): Promise<JobResult> {
   const id = randomUUID();
-  const tool = opts.tool ?? "flow_generate_image";
-  const cost = opts.cost ?? 1;
   const startedAt = Date.now();
 
   function record(outcome: JobOutcome, outputPaths: string[], error?: string) {
     appendJobRecord(config, {
       id,
       timestamp: new Date(startedAt).toISOString(),
-      tool,
-      prompt: params.prompt,
-      model: params.model,
-      aspect: params.aspect,
+      tool: meta.tool,
+      prompt: meta.prompt,
+      model: meta.model,
+      aspect: meta.aspect,
       outcome,
       durationMs: Date.now() - startedAt,
       outputPaths,
@@ -71,17 +74,17 @@ export async function runGenerateJob(
   }
 
   try {
-    checkBudget(config, cost);
+    checkBudget(config, meta.cost);
   } catch (err) {
     record("BUDGET_EXCEEDED", [], (err as Error).message);
     throw err;
   }
 
   try {
-    await generateImage(page, config, { ...params, dryRun: false });
+    await act();
     await waitForResults(page, config);
     const assets = await downloadResults(page, config, id);
-    recordUsage(config, cost);
+    recordUsage(config, meta.cost);
     record("success", assets.map((a) => a.path));
     return { id, assets };
   } catch (err) {
@@ -91,4 +94,30 @@ export async function runGenerateJob(
     record(outcome, [], (err as Error).message);
     throw err;
   }
+}
+
+/** Run one real (non-dry-run) single-image generation request end to end. Costs 1 budget unit. */
+export async function runGenerateJob(page: Page, config: FlowConfig, params: GenerateParams): Promise<JobResult> {
+  return runJobCore(
+    page,
+    config,
+    { tool: "flow_generate_image", cost: 1, prompt: params.prompt, model: params.model, aspect: params.aspect },
+    () => generateImage(page, config, { ...params, dryRun: false }),
+  );
+}
+
+/**
+ * Run one real Agent-mode variations request end to end. Still costs
+ * exactly 1 budget unit no matter how many variants params.count asked
+ * for — Flow's daily cap is per generation request, not per output image,
+ * so this is strictly better quota-per-output than looping
+ * runGenerateJob N times.
+ */
+export async function runVariationsJob(page: Page, config: FlowConfig, params: VariationsParams): Promise<JobResult> {
+  return runJobCore(
+    page,
+    config,
+    { tool: "flow_generate_variations", cost: 1, prompt: params.basePrompt },
+    () => generateVariations(page, config, { ...params, dryRun: false }),
+  );
 }
