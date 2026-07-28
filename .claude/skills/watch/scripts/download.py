@@ -7,6 +7,7 @@ transcribe.py can parse them without needing Whisper.
 from __future__ import annotations
 
 import json
+import os
 import shutil
 import subprocess
 import sys
@@ -15,6 +16,20 @@ from urllib.parse import urlparse
 
 
 VIDEO_EXTS = {".mp4", ".mkv", ".webm", ".mov", ".m4v", ".avi", ".flv", ".wmv"}
+
+
+def _cookies_args() -> list[str]:
+    """--cookies <file> if a cookies.txt is configured, else no extra args.
+
+    Checked in order: WATCH_COOKIES env var, then ~/.config/watch/cookies.txt.
+    Lets yt-dlp authenticate as a logged-in user when a site (e.g. YouTube)
+    blocks anonymous/datacenter-IP requests.
+    """
+    candidate = os.environ.get("WATCH_COOKIES") or str(
+        Path.home() / ".config" / "watch" / "cookies.txt"
+    )
+    path = Path(candidate).expanduser()
+    return ["--cookies", str(path)] if path.is_file() else []
 
 
 def is_url(source: str) -> bool:
@@ -80,6 +95,7 @@ def fetch_captions(url: str, out_dir: Path) -> dict:
         "--convert-subs", "vtt",
         "--no-playlist",
         "--ignore-errors",
+        *_cookies_args(),
         "-o", output_template,
         "--",
         url,
@@ -137,6 +153,7 @@ def download_url(
         "--convert-subs", "vtt",
         "--no-playlist",
         "--ignore-errors",
+        *_cookies_args(),
         "-o", output_template,
         "--",
         url,
