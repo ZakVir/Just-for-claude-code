@@ -202,17 +202,9 @@ per-stage notes above for how each fits into the process.
 | [recent.design](https://recent.design) | Layout/component inspiration (formerly godly.website) | Free to browse, no signup wall |
 | [21st.dev](https://21st.dev) | Component marketplace | Free to browse/copy, ~2 copies/day unauthenticated cap; paid tier removes it |
 | [getdesign.md](https://getdesign.md) | `design.md` visual-system references for known products | Core catalog (300+) free, no signup; some paid add-ons exist |
-| [aura.build](https://aura.build) | Free `design.md` library (separate from its paid AI builder) | Library reportedly free (third-party sourced, verify manually — SPA blocks automated checks) |
+| [aura.build](https://aura.build) | Free `design.md` library (separate from its paid AI builder) | Library is free (the builder tool is a separate metered product — see note below); the site itself is a client-rendered app that automated tools can't read directly, so this rests on external corroboration rather than a first-hand fetch |
+| [motionsites.ai](https://motionsites.ai) | Animated-website prompt templates | Freemium — about a third of visible templates (marked "Copy," no lock icon) are free with no apparent signup gate; the rest are "Premium," gated behind $89–349 one-time/annual purchases. Stick to the unlocked "Copy" templates and skip the upsells |
 | Pinterest, Awwwards, Dribbble | Layout/visual reference screenshots (Stage 6) | Free to browse |
-
-**Deliberately left out:** motionsites.ai was mentioned in one of the
-source videos as an animated-website prompt library, but it turned out to
-be mostly paywalled — its homepage literally bills itself as "Premium AI
-Website Prompts," with only a thin free slice and most content behind
-$89–349 one-time/annual purchases. Doesn't meet the free-access bar for
-this list; flagging it here so it doesn't get re-added without noticing.
-If you want prompt-writing help instead, do it yourself using the design
-principles in Stage 2 — you don't need a paid prompt library for that.
 
 **Also worth knowing, not landing-page-specific:** blog.vibecoder.me is a
 free (no signup) set of guides/learning tracks covering the parts of
