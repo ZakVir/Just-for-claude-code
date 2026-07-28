@@ -8,6 +8,9 @@ Each folder here is a self-contained Claude Code project. See the root
 | Project | Description |
 | ------- | ----------- |
 | [`_template`](./_template) | Starting point — copy this to begin a new project. |
+| [`design-reference-mcp`](./design-reference-mcp) | Local MCP server for design research — search galleries/repos/design systems, extract tokens, screenshot live sites, and grow a self-indexed keeper library. |
+| [`pet-sitting-site`](./pet-sitting-site) | Test build proving `design-reference-mcp` end to end: a pet-sitting landing page built from real MCP-researched inspiration, with full session logs and pulled assets as proof. |
+| [`calm-companion-app`](./calm-companion-app) | Screen designs (no working code) for Puff, a calm breathing-companion mobile app — researched via `design-reference-mcp`, published as an Artifact. |
 
 _Add a row above for each new project you create._
 

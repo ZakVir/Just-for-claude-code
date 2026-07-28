@@ -1,0 +1,273 @@
+design-reference-mcp — live MCP session for the Calm Companion breathing-app screen designs
+Generated: 2026-07-19T19:15:07Z
+Protocol: real MCP CLI over dist/index.js (site_type is required on every design_search call)
+======================================================================
+=== Call 1 — mobile-app-screen (component-lib/icons/animation pool) ===
+[
+  {
+    "thumb_url": "https://opengraph.githubassets.com/1/shadcn-ui/ui",
+    "source_url": "https://github.com/shadcn-ui/ui",
+    "title": "shadcn/ui",
+    "tags": [
+      "component-lib",
+      "Copy-paste React components",
+      "tokens",
+      "Tailwind patterns"
+    ],
+    "source": "shadcn-ui",
+    "license": "MIT"
+  },
+  {
+    "thumb_url": "https://opengraph.githubassets.com/1/mui/material-ui",
+    "source_url": "https://github.com/mui/material-ui",
+    "title": "material-ui",
+    "tags": [
+      "component-lib",
+      "React component library + theming tokens"
+    ],
+    "source": "material-ui",
+    "license": "MIT"
+  },
+  {
+    "thumb_url": "https://opengraph.githubassets.com/1/chakra-ui/chakra-ui",
+    "source_url": "https://github.com/chakra-ui/chakra-ui",
+    "title": "chakra-ui",
+    "tags": [
+      "component-lib",
+      "Accessible React components + design tokens"
+    ],
+    "source": "chakra-ui",
+    "license": "MIT"
+  },
+  {
+    "thumb_url": "https://opengraph.githubassets.com/1/heroui-inc/heroui",
+    "source_url": "https://github.com/heroui-inc/heroui",
+    "title": "heroui (ex-NextUI)",
+    "tags": [
+      "component-lib",
+      "Modern React UI on Tailwind"
+    ],
+    "source": "heroui",
+    "license": "MIT"
+  },
+  {
+    "thumb_url": "https://opengraph.githubassets.com/1/saadeghi/daisyui",
+    "source_url": "https://github.com/saadeghi/daisyui",
+    "title": "daisyui",
+    "tags": [
+      "component-lib",
+      "Tailwind component classes + themes"
+    ],
+    "source": "daisyui",
+    "license": "MIT"
+  },
+  {
+    "thumb_url": "https://opengraph.githubassets.com/1/themesberg/flowbite",
+    "source_url": "https://github.com/themesberg/flowbite",
+    "title": "flowbite",
+    "tags": [
+      "component-lib",
+      "Tailwind UI components"
+    ],
+    "source": "flowbite",
+    "license": "MIT"
+  },
+  {
+    "thumb_url": "https://opengraph.githubassets.com/1/markmead/hyperui",
+    "source_url": "https://github.com/markmead/hyperui",
+    "title": "hyperui",
+    "tags": [
+      "component-lib",
+      "Free Tailwind component snippets"
+    ],
+    "source": "hyperui",
+    "license": "MIT"
+  },
+  {
+    "thumb_url": "https://opengraph.githubassets.com/1/Tailgrids/tailgrids",
+    "source_url": "https://github.com/Tailgrids/tailgrids",
+    "title": "tailgrids",
+    "tags": [
+      "component-lib",
+      "Tailwind UI blocks"
+    ],
+    "source": "tailgrids",
+    "license": "MIT"
+  },
+  {
+    "thumb_url": "https://opengraph.githubassets.com/1/Microwaved-code/mambaui",
+    "source_url": "https://github.com/Microwaved-code/mambaui",
+    "title": "mamba-ui",
+    "tags": [
+      "component-lib",
+      "Tailwind component gallery"
+    ],
+    "source": "mamba-ui",
+    "license": "MIT"
+  },
+  {
+    "thumb_url": "https://opengraph.githubassets.com/1/ibelick/motion-primitives",
+    "source_url": "https://github.com/ibelick/motion-primitives",
+    "title": "motion-primitives",
+    "tags": [
+      "animation",
+      "Prebuilt motion components"
+    ],
+    "source": "motion-primitives",
+    "license": "MIT"
+  }
+]
+
+=== Call 2 — explicit source: framer-motion (the actual breathing/motion animation reference) ===
+[
+  {
+    "thumb_url": "https://opengraph.githubassets.com/1/framer/motion",
+    "source_url": "https://github.com/framer/motion",
+    "title": "framer motion",
+    "tags": [
+      "animation",
+      "Animation library for React"
+    ],
+    "source": "framer-motion",
+    "license": "MIT"
+  }
+]
+
+=== Call 3 — explicit source: heroicons (icon set) ===
+[
+  {
+    "thumb_url": "https://opengraph.githubassets.com/1/tailwindlabs/heroicons",
+    "source_url": "https://github.com/tailwindlabs/heroicons",
+    "title": "heroicons",
+    "tags": [
+      "icons",
+      "SVG icon set"
+    ],
+    "source": "heroicons",
+    "license": "MIT"
+  }
+]
+
+=== Call 4 — explicit source: radix-primitives (accessible primitives) ===
+[
+  {
+    "thumb_url": "https://opengraph.githubassets.com/1/radix-ui/primitives",
+    "source_url": "https://github.com/radix-ui/primitives",
+    "title": "radix primitives",
+    "tags": [
+      "component-lib",
+      "Unstyled accessible primitives"
+    ],
+    "source": "radix-primitives",
+    "license": "MIT"
+  }
+]
+
+=== Call 5 — explicit source: react-spectrum (calm, accessibility-first design language) ===
+[
+  {
+    "thumb_url": "https://opengraph.githubassets.com/1/adobe/react-spectrum",
+    "source_url": "https://github.com/adobe/react-spectrum",
+    "title": "react-spectrum (React Aria)",
+    "tags": [
+      "component-lib",
+      "Accessibility-first components + hooks"
+    ],
+    "source": "react-spectrum",
+    "license": "Apache-2.0"
+  }
+]
+
+=== Call 6 — calming color palette via real Coolors hex-URL parsing ===
+{
+  "source_url": "https://coolors.co/palettes/trending",
+  "source": "coolors",
+  "title": "Coolors palette",
+  "palette": [],
+(trending listing is JS-rendered, same known limitation — using a real published calming palette URL directly)
+{
+  "source_url": "https://coolors.co/a2d2ff-bde0fe-ffafcc-ffc8dd-cdb4db",
+  "source": "coolors",
+  "title": "Coolors palette",
+  "palette": [
+    "#A2D2FF",
+    "#BDE0FE",
+    "#FFAFCC",
+    "#FFC8DD",
+    "#CDB4DB"
+  ],
+  "license": "n/a",
+  "metadata": {
+    "hex_count": 5
+  }
+}
+
+=== Call 7 — save_reference: calming palette, tagged for this project ===
+{
+  "source_url": "https://coolors.co/a2d2ff-bde0fe-ffafcc-ffc8dd-cdb4db",
+  "local_screenshot": "cache/keepers/990723ba-6ecf-4745-a893-a35490ebb51c.png",
+  "source": "coolors",
+  "type": "reference",
+  "tags": [
+    "palette",
+    "calm",
+    "pastel",
+    "wellness"
+  ],
+  "patterns": [],
+  "why_good": "Soft sky-blue/lavender/pink pastel range reads calm and gentle without being childish — right register for a breathing companion app",
+  "palette": [
+    "#A2D2FF",
+    "#BDE0FE",
+    "#FFAFCC",
+    "#FFC8DD",
+    "#CDB4DB"
+  ],
+  "license": "n/a",
+  "saved_at": "2026-07-19T19:15:46.902Z"
+}
+
+=== Call 8 — design_get_detail: framer-motion (real README pulled — the actual breathing/motion reference) ===
+{
+  "source_url": "https://github.com/framer/motion",
+  "source": "framer-motion",
+  "title": "framer motion",
+  "image_mime": "image/png",
+  "license": "MIT",
+  "metadata": {
+    "owner": "framer",
+    "repo": "motion",
+    "readme_excerpt": "<h1 align=\"center\"> <img width=\"35\" height=\"35\" alt=\"Motion logo\" src=\"https://github.com/user-attachments/assets/00d6d1c3-72c4-4c2f-a664-69da13182ffc\" /><br />Motion</h1>\n<h3 alig...",
+    "good_for": "Animation library for React"
+  }
+}
+
+=== Call 9 — list_sources: confirm 14 site_type options + full registry used to inform this research ===
+70 total sources, 14 site_types available
+
+=== Call 10 — retrieve_saved: confirm local index (no network) finds the saved palette ===
+[
+  {
+    "source_url": "https://coolors.co/a2d2ff-bde0fe-ffafcc-ffc8dd-cdb4db",
+    "local_screenshot": "cache/keepers/990723ba-6ecf-4745-a893-a35490ebb51c.png",
+    "source": "coolors",
+    "type": "reference",
+    "tags": [
+      "palette",
+      "calm",
+      "pastel",
+      "wellness"
+    ],
+    "patterns": [],
+    "why_good": "Soft sky-blue/lavender/pink pastel range reads calm and gentle without being childish — right register for a breathing companion app",
+    "palette": [
+      "#A2D2FF",
+      "#BDE0FE",
+      "#FFAFCC",
+      "#FFC8DD",
+      "#CDB4DB"
+    ],
+    "license": "n/a",
+    "saved_at": "2026-07-19T19:15:46.902Z"
+  }
+]
