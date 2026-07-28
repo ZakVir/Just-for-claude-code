@@ -10,24 +10,30 @@
       <label for="prompt">Prompt</label>
       <textarea id="prompt" role="textbox" aria-label="Describe your image"></textarea>
 
-      <button role="combobox" aria-expanded="false" aria-haspopup="listbox" aria-label="Model">Model: Nano Banana Pro</button>
-      <ul role="listbox">
+      <button type="button" role="combobox" aria-expanded="false" aria-haspopup="listbox" aria-label="Model" data-dropdown="model-list">Model: Nano Banana Pro</button>
+      <ul role="listbox" id="model-list" hidden>
         <li role="option">Nano Banana Pro</li>
         <li role="option">Imagen 4</li>
       </ul>
 
-      <button aria-haspopup="listbox">Aspect ratio: 16:9</button>
-      <ul role="listbox">
+      <button type="button" aria-haspopup="listbox" data-dropdown="aspect-list">Aspect ratio: 16:9</button>
+      <ul role="listbox" id="aspect-list" hidden>
         <li role="option">16:9</li>
         <li role="option">1:1</li>
         <li role="option">9:16</li>
       </ul>
 
-      <button role="switch" aria-checked="false">Agent mode</button>
+      <button type="button" role="switch" aria-checked="false" data-toggle="agent">Agent mode</button>
 
-      <button aria-label="output count">Outputs: 1</button>
+      <button type="button" aria-label="output count" data-dropdown="count-list">Outputs: 1</button>
+      <ul role="listbox" id="count-list" hidden>
+        <li role="option">1</li>
+        <li role="option">2</li>
+        <li role="option">3</li>
+        <li role="option">4</li>
+      </ul>
 
-      <button type="submit">Generate</button>
+      <button type="button" id="generate-btn">Generate</button>
     </form>
     <section>
       <img alt="Generated image result 1" src="data:image/png;base64,iVBORw0KGgo=" />
@@ -35,5 +41,37 @@
       <div>Daily quota: 3 / 25</div>
     </section>
   </main>
+  <script>
+    // Minimal, realistic dropdown wiring: click the trigger to open/close its
+    // listbox, click an option to select it and close the list. This is what
+    // makes the fixture representative of a real combobox instead of an
+    // always-open one.
+    document.querySelectorAll("[data-dropdown]").forEach((trigger) => {
+      const list = document.getElementById(trigger.dataset.dropdown);
+      trigger.addEventListener("click", () => {
+        const willOpen = list.hasAttribute("hidden");
+        if (willOpen) list.removeAttribute("hidden");
+        else list.setAttribute("hidden", "");
+        if (trigger.getAttribute("role") === "combobox") {
+          trigger.setAttribute("aria-expanded", String(willOpen));
+        }
+      });
+      list.querySelectorAll('[role="option"]').forEach((opt) => {
+        opt.addEventListener("click", () => {
+          list.setAttribute("hidden", "");
+          if (trigger.getAttribute("role") === "combobox") {
+            trigger.setAttribute("aria-expanded", "false");
+          }
+        });
+      });
+    });
+    document.querySelector('[data-toggle="agent"]').addEventListener("click", (e) => {
+      const el = e.currentTarget;
+      el.setAttribute("aria-checked", String(el.getAttribute("aria-checked") !== "true"));
+    });
+    document.getElementById("generate-btn").addEventListener("click", () => {
+      window.__generateClicked = true;
+    });
+  </script>
 </body>
 </html>

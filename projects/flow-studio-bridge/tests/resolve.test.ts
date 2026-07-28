@@ -74,12 +74,17 @@ describe("resolve.ts against the flow-app fixture", () => {
     expect(result.strategyType).toBe("text");
   });
 
-  it("resolves modelOption with a substituted param", async () => {
+  it("resolves modelOption with a substituted param, once its dropdown is open", async () => {
+    await (await resolveElement(page, "modelSelector")).locator.click();
+    const opened = page.locator("#model-list");
+    await opened.waitFor({ state: "visible" });
     const result = await resolveElement(page, "modelOption", { param: "Imagen 4" });
     expect(["role", "text"]).toContain(result.strategyType);
   });
 
-  it("resolves aspectRatioOption with a substituted param", async () => {
+  it("resolves aspectRatioOption with a substituted param, once its dropdown is open", async () => {
+    await (await resolveElement(page, "aspectRatioSelector")).locator.click();
+    await page.locator("#aspect-list").waitFor({ state: "visible" });
     const result = await resolveElement(page, "aspectRatioOption", { param: "9:16" });
     expect(["role", "text"]).toContain(result.strategyType);
   });
