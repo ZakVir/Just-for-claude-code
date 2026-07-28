@@ -5,7 +5,7 @@
  * clicks or fills anything.
  */
 import type { Page } from "playwright";
-import { resolveElement, staticLogicalNames, SelectorMissError } from "../browser/resolve.js";
+import { resolveElement, resolveAllElements, staticLogicalNames, SelectorMissError } from "../browser/resolve.js";
 
 export interface DoctorRow {
   name: string;
@@ -21,12 +21,20 @@ const EXAMPLE_PARAMS: Record<string, Record<string, string>> = {
   aspectRatioOption: { param: "16:9" },
 };
 
+/**
+ * Logical elements that are legitimately plural on a page with results
+ * already present (one tile/button per generated image). These resolve via
+ * resolveAllElements (one-or-more) rather than resolveElement's stricter
+ * exactly-one check, which only fits genuinely singular controls.
+ */
+const PLURAL_ELEMENTS = new Set(["resultTile", "resultDownloadButton"]);
+
 /** Resolve every logical element (static + one example of each parameterized one) and report the outcome for each. */
 export async function runDoctor(page: Page): Promise<DoctorRow[]> {
   const rows: DoctorRow[] = [];
 
   for (const name of staticLogicalNames()) {
-    rows.push(await resolveOne(page, name));
+    rows.push(PLURAL_ELEMENTS.has(name) ? await resolveOneOrMore(page, name) : await resolveOne(page, name));
   }
   for (const [name, params] of Object.entries(EXAMPLE_PARAMS)) {
     rows.push(await resolveOne(page, name, params));
@@ -52,6 +60,27 @@ async function resolveOne(page: Page, name: string, params?: Record<string, stri
       strategy: null,
       resolveTimeMs: null,
       error: err instanceof SelectorMissError ? "MISS" : (err as Error).message,
+    };
+  }
+}
+
+async function resolveOneOrMore(page: Page, name: string): Promise<DoctorRow> {
+  try {
+    const result = await resolveAllElements(page, name);
+    return {
+      name,
+      ok: true,
+      strategy: `${result.strategyType}[${result.strategyIndex}] (x${result.locators.length})`,
+      resolveTimeMs: null,
+      error: null,
+    };
+  } catch (err) {
+    return {
+      name,
+      ok: false,
+      strategy: null,
+      resolveTimeMs: null,
+      error: err instanceof SelectorMissError ? "MISS (no results present — expected if nothing has been generated yet)" : (err as Error).message,
     };
   }
 }

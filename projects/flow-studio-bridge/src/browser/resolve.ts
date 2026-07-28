@@ -186,6 +186,51 @@ async function resolveElementInternal(
   throw new SelectorMissError(logicalName, attempts);
 }
 
+export interface ResolveAllResult {
+  locators: Locator[];
+  strategyType: Strategy["type"];
+  strategyIndex: number;
+}
+
+/**
+ * Like resolveElement, but for logical elements that are legitimately
+ * plural (result tiles, one download button per tile): the first strategy
+ * yielding one-or-more visible matches wins, and all of them are returned
+ * in DOM order. Never used for singular controls — those must still use
+ * resolveElement's stricter exactly-one check.
+ */
+export async function resolveAllElements(
+  page: Page,
+  logicalName: string,
+  params?: Record<string, string>,
+): Promise<ResolveAllResult> {
+  const map = loadMap();
+  const strategies = map[logicalName];
+  if (!strategies) {
+    throw new Error(`Unknown logical element "${logicalName}" — not present in selectors/flow.map.json`);
+  }
+
+  const attempts: string[] = [];
+  for (let i = 0; i < strategies.length; i++) {
+    const strategy = strategies[i];
+    attempts.push(describeStrategy(strategy));
+    try {
+      const locator = await buildLocator(page, strategy, params, new Set([logicalName]));
+      const all = await locator.all();
+      const visible: Locator[] = [];
+      for (const el of all) {
+        if (await el.isVisible().catch(() => false)) visible.push(el);
+      }
+      if (visible.length > 0) {
+        return { locators: visible, strategyType: strategy.type, strategyIndex: i };
+      }
+    } catch {
+      // strategy itself threw — treat as a miss and try the next one
+    }
+  }
+  throw new SelectorMissError(logicalName, attempts);
+}
+
 /**
  * Resolve a logical element name to a Playwright Locator using the ordered
  * strategy list in selectors/flow.map.json. Throws SelectorMissError if no

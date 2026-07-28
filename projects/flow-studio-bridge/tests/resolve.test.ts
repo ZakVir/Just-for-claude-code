@@ -4,7 +4,7 @@ import { fileURLToPath } from "node:url";
 import { afterAll, beforeAll, beforeEach, describe, expect, it } from "vitest";
 import type { Browser, Page } from "playwright";
 import { launchTestBrowser } from "./helpers.js";
-import { resolveElement, SelectorMissError, __clearMapCache } from "../src/browser/resolve.js";
+import { resolveElement, resolveAllElements, SelectorMissError, __clearMapCache } from "../src/browser/resolve.js";
 
 const FIXTURES_DIR = resolve(fileURLToPath(new URL("..", import.meta.url)), "fixtures");
 
@@ -59,14 +59,16 @@ describe("resolve.ts against the flow-app fixture", () => {
     expect(result.strategyType).toBe("role");
   });
 
-  it("resolves resultTile via role/img", async () => {
-    const result = await resolveElement(page, "resultTile");
+  it("resolves both resultTiles via role/img, plural-aware", async () => {
+    const result = await resolveAllElements(page, "resultTile");
     expect(result.strategyType).toBe("role");
+    expect(result.locators).toHaveLength(2);
   });
 
-  it("resolves resultDownloadButton", async () => {
-    const result = await resolveElement(page, "resultDownloadButton");
+  it("resolves both resultDownloadButtons, plural-aware", async () => {
+    const result = await resolveAllElements(page, "resultDownloadButton");
     expect(result.strategyType).toBe("role");
+    expect(result.locators).toHaveLength(2);
   });
 
   it("resolves quotaIndicator via the text strategy", async () => {

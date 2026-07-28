@@ -36,8 +36,14 @@
       <button type="button" id="generate-btn">Generate</button>
     </form>
     <section>
-      <img alt="Generated image result 1" src="data:image/png;base64,iVBORw0KGgo=" />
-      <button aria-label="Download">Download</button>
+      <div class="tile">
+        <img alt="Generated image result 1" src="data:image/png;base64,iVBORw0KGgo=" />
+        <button type="button" aria-label="Download" data-download-name="result-1.png">Download</button>
+      </div>
+      <div class="tile">
+        <img alt="Generated image result 2" src="data:image/png;base64,iVBORw0KGgo=" />
+        <button type="button" aria-label="Download" data-download-name="result-2.png">Download</button>
+      </div>
       <div>Daily quota: 3 / 25</div>
     </section>
   </main>
@@ -71,6 +77,20 @@
     });
     document.getElementById("generate-btn").addEventListener("click", () => {
       window.__generateClicked = true;
+    });
+    // Simulate Flow's real download behavior: clicking a tile's Download
+    // button triggers a genuine browser download (a small in-memory PNG),
+    // so tests can exercise the real Playwright download event instead of
+    // a fake in-page stand-in.
+    document.querySelectorAll("[data-download-name]").forEach((btn) => {
+      btn.addEventListener("click", () => {
+        const a = document.createElement("a");
+        a.href = "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNk+A8AAQUBAScY42YAAAAASUVORK5CYII=";
+        a.download = btn.dataset.downloadName;
+        document.body.appendChild(a);
+        a.click();
+        a.remove();
+      });
     });
   </script>
 </body>
