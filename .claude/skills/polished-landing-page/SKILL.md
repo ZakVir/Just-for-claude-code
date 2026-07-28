@@ -16,10 +16,12 @@ other direction. The fix isn't a better one-shot prompt; it's giving the
 agent the same inputs a human designer would use: a clear brief, a real
 visual system, real reference material, and a self-check loop.
 
-This is a **process skill** — it has no bundled scripts. Follow the stages
-below yourself, using whatever tools you have (Bash, Read/Write/Edit,
-browser/screenshot tooling if available). Skip stages that don't apply to
-the project; this is a checklist to adapt, not a rigid pipeline.
+This is a **process skill** — it has no bundled scripts, just this guide
+plus a bundled reference doc (`reference/design-mcps-and-apis.md`) of
+MCP servers and APIs for sourcing design assets. Follow the stages below
+yourself, using whatever tools you have (Bash, Read/Write/Edit, browser/
+screenshot tooling if available). Skip stages that don't apply to the
+project; this is a checklist to adapt, not a rigid pipeline.
 
 ## Origin
 
@@ -138,6 +140,11 @@ actually matches:
 - If the agent supports a planning mode, use it before an image-heavy
   task, especially if image generation is rate-limited — review the plan
   before letting it burn budget on the wrong images.
+- Generating original imagery isn't always the right call — free stock/
+  icon/font APIs (Unsplash, Pexels, Pixabay, Iconify, Google Fonts) cover
+  a lot of ground cheaply when the brand doesn't need fully custom
+  photography. See `reference/design-mcps-and-apis.md` for the vetted
+  list, including which need an API key and which don't.
 
 ## Stage 6 — Borrow layout ideas, not just colors
 
@@ -172,6 +179,10 @@ Rather than re-prompting the whole page, fix these in isolation:
     account, but capped at ~2 copies/day unauthenticated; a paid tier
     removes the cap and adds AI generation credits. Fine for occasional
     use, worth knowing the limit exists before relying on it mid-build.
+  - If a **Figma MCP server** or **shadcn/ui MCP** is connected to this
+    session, prefer pulling real component/design data through it over
+    guessing from a screenshot — see `reference/design-mcps-and-apis.md`
+    for what's available and how free each one actually is.
 - Apply component-level changes one at a time so you can evaluate each
   before moving to the next.
 - If the page feels sluggish after adding heavy animation/motion effects,
