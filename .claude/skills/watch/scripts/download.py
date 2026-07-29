@@ -32,6 +32,13 @@ def _cookies_args() -> list[str]:
     return ["--cookies", str(path)] if path.is_file() else []
 
 
+# YouTube's "n" signature challenge requires a JS solver; yt-dlp fetches one
+# from its own GitHub releases on demand. Harmless to always request (yt-dlp
+# no-ops if a runtime like deno isn't installed), and fixes "Only images are
+# available for download" on sites requiring it.
+_REMOTE_COMPONENTS_ARGS = ["--remote-components", "ejs:github"]
+
+
 def is_url(source: str) -> bool:
     if source.startswith("-"):
         return False
@@ -96,6 +103,7 @@ def fetch_captions(url: str, out_dir: Path) -> dict:
         "--no-playlist",
         "--ignore-errors",
         *_cookies_args(),
+        *_REMOTE_COMPONENTS_ARGS,
         "-o", output_template,
         "--",
         url,
@@ -154,6 +162,7 @@ def download_url(
         "--no-playlist",
         "--ignore-errors",
         *_cookies_args(),
+        *_REMOTE_COMPONENTS_ARGS,
         "-o", output_template,
         "--",
         url,
