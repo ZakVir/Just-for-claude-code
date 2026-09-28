@@ -12,7 +12,7 @@ final class ExtensionInstaller: NSObject, OSSystemExtensionRequestDelegate {
 
     func activate() {
         let request = OSSystemExtensionRequest.activationRequest(
-            forExtensionIdentifier: SnapShared.extensionBundleID, queue: .main)
+            forExtensionWithIdentifier: SnapShared.extensionBundleID, queue: .main)
         request.delegate = self
         OSSystemExtensionManager.shared.submitRequest(request)
     }
