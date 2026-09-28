@@ -1,0 +1,23 @@
+{
+  "manifest_version": 3,
+  "name": "Snap for Orion",
+  "version": "0.1.0",
+  "description": "Snap your fingers and vanish from your own video in Google Meet. Orion-compatible port of Snap.",
+  "content_scripts": [
+    {
+      "matches": ["https://meet.google.com/*"],
+      "js": ["loader.js"],
+      "run_at": "document_start",
+      "all_frames": false
+    }
+  ],
+  "web_accessible_resources": [
+    {
+      "resources": ["page/effect.js", "page/snapdetect.js", "page/inject.js"],
+      "matches": ["https://meet.google.com/*"]
+    }
+  ],
+  "browser_specific_settings": {
+    "gecko": { "id": "snap-orion@just-for-claude-code" }
+  }
+}

@@ -1,0 +1,44 @@
+name: snap-macos build check
+
+# Compile-only check for projects/snap-macos. This was written without any
+# access to macOS/Xcode, so this workflow is the first real compiler this
+# code sees. It builds unsigned (no team/certs needed) — it proves the code
+# compiles and links against the real Apple SDKs, not that the camera
+# extension actually activates or streams correctly on a real Mac.
+on:
+  push:
+    branches: [claude/snap-orion-browser-2diq0r]
+    paths:
+      - "projects/snap-macos/**"
+      - ".github/workflows/snap-macos-build.yml"
+  workflow_dispatch: {}
+
+jobs:
+  build:
+    runs-on: macos-latest
+    defaults:
+      run:
+        working-directory: projects/snap-macos
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install XcodeGen
+        run: brew install xcodegen
+
+      - name: Generate Xcode project
+        run: xcodegen generate
+
+      - name: Show selected Xcode / SDK version
+        run: xcodebuild -version
+
+      - name: Build (unsigned)
+        run: |
+          set -o pipefail
+          xcodebuild \
+            -project Snap.xcodeproj \
+            -scheme Snap \
+            -configuration Debug \
+            -destination "generic/platform=macOS" \
+            CODE_SIGNING_ALLOWED=NO \
+            CODE_SIGNING_REQUIRED=NO \
+            build
