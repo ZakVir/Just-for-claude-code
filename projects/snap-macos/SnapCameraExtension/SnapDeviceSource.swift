@@ -36,7 +36,7 @@ class SnapDeviceSource: NSObject, CMIOExtensionDeviceSource {
     func deviceProperties(forProperties properties: Set<CMIOExtensionProperty>) throws -> CMIOExtensionDeviceProperties {
         let deviceProperties = CMIOExtensionDeviceProperties(dictionary: [:])
         if properties.contains(.deviceTransportType) {
-            deviceProperties.transportType = kIOAudioDeviceTransportTypeVirtual
+            deviceProperties.transportType = kAudioDeviceTransportTypeVirtual
         }
         if properties.contains(.deviceModel) {
             deviceProperties.model = "Snap Camera Model"
