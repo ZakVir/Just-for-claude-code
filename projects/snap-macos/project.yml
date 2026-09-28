@@ -1,0 +1,49 @@
+name: Snap
+options:
+  bundleIdPrefix: com.snap.app
+  deploymentTarget:
+    macOS: "13.0"
+settings:
+  base:
+    MACOSX_DEPLOYMENT_TARGET: "13.0"
+    SWIFT_VERSION: "5.0"
+
+targets:
+  Snap:
+    type: application
+    platform: macOS
+    sources:
+      - path: SnapApp
+      - path: Shared
+    info:
+      path: SnapApp/Info.plist
+    entitlements:
+      path: SnapApp/SnapApp.entitlements
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: com.snap.app
+        PRODUCT_NAME: Snap
+        CODE_SIGN_STYLE: Automatic
+        ENABLE_HARDENED_RUNTIME: YES
+    dependencies:
+      - target: SnapCameraExtension
+        embed: true
+        codeSign: true
+
+  SnapCameraExtension:
+    type: com.apple.product-type.system-extension
+    platform: macOS
+    sources:
+      - path: SnapCameraExtension
+      - path: Shared
+    info:
+      path: SnapCameraExtension/Info.plist
+    entitlements:
+      path: SnapCameraExtension/SnapCameraExtension.entitlements
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: com.snap.app.camera-extension
+        PRODUCT_NAME: SnapCameraExtension
+        CODE_SIGN_STYLE: Automatic
+        ENABLE_HARDENED_RUNTIME: YES
+        SKIP_INSTALL: YES
