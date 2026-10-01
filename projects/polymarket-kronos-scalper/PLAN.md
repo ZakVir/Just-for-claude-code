@@ -445,14 +445,23 @@ merged forecast against the market lost 25% per $ (CI excludes zero). This
 replicates the published null result for 15-minute markets (Young 2026).
 
 **2. Live forecasts, frozen before the outcome** (`report_1790885700.md`,
-`predictions_1790887500*.md`, `live_loop.md`). Early record (one falling
-afternoon): Kronos right on 4 of 5 resolved calls, TimesFM 2 of 5, merged 4
-of 5 — e.g. the 20:15–20:30 window resolved Down with Kronos at P(Up) 0.05,
-TimesFM 0.69, market 0.485. A handful of calls in one trending hour cannot
-separate skill from a bearish drift; Kronos also showed overconfidence
-(its sampled paths span ~6 bp vs ~19 bp typical 15-minute moves). The
-rolling live loop and the 4-hour/daily/ladder predictions keep scoring; see
-the results folder.
+`predictions_1790887500*.md`, `live_loop.md`). Two multi-horizon snapshots
+(20:15 and 20:45 UTC) and a rolling loop that predicted every 15-minute
+window from 21:00 to 22:30 at its open:
+
+| Session | Kronos | TimesFM 3 | merged | market |
+|---|---:|---:|---:|---:|
+| Snapshots (4 market calls) | 3/4 | 1/4 | 3/4 | 1/4 |
+| Rolling loop (7 windows) — hit rate · Brier | 3/7 · 0.290 | 5/7 · 0.232 | 4/7 · 0.255 | 3/7 · 0.248 |
+| **All 11 live market calls** | **6/11** | **6/11** | 7/11 | 4/11 |
+
+The two models swapped places between sessions — exactly what noise looks
+like at this sample size. The market's at-the-open price is ~0.50 by design
+(Brier ≈ 0.25), so a forecaster has to beat 0.25 *consistently*; over 96
+backtest windows neither did. Kronos also leaned bearish on almost every
+call during a mostly falling evening and was overconfident (sampled paths
+~6 bp wide vs ~19 bp typical moves). The 4-hour, daily and ladder
+predictions are scored as they settle (results folder).
 
 **Verdict so far:** don't trade direction on these models. Keep them as
 research inputs, test any new model the same way (frozen predictions,
