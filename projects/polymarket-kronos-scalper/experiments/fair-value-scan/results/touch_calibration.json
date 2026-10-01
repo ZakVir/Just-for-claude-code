@@ -1,0 +1,272 @@
+{
+ "generated": "2026-10-01T20:51:42.890462+00:00",
+ "families": {
+  "daily": {
+   "n_rows": 662,
+   "n_periods": 43,
+   "table": [
+    {
+     "bucket": "0.00-0.02",
+     "n": 383,
+     "periods": 43,
+     "avg_price": 0.0063,
+     "yes_rate": 0.0235,
+     "rate_minus_price_ci95": [
+      -0.0033,
+      0.0448
+     ],
+     "no_buyer_return": -0.0213,
+     "no_buyer_return_ci95": [
+      -0.0489,
+      -0.0005
+     ],
+     "yes_buyer_return": 0.6815
+    },
+    {
+     "bucket": "0.02-0.05",
+     "n": 65,
+     "periods": 39,
+     "avg_price": 0.033,
+     "yes_rate": 0.0769,
+     "rate_minus_price_ci95": [
+      -0.0185,
+      0.1292
+     ],
+     "no_buyer_return": -0.0521,
+     "no_buyer_return_ci95": [
+      -0.1397,
+      0.012
+     ],
+     "yes_buyer_return": 1.0342
+    },
+    {
+     "bucket": "0.05-0.10",
+     "n": 49,
+     "periods": 35,
+     "avg_price": 0.0708,
+     "yes_rate": 0.0816,
+     "rate_minus_price_ci95": [
+      -0.0519,
+      0.0915
+     ],
+     "no_buyer_return": -0.0225,
+     "no_buyer_return_ci95": [
+      -0.1094,
+      0.0453
+     ],
+     "yes_buyer_return": -0.1407
+    },
+    {
+     "bucket": "0.10-0.20",
+     "n": 43,
+     "periods": 32,
+     "avg_price": 0.147,
+     "yes_rate": 0.2558,
+     "rate_minus_price_ci95": [
+      -0.0026,
+      0.2294
+     ],
+     "no_buyer_return": -0.1373,
+     "no_buyer_return_ci95": [
+      -0.2748,
+      -0.0103
+     ],
+     "yes_buyer_return": 0.7486
+    },
+    {
+     "bucket": "0.20-0.35",
+     "n": 37,
+     "periods": 29,
+     "avg_price": 0.273,
+     "yes_rate": 0.2973,
+     "rate_minus_price_ci95": [
+      -0.098,
+      0.1496
+     ],
+     "no_buyer_return": -0.0696,
+     "no_buyer_return_ci95": [
+      -0.2459,
+      0.1022
+     ],
+     "yes_buyer_return": -0.0658
+    },
+    {
+     "bucket": "0.35-0.50",
+     "n": 29,
+     "periods": 26,
+     "avg_price": 0.4222,
+     "yes_rate": 0.5172,
+     "rate_minus_price_ci95": [
+      -0.0654,
+      0.2638
+     ],
+     "no_buyer_return": -0.1826,
+     "no_buyer_return_ci95": [
+      -0.457,
+      0.0883
+     ],
+     "yes_buyer_return": 0.1926
+    },
+    {
+     "bucket": "0.50-0.65",
+     "n": 29,
+     "periods": 23,
+     "avg_price": 0.5633,
+     "yes_rate": 0.4828,
+     "rate_minus_price_ci95": [
+      -0.2164,
+      0.0602
+     ],
+     "no_buyer_return": 0.1088,
+     "no_buyer_return_ci95": [
+      -0.2058,
+      0.4122
+     ],
+     "yes_buyer_return": -0.1873
+    },
+    {
+     "bucket": "0.65-0.80",
+     "n": 18,
+     "periods": 16,
+     "avg_price": 0.7058,
+     "yes_rate": 0.5,
+     "rate_minus_price_ci95": [
+      -0.41,
+      0.005
+     ],
+     "no_buyer_return": 0.5491,
+     "no_buyer_return_ci95": [
+      -0.1373,
+      1.261
+     ],
+     "yes_buyer_return": -0.3217
+    }
+   ]
+  },
+  "weekly": {
+   "n_rows": 261,
+   "n_periods": 19,
+   "table": [
+    {
+     "bucket": "0.00-0.02",
+     "n": 109,
+     "periods": 19,
+     "avg_price": 0.0091,
+     "yes_rate": 0.0459,
+     "rate_minus_price_ci95": [
+      -0.0099,
+      0.1266
+     ],
+     "no_buyer_return": -0.0415,
+     "no_buyer_return_ci95": [
+      -0.1315,
+      0.0051
+     ],
+     "yes_buyer_return": 2.8446
+    },
+    {
+     "bucket": "0.02-0.05",
+     "n": 42,
+     "periods": 19,
+     "avg_price": 0.0316,
+     "yes_rate": 0.0714,
+     "rate_minus_price_ci95": [
+      -0.0327,
+      0.1765
+     ],
+     "no_buyer_return": -0.048,
+     "no_buyer_return_ci95": [
+      -0.1888,
+      0.0265
+     ],
+     "yes_buyer_return": 0.7554
+    },
+    {
+     "bucket": "0.05-0.10",
+     "n": 26,
+     "periods": 17,
+     "avg_price": 0.0696,
+     "yes_rate": 0.0385,
+     "rate_minus_price_ci95": [
+      -0.071,
+      0.0459
+     ],
+     "no_buyer_return": 0.0232,
+     "no_buyer_return_ci95": [
+      -0.0594,
+      0.0659
+     ],
+     "yes_buyer_return": -0.5593
+    },
+    {
+     "bucket": "0.10-0.20",
+     "n": 29,
+     "periods": 18,
+     "avg_price": 0.1369,
+     "yes_rate": 0.1034,
+     "rate_minus_price_ci95": [
+      -0.1326,
+      0.0936
+     ],
+     "no_buyer_return": 0.0227,
+     "no_buyer_return_ci95": [
+      -0.1231,
+      0.1372
+     ],
+     "yes_buyer_return": -0.3551
+    },
+    {
+     "bucket": "0.20-0.35",
+     "n": 24,
+     "periods": 16,
+     "avg_price": 0.2848,
+     "yes_rate": 0.1667,
+     "rate_minus_price_ci95": [
+      -0.2446,
+      0.0346
+     ],
+     "no_buyer_return": 0.1268,
+     "no_buyer_return_ci95": [
+      -0.093,
+      0.3076
+     ],
+     "yes_buyer_return": -0.5171
+    },
+    {
+     "bucket": "0.35-0.50",
+     "n": 12,
+     "periods": 11,
+     "avg_price": 0.4062,
+     "yes_rate": 0.25,
+     "rate_minus_price_ci95": [
+      -0.3874,
+      0.1346
+     ],
+     "no_buyer_return": 0.225,
+     "no_buyer_return_ci95": [
+      -0.2551,
+      0.5819
+     ],
+     "yes_buyer_return": -0.4066
+    },
+    {
+     "bucket": "0.50-0.65",
+     "n": 10,
+     "periods": 7,
+     "avg_price": 0.582,
+     "yes_rate": 0.5,
+     "rate_minus_price_ci95": [
+      -0.3939,
+      0.2012
+     ],
+     "no_buyer_return": 0.163,
+     "no_buyer_return_ci95": [
+      -0.4759,
+      0.9381
+     ],
+     "yes_buyer_return": -0.1631
+    }
+   ]
+  }
+ }
+}

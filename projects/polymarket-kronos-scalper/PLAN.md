@@ -13,24 +13,29 @@
 
 ## 0. TL;DR
 
-1. **Stop trying to predict Bitcoin; price Bitcoin contracts.** The evidence
-   says takers lose, makers win, longshots are overpriced, and 15-minute
-   direction models don't beat the order book (§1). So v3 prices every
-   contract off the **options market** (Deribit/OKX implied vol), **sells
-   what's overpriced**, **buys what's cheap**, and executes as a **maker**.
-2. **Today's live scan agrees.** On Polymarket's October touch, this week's
-   touch and tomorrow's "above" ladder, most strikes priced YES *above*
-   options-implied fair value — e.g. "BTC dips to $82.5k in October" at 0.785
-   vs ~0.72 fair; "above $86k on Oct 2" at 0.185 vs ~0.13 fair (§5). One
-   snapshot: a lead to measure, not proof.
+1. **Stop trying to predict Bitcoin; price Bitcoin contracts — and check
+   every edge against what actually happened.** The literature says takers
+   lose, makers win, and 15-minute direction models don't beat the order book
+   (§1). So v3 executes as a **maker**, prices contracts off the **options
+   market**, and funds only edges that pass a calibration test on resolved
+   Polymarket history.
+2. **Our own data overturned the headline edge.** Today's scan shows
+   Polymarket tails priced *above* options-implied values, as published
+   research reports (§5.1). But on resolved 2026 markets, BTC tails were
+   priced **fairly or too cheaply**: daily ladders' cheap strikes resolved YES
+   as often as priced (116 days), and daily/weekly touch strikes under 2¢ hit
+   2.4% / 4.6% of the time vs 0.6% / 0.9% priced (§5.2–5.3). Fading tails
+   would have **lost** money. The cheap side was the near-certain favourite:
+   95–98¢ ladder strikes won 56/56.
 3. **We ran Kronos and TimesFM 3 live and on recent history** (§6). Use them
    as research inputs only; don't build the business on them.
-4. **14 strategies in 5 families** (§3). Build order: (1) options-anchored
-   tail-fading on touch/strike markets, (2) options-anchored quoting on daily
-   ladders and ranges, (3) an always-on structural-arbitrage scanner,
-   (4) carry and fee programs, (5) cross-venue arbitrage (US: Kalshi ↔
-   Polymarket US), (6) short-horizon maker quoting; ML direction stays
-   research-only.
+4. **14 strategies in 5 families** (§3). Build order, re-ranked on our data:
+   (1) maker-first execution + structural-arbitrage scanner + favourite
+   harvesting, (2) carry and fee programs, (3) cross-venue arbitrage (US:
+   Kalshi ↔ Polymarket US), (4) options-anchored pricing on touch/ladders
+   **only where the calibration test passes** (currently it doesn't for
+   daily/weekly tails; monthly/yearly untested), (5) short-horizon maker
+   quoting; ML direction stays research-only.
 5. **Measure everything at once before risking money.** Two weeks of a
    *shadow ledger* — live prices, simulated fills, $0 at risk — produces a
    league table; only strategies with a positive lower bound get capital (§7).
@@ -51,7 +56,8 @@
 | Kalshi prices show a favourite–longshot bias: cheap contracts win far less often than their price implies; makers earn more than takers | Bürgi, Deng & Whelan (CESifo WP, 2025), 300k+ contracts | 📄 ✅ abstract verified | trade as **maker**; **sell longshots** |
 | The maker–taker gap is largest in crypto categories | Becker (2026), 72.1M Kalshi trades | 📄 industry ⚠️ | doubly so in BTC markets |
 | Polymarket profits are concentrated in few wallets; maker share is the strongest predictor of profit | Akey et al. (2026), $67B volume | 📄 preprint ⚠️ | maker-first everywhere |
-| Polymarket BTC strike/touch YES prices sit **above** Deribit-implied values (larger on weekends, long-dated, low-probability) | Fabi et al. (2025 draft); Portnaya (2026) | 📄 preprints ⚠️ | **core strategy A1/A2**; our scan reproduces it (§5) |
+| Polymarket BTC strike/touch YES prices sit **above** Deribit-implied values (larger on weekends, long-dated, low-probability) | Fabi et al. (2025 draft); Portnaya (2026) | 📄 preprints ⚠️ | our scan reproduces the gap (§5.1)… |
+| …but on resolved 2026 markets, daily-ladder tails were fairly priced and daily/weekly touch tails were **under**-priced; 95–98¢ ladder favourites won 56/56 | **our calibration studies** (116 days ladders; 43 days / 19 weeks touch) | ✅ our data, small samples | **don't fade tails yet**; harvest favourites as maker (§5.2–5.3) |
 | Polymarket's implied variance risk premium is far larger than Kalshi's | Lee, Lee & Lee (2026) | 📄 preprint ⚠️ | Polymarket prices too-wide distributions → sell tails |
 | A 43-feature model on 15-min BTC markets "does not beat… the probability already implied by Polymarket's own order book"; −0.116 payoff units per trade after fees | Young (2026, arXiv 2607.26245) | 📄 ✅ abstract verified | **no taker direction bot** |
 | ~$40M of arbitrage was realised on Polymarket (Apr 2024–Apr 2025), mostly single-market/neg-risk rebalancing | Saguillo et al. (2025, arXiv 2508.03474) | 📄 ✅ abstract verified | arbitrage is real but… |
@@ -122,13 +128,13 @@ Ranked by (evidence × capacity) ÷ effort. "Ref" = tested function in
 
 | ID | Strategy | Horizon | Edge source | Evidence | Capacity | Build order |
 |---|---|---|---|---|---|---|
-| **A1** | Tail-fade touch markets vs options | day → year | Polymarket YES rich vs options | 📄 + live scan | **High** | **1** |
-| **A2** | Price strike ladders & range buckets off options | hours → days | same, plus too-wide distributions | 📄 + live scan | **High** | **1** |
+| A1 | Tail-fade touch markets vs options | day → year | Polymarket YES rich vs options | 📄 + scan, **but our 2026 calibration ✗** | High | 4 (gated) |
+| A2 | Price strike ladders & range buckets off calibrated fair values | hours → days | too-wide distributions | scan; calibration: tails fair | High | 4 (gated) |
 | A3 | Options-anchored market making on A1/A2 markets | day → month | spread + 20% rebate + fair-value anchor | 📄 makers win | High | 3 |
-| A4 | Favourite harvesting (maker bids on 95–99¢) | day → month | small positive drift | 📄 | Medium | with A2 |
-| **B1** | Complete-set arb (YES+NO ≠ $1) | all | mechanical | 📄 ✅ | Low–Med | **2** |
-| **B2** | Neg-risk range buckets (Σ ≠ 1) | daily | mechanical | 📄 ✅ | Medium | **2** |
-| **B3** | Dominance lattice across linked markets | hours → year | mechanical | 📄 | Low–Med | **2** |
+| **A4** | Favourite harvesting (maker bids on 95–99¢) | day → month | favourites under-priced | 📄 + **our ladders 56/56** | Medium | **1** |
+| **B1** | Complete-set arb (YES+NO ≠ $1) | all | mechanical | 📄 ✅ | Low–Med | **1** |
+| **B2** | Neg-risk range buckets (Σ ≠ 1) | daily | mechanical | 📄 ✅ | Medium | **1** |
+| **B3** | Dominance lattice across linked markets | hours → year | mechanical | 📄 | Low–Med | **1** |
 | B4 | Post-close / settled-not-resolved sweeps | 1h → year | known outcome, slow UMA | live observation ✅ | Low | 4 |
 | C1 | Same-claim cross-venue (Kalshi ↔ Polymarket US, both BRTI) | 15m, 60m | identical claims, different prices | ✅ settlement match | Medium | 5 (US only) |
 | C2 | Near-claim cross-venue (Binance/Chainlink ↔ BRTI) | 15m → day | basis-adjusted mispricing | — | Low | research |
@@ -141,6 +147,13 @@ Rejected: Martingale/loss-chasing, copy-trading, "smart-money" alerts, taker
 direction bots on 5m/15m, settlement manipulation.
 
 ### A1 — Tail-fade touch markets ("what price will Bitcoin hit")
+
+> **Status: gated — our data says not now.** On resolved 2026 daily and
+> weekly touch markets, cheap YES strikes hit *more* often than priced
+> (§5.3); buying NO there lost 2–4% per $ after costs. Published evidence
+> (2023–2025) and today's options scan point the other way. Monthly and
+> yearly touch markets are untested (few independent events). A1 is funded
+> only if Phase 1's calibration + shadow ledger show a positive lower bound.
 
 - **What:** day/week/month/year touch markets. For each strike compute the
   options-implied touch probability; where Polymarket's YES is above it by
@@ -282,6 +295,10 @@ decides whether the same signal makes or loses money.
 
 ### 4.2 Worked examples from today's scan (snapshot, before depth checks)
 
+> These show the *mechanics* of sizing an options-anchored trade. They are not
+> current recommendations: resolved 2026 outcomes did not bear out the
+> options view on short-dated tails (§5.2–5.3).
+
 | Trade | Price paid (incl. fee) | Options fair | EV / share | EV per $ | ¼-Kelly stake |
 |---|---:|---:|---:|---:|---:|
 | NO "BTC dips to $82.5k in Oct" (taker) | 0.232 | 0.279 (0.262 at IV+3) | +4.7¢ (+3.0¢) | +20% (+13%) over 30 days | 1.5% (1.0%) |
@@ -314,7 +331,9 @@ not strikes. That is why §7 also validates the pricing model historically
 
 ---
 
-## 5. Live fair-value scan (2026-10-01 20:16 UTC)
+## 5. Testing the edges: live options scan vs resolved history
+
+### 5.1 Live fair-value scan (2026-10-01 20:16 UTC)
 
 `experiments/fair-value-scan/scan.py` (read-only) priced three live families
 off the Deribit smile. Full table: `experiments/fair-value-scan/results/`.
@@ -359,10 +378,26 @@ returns after taker fee + 0.5¢ half-spread.
   in ~20 h). Caveat: 56 straight wins still allow a true loss rate up to ~5%
   (rule of three), which would erase it; treat as a lead for A4, sized small.
 
-**Touch markets (daily/weekly):** _see §5.3 once the corrected run finishes._
-A first run produced a spectacular but **spurious** "NO edge": newly listed
-strikes report the midpoint of an empty book (0.50) until quoted. Filtering
-unquoted snapshots is mandatory in any Polymarket history study.
+### 5.3 Touch markets ("what price will Bitcoin hit"), daily and weekly
+
+`touch_calibration.md`: YES price 3 h (daily) / 12 h (weekly) after the
+period opens vs official outcome; unquoted strikes excluded.
+
+| Market | YES price bucket | n | avg price | YES rate | buy NO after costs (95% CI) |
+|---|---|---:|---:|---:|---|
+| Daily touch (43 days, 662 strikes) | < 2¢ | 383 | 0.006 | **0.024** | **−2.1%** (−4.9%, −0.1%) |
+| | 10–20¢ | 43 | 0.147 | **0.256** | **−13.7%** (−27.5%, −1.0%) |
+| Weekly touch (19 weeks, 261 strikes) | < 2¢ | 109 | 0.009 | **0.046** | −4.2% (−13.2%, +0.5%) |
+| | 20–35¢ | 24 | 0.285 | 0.167 | +12.7% (−9.3%, +30.8%) |
+
+- Cheap touch tails were **under**-priced in 2026: BTC hit far strikes more
+  often than the market charged. Fading them lost money. Mid-priced weekly
+  strikes leaned the other way but with CIs that include zero.
+- **Data trap we hit:** the first run produced a spectacular but **spurious**
+  "NO edge" (up to +79% per $): newly listed strikes report the midpoint of an
+  empty book (0.50) until someone quotes them. Filtering unquoted snapshots is
+  mandatory in any Polymarket history study (first run kept under
+  `results/superseded/`).
 
 **Lesson for the plan:** published biases and options gaps are hypotheses;
 recent Polymarket BTC ladders were efficient in the tails. Every strategy
@@ -414,10 +449,12 @@ Copy-paste Claude Code prompts for each phase: `prompts/PROMPTS.md`.
 - [ ] **Scanner + shadow ledger:** every strategy in §3 posts the trades it
   *would* make at executable prices (taker) or would-be-filled prices (maker,
   conservative queue model), with fees, and marks them to resolution.
-- [ ] **Historical pricing backtest (A1/A2):** for past months of daily
-  ladders and monthly touch markets, rebuild fair values from DVOL (+ skew
-  proxy) and Polymarket's `prices-history` ✅, score against Binance
-  outcomes. Hundreds of strike-days without waiting.
+- [ ] **Calibration on resolved history (every market family):** the model-free
+  version is done for daily ladders and daily/weekly touch (§5.2–5.3; rerun
+  monthly). Extend to range buckets, hourly ladders, monthly/yearly touch,
+  and add an options-anchored version (DVOL + skew proxy at each snapshot)
+  to see whether options-implied gaps ever predicted outcomes. Filter
+  unquoted placeholder prices.
 - [ ] Daily report: opportunities seen, size available, edge after fees,
   persistence (seconds/minutes), who took them (if visible).
 
@@ -547,6 +584,7 @@ batch-of-1 sampling for distributions).
 
 | Risk | Likelihood | Impact | Mitigation |
 |---|---|---|---|
+| Options-implied "edges" that don't show up in resolved outcomes (already observed for 2026 daily/weekly tails) | **High** | Systematic losses | Calibration test on resolved history before funding; shadow ledger; size from lower bound |
 | The options-vs-Polymarket gap is a risk premium you're paid to bear, not a free lunch (crashes) | Medium | Large drawdown | Crash/squeeze scenario caps; diversify expiries; option hedges where legal |
 | Pricing model error (skew, interpolation, basis) flips the sign | Medium | Systematic losses | Tested reference maths; IV±3 bands; historical backtest; size from lower bound |
 | Rules misread (candle open vs close, tie rules, strikes added later) | Medium | Loss on "sure" trades | Rules normaliser + human-reviewed templates; margin from strike |
