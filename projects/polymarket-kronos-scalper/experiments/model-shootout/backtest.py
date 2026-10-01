@@ -82,17 +82,29 @@ def main() -> None:
     a = ap.parse_args()
     offsets = [int(x) for x in a.offsets.split(",")]
 
-    now = int(time.time())
-    last = now - now % 900 - 1800  # windows that closed >= 15 min ago
-    starts = list(range(last - int(a.hours * 3600) + 900, last + 1, 900))
+    ckpt = c.HERE / "results" / "backtest_ckpt.json"
+    params = {"hours": a.hours, "paths": a.paths, "offsets": offsets}
+    saved = json.loads(ckpt.read_text()) if ckpt.exists() else None
+    if saved and saved["params"] == params:
+        starts = saved["starts"]  # resume: same windows as the interrupted run
+        print(f"resuming from checkpoint ({sum('kronos' in x for x in saved['cases'])}"
+              f"/{len(saved['cases'])} Kronos cases done)", flush=True)
+    else:
+        saved = None
+        now = int(time.time())
+        last = now - now % 900 - 1800  # windows that closed >= 15 min ago
+        starts = list(range(last - int(a.hours * 3600) + 900, last + 1, 900))
     print(f"{len(starts)} windows x {len(offsets)} decision times", flush=True)
 
     hist = c.fetch_history("1m", (starts[0] - (CTX + 70) * 60) * 1000, (starts[-1] + 900) * 1000)
     by_open = {int(t): i for i, t in enumerate(hist["open_time"])}
     closes_all = hist["close"].to_numpy()
 
-    cases = []
-    for s in starts:
+    def save_ckpt() -> None:
+        ckpt.write_text(json.dumps({"params": params, "starts": starts, "cases": cases}, default=float))
+
+    cases = saved["cases"] if saved else []
+    for s in ([] if saved else starts):
         k_idx = by_open.get((s - 60) * 1000)
         end_idx = by_open.get((s + 840) * 1000)
         if k_idx is None or end_idx is None:
@@ -113,14 +125,16 @@ def main() -> None:
     print(f"{len(cases)} scorable decisions", flush=True)
 
     # ---- TimesFM 3 (deterministic, batched) ----
-    tfm = c.load_timesfm3()
-    ctxs = [closes_all[cs["ctx_end"] - CTX + 1: cs["ctx_end"] + 1].astype(np.float32) for cs in cases]
-    outs = list(tfm.predict_batch(ctxs, horizon=15, return_quantiles=True))
-    for cs, o in zip(cases, outs):
-        q = np.asarray(o.quantiles)[cs["steps"] - 1]
-        cs["timesfm3"] = c.p_up_from_quantiles(q, cs["strike"])
-        cs["analytic"] = analytic_p_up(closes_all[: cs["ctx_end"] + 1], cs["strike"], cs["steps"])
-    del tfm
+    if not all("timesfm3" in cs for cs in cases):
+        tfm = c.load_timesfm3()
+        ctxs = [closes_all[cs["ctx_end"] - CTX + 1: cs["ctx_end"] + 1].astype(np.float32) for cs in cases]
+        outs = list(tfm.predict_batch(ctxs, horizon=15, return_quantiles=True))
+        for cs, o in zip(cases, outs):
+            q = np.asarray(o.quantiles)[cs["steps"] - 1]
+            cs["timesfm3"] = c.p_up_from_quantiles(q, cs["strike"])
+            cs["analytic"] = analytic_p_up(closes_all[: cs["ctx_end"] + 1], cs["strike"], cs["steps"])
+        del tfm
+        save_ckpt()
     print("timesfm3 done", flush=True)
 
     # ---- Kronos-base, sampled paths, batched by horizon ----
@@ -128,7 +142,7 @@ def main() -> None:
     cols = ["open", "high", "low", "close", "volume", "amount"]
     t0 = time.time()
     for steps in sorted({cs["steps"] for cs in cases}):
-        group = [cs for cs in cases if cs["steps"] == steps]
+        group = [cs for cs in cases if cs["steps"] == steps and "kronos" not in cs]
         for i in range(0, len(group), 8):
             chunk = group[i: i + 8]
             dfs, xts, yts = [], [], []
@@ -143,6 +157,7 @@ def main() -> None:
             finals = np.array([r["close"].to_numpy()[-1] for r in res]).reshape(len(chunk), a.paths)
             for cs, f in zip(chunk, finals):
                 cs["kronos"] = c.p_up_from_paths(f, cs["strike"])
+            save_ckpt()
             done = sum("kronos" in x for x in cases)
             print(f"kronos {done}/{len(cases)} ({time.time() - t0:.0f}s)", flush=True)
     for cs in cases:
