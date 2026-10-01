@@ -433,11 +433,16 @@ times, scored against Polymarket's official results** (`backtest_report.md`).
 | 5 min in | market | 74% | 0.175 | — | — |
 | | TimesFM 3 | 69% | 0.207 | **+0.032 (+0.008, +0.059) worse** | **−21.7% (−40%, −3.5%)** |
 | | random walk | 71% | 0.186 | +0.011 (−0.010, +0.035) | −1.3% (−23%, +22%) |
-| both | Kronos-base | _running (CPU-bound); added when complete_ | | | |
+| | Kronos-base | 68% | 0.205 | +0.030 (−0.008, +0.072) worse | −7.4% (−27%, +14%) |
+| | merged (Kronos+TimesFM) | 69% | 0.195 | +0.020 (−0.006, +0.049) worse | **−25.1% (−43%, −6.6%)** |
+| window open | Kronos-base | _running (CPU-bound); added when complete_ | | | |
 
 TimesFM 3 is **statistically worse than the market price** at both decision
-points, and trading on its disagreements lost ~20% per $. This replicates
-the published null result for 15-minute markets (Young 2026).
+points, and trading on its disagreements lost ~20% per $. Kronos carries real
+information mid-window (when it said < 20%, Up happened 21% of the time; > 80%,
+100%) but the market prices the same information better, and trading the
+merged forecast against the market lost 25% per $ (CI excludes zero). This
+replicates the published null result for 15-minute markets (Young 2026).
 
 **2. Live forecasts, frozen before the outcome** (`report_1790885700.md`,
 `predictions_1790887500*.md`, `live_loop.md`). Early record (one falling
