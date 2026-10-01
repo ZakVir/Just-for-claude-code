@@ -52,9 +52,16 @@ def gamma_event(slug: str) -> dict | None:
 
 
 def book(m: dict) -> dict:
+    """Order-book quote for the YES/Up token; Gamma's cached fields as fallback."""
+    try:
+        top = c.clob_top(json.loads(m["clobTokenIds"])[0])
+        if top:
+            return top
+    except (KeyError, TypeError, ValueError):
+        pass
     try:
         bid, ask = float(m["bestBid"]), float(m["bestAsk"])
-        return {"bid": bid, "ask": ask, "mid": round((bid + ask) / 2, 4)}
+        return {"bid": bid, "ask": ask, "mid": round((bid + ask) / 2, 4), "source": "gamma"}
     except (KeyError, TypeError, ValueError):
         return {}
 

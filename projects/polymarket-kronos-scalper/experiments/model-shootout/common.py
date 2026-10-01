@@ -88,6 +88,25 @@ def future_index(last_open: pd.Timestamp, interval: str, steps: int) -> pd.Serie
     return pd.Series([last_open + step * (i + 1) for i in range(steps)])
 
 
+def clob_top(token_id: str) -> dict:
+    """Best bid/ask (+ size) for one outcome token from the CLOB order book.
+
+    Gamma's bestBid/bestAsk fields can lag; the book is authoritative.
+    """
+    try:
+        b = requests.get("https://clob.polymarket.com/book",
+                         params={"token_id": token_id}, timeout=20).json()
+        bids = sorted((float(x["price"]), float(x["size"])) for x in b.get("bids", []))
+        asks = sorted((float(x["price"]), float(x["size"])) for x in b.get("asks", []))
+        if not bids or not asks:
+            return {}
+        (bid, bsz), (ask, asz) = bids[-1], asks[0]
+        return {"bid": bid, "ask": ask, "mid": round((bid + ask) / 2, 4),
+                "bid_size": bsz, "ask_size": asz, "source": "clob"}
+    except Exception:
+        return {}
+
+
 # --------------------------------------------------------------------------
 # Kronos
 # --------------------------------------------------------------------------

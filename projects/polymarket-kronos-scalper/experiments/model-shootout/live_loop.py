@@ -29,8 +29,11 @@ FORECASTERS = ["kronos", "timesfm", "merged", "market"]
 def market(start: int) -> dict:
     try:
         m = requests.get(GAMMA, params={"slug": f"btc-updown-15m-{start}"}, timeout=20).json()[0]["markets"][0]
+        top = c.clob_top(json.loads(m["clobTokenIds"])[0])
+        if top:
+            return top
         bid, ask = float(m["bestBid"]), float(m["bestAsk"])
-        return {"bid": bid, "ask": ask, "mid": (bid + ask) / 2}
+        return {"bid": bid, "ask": ask, "mid": (bid + ask) / 2, "source": "gamma"}
     except Exception as exc:
         return {"error": repr(exc)}
 
