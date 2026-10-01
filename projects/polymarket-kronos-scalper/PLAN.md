@@ -1,458 +1,437 @@
-# Polymarket 5-Minute Scalper — Executable Plan (v2)
+# Polymarket BTC Edge — Executable Plan (v3: 15-minute to yearly)
 
-> Rewrite of the "I Gave Claude AI a FREE 5-Minute Scalping Strategy" article
-> (Andrew Collins, 2026-05-05) into a plan you can actually run — and that
-> stops you early if there is no money to be made.
+> **v3, 2026-10-01.** v2 was one 5-minute directional bot. v3 is a portfolio
+> of strategies across every recurring Polymarket BTC market — 15-minute
+> Up/Down through yearly "what price will Bitcoin hit" — ordered by how likely
+> each is to make money given published evidence and our own live tests.
 >
-> Facts below were checked against primary docs on **2026-10-01**. Anything
-> I could not verify is tagged **[VERIFY]** and has an owner in Phase 0.
+> Tags: ✅ verified today against a primary source or live API · 📄 published
+> research (preprints flagged, numbers as reported) · ⚠️ unverified / to check.
+> Not financial or legal advice.
 
 ---
 
 ## 0. TL;DR
 
-1. **The article's architecture is a decent skeleton and its economics are
-   wrong.** It never mentions fees, treats model "confidence" as a
-   probability, includes a Martingale variant, and describes a settlement
-   rule Polymarket changed in August 2026.
-2. **Money = net edge per dollar × dollars turned over − costs.** A taker at
-   50¢ pays ~3.5% of stake in fees, so a *real* 1-point win-rate edge is a
-   net **loser** (−1.45% per $). Most of the upside in this plan comes from
-   attacking cost (maker-first execution, trading where fees are small) and
-   from honest probability modelling — not from a fancier forecaster.
-3. **Kronos becomes one feature, not the engine.** The engine is an analytic
-   fair-value model for "will the 60-second TWAP at the end beat the strike?",
-   a calibrator, and a fee-aware EV/Kelly layer. Kronos stays only if an
-   ablation shows it adds out-of-sample value after costs.
-4. **Data first.** Order-book history is what makes a backtest honest, and the
-   only way to own it is to start recording *now*. The recorder runs from
-   Day 2, unattended, while everything else is built.
-5. **Pre-registered go/no-go gates** (§5) with a capital ladder (§9). You
-   risk $0 until Gate G2 and ≤ $500 until Gate G3. If the edge isn't there,
-   you find out in ~4 weeks for the price of a VPS.
-6. **Honest expectation:** I cannot promise an edge exists. Prediction
-   markets are zero-sum before fees, and taker flow loses fees on average.
-   The plan is built so that *if* an edge exists you capture more of it, and
-   *if not* you lose almost nothing.
+1. **Stop trying to predict Bitcoin; price Bitcoin contracts.** The evidence
+   says takers lose, makers win, longshots are overpriced, and 15-minute
+   direction models don't beat the order book (§1). So v3 prices every
+   contract off the **options market** (Deribit/OKX implied vol), **sells
+   what's overpriced**, **buys what's cheap**, and executes as a **maker**.
+2. **Today's live scan agrees.** On Polymarket's October touch, this week's
+   touch and tomorrow's "above" ladder, most strikes priced YES *above*
+   options-implied fair value — e.g. "BTC dips to $82.5k in October" at 0.785
+   vs ~0.72 fair; "above $86k on Oct 2" at 0.185 vs ~0.13 fair (§5). One
+   snapshot: a lead to measure, not proof.
+3. **We ran Kronos and TimesFM 3 live and on recent history** (§6). Use them
+   as research inputs only; don't build the business on them.
+4. **14 strategies in 5 families** (§3). Build order: (1) options-anchored
+   tail-fading on touch/strike markets, (2) options-anchored quoting on daily
+   ladders and ranges, (3) an always-on structural-arbitrage scanner,
+   (4) carry and fee programs, (5) cross-venue arbitrage (US: Kalshi ↔
+   Polymarket US), (6) short-horizon maker quoting; ML direction stays
+   research-only.
+5. **Measure everything at once before risking money.** Two weeks of a
+   *shadow ledger* — live prices, simulated fills, $0 at risk — produces a
+   league table; only strategies with a positive lower bound get capital (§7).
+6. **Venue matrix first.** What you can legally use decides the strategy set:
+   US persons are close-only on Polymarket international; they get Kalshi +
+   Polymarket US instead (§2.3).
+7. **Honest expectation.** These edges are cents per contract, capacity is
+   limited, and some are contested by bots. "Lots of money" needs capital,
+   several uncorrelated edges, compounding, and time. This plan maximises the
+   odds and cuts losers fast; it can't promise profit.
 
 ---
 
-## 1. What was wrong with the original (and the fix)
+## 1. What the evidence says (read this before building anything)
 
-| # | Article says / does | Problem | Fix in this plan |
-|---|---------------------|---------|------------------|
-| 1 | Kronos-Base has 4,096 context; Large for longer horizons | Kronos README: mini 2,048 ctx (4.1M params), small 512 (24.7M), **base 512** (102.3M), **large 499.2M is *not* open-sourced** | Benchmark mini/small/base on *your* latency budget; pick by OOS log-loss per ms (§6.2) |
-| 2 | "Outperformed X by 93%" | Forecast-error benchmarks ≠ tradable edge after fees. Kronos authors call their own backtest "a demonstration… not a production-ready quantitative trading system" | Treat Kronos as a hypothesis to be falsified by ablation (§6.5) |
-| 3 | "Up if end price ≥ start price" | Since **Aug 7 2026** (30 s) and **Aug 14 2026** (60 s) 5-min crypto markets settle on a **Chainlink TWAP**, not a spot print | Model the TWAP explicitly (§6.1); label outcomes from Polymarket's result and cross-check with own TWAP |
-| 4 | No fees anywhere | Taker fee = `shares × 0.07 × p × (1−p)` on crypto → **$1.75 per 100 shares at 50¢**; break-even win prob **51.75%** at 50¢ | All edge/EV/Kelly math is **fee-inclusive**; fee rate read live per market (§3, `reference/edge_math.py`) |
-| 5 | "Confidence > 55%" gate, then Kelly on confidence | Raw model confidence is not a calibrated probability; Kelly on an overstated edge over-bets and compounds losses | Walk-forward calibration, shrink toward market, lower-confidence-bound edge, ¼-Kelly (§6.3, §7) |
-| 6 | Variant 4: Kelly + **Martingale** | Doubling after losses turns many small wins into rare ruin and breaks the article's own 5% cap | **Dropped.** Sizing only ever responds to *edge*, never to losses |
-| 7 | 5% per-trade cap, 20% daily loss limit | Far too loose for an unproven edge, and BTC/ETH/SOL/XRP 5-min bets are highly correlated | 1% per trade, 5% concurrent, 3% daily, 8% weekly, 15% drawdown halt (§7) |
-| 8 | "Download historical Polymarket data" | Price history can't tell you whether you'd have been *filled*. You need L2 book snapshots/deltas + trades | Self-record L2 from Day 2 + backfill from free/paid datasets (§4, Phase 1) |
-| 9 | "~15,000 bets, ~7,000 wins, $12,300 profit" | 7,000/15,000 = **46.7% hit rate**; entry prices, fees, fills, bankroll, and slippage aren't disclosed, so the number can't be interpreted | Report net EV per $ staked with confidence bounds, by price bucket and execution mode |
-| 10 | "Treat the first 30 days as testing" | A true 1-point win-rate edge (≈2% EV/$) needs **~15,500 independent bets** to detect at 95%/80% power. 30 days of trades can't tell you | Score *probabilities on every window* (far more power than win/loss), cluster-bootstrap, sequential gates (§5) |
-| 11 | Pull BTC/ETH data "from Polymarket's API" | Polymarket isn't a spot OHLCV source | Exchange WS (Binance/Coinbase/Kraken, whichever your region can reach) + Polymarket RTDS `price.crypto.twap` channel for settlement-consistent prices |
-| 12 | Copy-trading + "smart-money alerts" | Survivorship bias (you only see winners), and by the time you mirror, the price has moved | **Out of scope.** Revisit only with a measured follow-latency study |
-| 13 | ADX ≥ 20 and ATR ≥ "[YOUR THRESHOLD]" as hard gates | Thresholds are eyeballed and untested on 5-min Polymarket windows | Gates become *features/regime filters* whose thresholds are fit walk-forward and must survive ablation (§6.4) |
-| 14 | Latency never budgeted | Kronos inference time, WS lag, and Polymarket's taker delay (150 ms as of Sep 4 2026, changed several times) all affect fills | Latency budget + measured RTT in Phase 0; paper broker models it (§8) |
+| Finding | Source | Status | So we… |
+|---|---|---|---|
+| Kalshi prices show a favourite–longshot bias: cheap contracts win far less often than their price implies; makers earn more than takers | Bürgi, Deng & Whelan (CESifo WP, 2025), 300k+ contracts | 📄 ✅ abstract verified | trade as **maker**; **sell longshots** |
+| The maker–taker gap is largest in crypto categories | Becker (2026), 72.1M Kalshi trades | 📄 industry ⚠️ | doubly so in BTC markets |
+| Polymarket profits are concentrated in few wallets; maker share is the strongest predictor of profit | Akey et al. (2026), $67B volume | 📄 preprint ⚠️ | maker-first everywhere |
+| Polymarket BTC strike/touch YES prices sit **above** Deribit-implied values (larger on weekends, long-dated, low-probability) | Fabi et al. (2025 draft); Portnaya (2026) | 📄 preprints ⚠️ | **core strategy A1/A2**; our scan reproduces it (§5) |
+| Polymarket's implied variance risk premium is far larger than Kalshi's | Lee, Lee & Lee (2026) | 📄 preprint ⚠️ | Polymarket prices too-wide distributions → sell tails |
+| A 43-feature model on 15-min BTC markets "does not beat… the probability already implied by Polymarket's own order book"; −0.116 payoff units per trade after fees | Young (2026, arXiv 2607.26245) | 📄 ✅ abstract verified | **no taker direction bot** |
+| ~$40M of arbitrage was realised on Polymarket (Apr 2024–Apr 2025), mostly single-market/neg-risk rebalancing | Saguillo et al. (2025, arXiv 2508.03474) | 📄 ✅ abstract verified | arbitrage is real but… |
+| …fast violations now close in a median ~16 s; profit per conversion fell ~10× (2024 → 2026) | Gebele, Mutzel & Matthes (2026) | 📄 preprint ⚠️ | run a scanner, capture as maker; don't make it the business |
+| 90–99¢ favourites earned ~+0.5–1.7%; crypto favourites ~+0.5%; crypto longshots ~−12.6% | Cardozo & Rivero-Wildemauwe (2026), 588M trades | 📄 preprint ⚠️ | favourites only as maker, options-checked, capped |
+| Pre-TWAP 5-min "edge" was settlement manipulation; TWAP (Aug 2026) targeted it | Dai, Jia & Yu (2026); Polymarket changelog | 📄 ⚠️ / ✅ | ignore 5-min "late-window" folklore |
+| Liquidity-reward pools on crypto are currently ~$0; rewards are highly concentrated | Polymarket live rewards API; Odaily/Phemex | ✅ / industry | not an income source today; be ready when pools return |
 
-**Kept from the article** (good ideas): the dashboard, ATR/ADX as candidate
-signals, fractional Kelly, backtest-before-live, Telegram alerts, CSV trade
-log, `.env` + `.gitignore`, "log *why* a signal was blocked".
+**Translation:** the reliable money in these markets comes from (a) being the
+house (maker), (b) pricing better than the crowd using a deeper market
+(options), and (c) mechanical consistency (arbitrage) — not from forecasting
+BTC direction.
 
 ---
 
-## 2. Where the money can actually come from
+## 2. The market map (live, 2026-10-01 ✅)
 
-Ranked by (probability it works) × (size) ÷ effort. Each lever is tested, not
-assumed; §5 says when to kill it.
+### 2.1 Recurring Polymarket crypto markets
 
-| # | Lever | Why it might pay | Main risk | Test |
-|---|-------|------------------|-----------|------|
-| L1 | **Maker-first execution** | Makers pay **0 fee** and share **20% of taker fees** pro-rata per market (paid daily). Same signal, ~3.5%-of-stake cheaper at 50¢ | Adverse selection (you fill when you're wrong), non-fill bias | Markout at +5/+30 s; queue-aware fill sim |
-| L2 | **Trade where fees are small** | Fee ∝ p(1−p): 1.4% of stake at 80¢, 0.35% at 95¢. Late-window favourites need almost no edge to clear fees | "Pennies in front of a steamroller": a vol spike flips a 97¢ favourite | Edge map by (secs-into-window × price bucket) (§6.6) |
-| L3 | **Analytic TWAP fair-value + calibration** | After Aug 2026 the contract is a pricing problem ("will the 60 s TWAP finish above strike?") — settlement sniping is dead, forecasting the running average is not | Gaussian tails are too thin → needs calibration; market may already be efficient | Brier/log-loss vs market mid on **all** windows |
-| L4 | **Spot lead–lag** | Polymarket quotes may trail the exchange composite by seconds | Smaller after TWAP + 150 ms taker delay; makers cancel | Quote-staleness metric from recorder |
-| L5 | **Kronos as a feature** | Might add information at 1–5 min horizon | Likely ~zero after costs; adds latency and infra | Ablation A3 vs A2 (§6.5) |
-| L6 | **Turnover** | More markets × more decision points = more dollars through a positive edge: BTC/ETH/SOL/XRP 5-min (**[VERIFY]** current asset list), plus 15 m / 1 h | Correlated → treat as one risk bucket; thin books cap size | Depth-capped stake sizing |
-| L7 | **Sizing discipline** | Quarter-Kelly on a *shrunk, lower-bounded* edge maximises long-run growth without blowing up on model error | Over-shrinking leaves money on the table (acceptable) | Monte-Carlo bankroll sims (Phase 3) |
-| L8 | **Cost control** | Fixed costs ~$30–100/mo (VPS, optional GPU/data). Edge must beat that at your bankroll | — | Break-even bankroll calc in dashboard |
+Fees on all: taker `0.07·p·(1−p)` per share, makers 0, makers get 20% of
+taker fees back. Minimum order 5. Tick 0.01 (0.001 near 0/1).
 
-**Explicitly rejected:** Martingale (negative skew, ruin), copy-trading,
-"always take the ask when confidence > 55%", and any stake larger than 1% of
-bankroll before Stage 3 of the ladder (§9).
+| Market (assets) | Example slug | Settles on | Resolves | Taker delay | Median BTC vol/event |
+|---|---|---|---|---|---|
+| 15m Up/Down (BTC ETH SOL XRP DOGE BNB HYPE ZEC) | `btc-updown-15m-<unix>` | Chainlink BTC/USD **60 s TWAP**, end ≥ start | auto, ~1 min | 150 ms | $23k |
+| 1h Up/Down (7 assets) | `bitcoin-up-or-down-october-2-2026-10am-et` | **Binance BTCUSDT 1h candle** close ≥ open | UMA, ~12 min | 150 ms | $33k |
+| 4h Up/Down (8) | `btc-updown-4h-<unix>` | Chainlink 60 s TWAP | auto, ~1 min | **none** | $14k |
+| Daily Up/Down (7) | `bitcoin-up-or-down-on-october-2-2026` | Binance 1m noon-ET close vs prior noon | UMA, ~13 min | none | $150k |
+| Daily "above ___" ladder (BTC ETH SOL XRP), 11 strikes $2k apart | `bitcoin-above-on-october-2-2026` | Binance 1m candle **opening** 12:00 ET, close > strike | UMA, ~13 min | none | **$1.43M** |
+| Hourly "above ___" ladder (BTC ETH), 20 strikes $200 apart | `bitcoin-above-on-october-1-2026-4pm-et` | Binance 1h candle close > strike | UMA, ~12 min | 150 ms | tiny |
+| "Price on <date>" range buckets (neg-risk), 11 × $2k | `bitcoin-price-on-october-2-2026` | Binance noon candle | UMA, ~13 min | none | $202k |
+| Touch — day / week / month | `what-price-will-bitcoin-hit-in-october-2026` | any Binance 1m **High ≥ ↑K / Low ≤ ↓K** → Yes at once | at touch, else end + ~15 min | none | $249k / $1.64M / **$38.6M** |
+| Yearly | `what-price-will-bitcoin-hit-before-2027` | Binance 1m touch | UMA | none | $72M lifetime |
+
+Also listed: 5m Up/Down (excluded from v3 — most bot-contested, highest fee
+drag), BTC dominance, ETH/BTC weekly touch, implied-vol index markets (thin).
+Weekly/monthly Up/Down and monthly strike ladders are dormant since 2025.
+
+### 2.2 What the map implies
+
+- **Two settlement families.** Chainlink TWAP (15m, 4h) vs Binance candles
+  (everything else). Binance BTCUSDT trades ~+4.3 bp over USD indices
+  (measured ✅), which matters for strikes priced off options (§4.3).
+- **Capacity lives in longer-dated markets.** One daily ladder trades ~60×
+  a 15-minute window; the monthly touch market ~1,700×.
+- **Makers are protected only on 5m/15m/1h** (150 ms taker delay ✅). On 4h,
+  daily, weekly, monthly and yearly markets quotes can be picked off
+  instantly — quote wider, cancel faster, or hedge.
+- **Binance-settled markets resolve through UMA** (~12–14 min, tails 1–3 h ✅);
+  books sometimes stay live after the outcome is known (strategy B4).
+
+### 2.3 Venue matrix (decide in Phase 0)
+
+| You are… | Prediction venues | Fair-value data | Hedging venues |
+|---|---|---|---|
+| **Non-US**, not in a Polymarket-restricted country | Polymarket international (+ Kalshi where available) | Deribit, OKX (public, no auth ✅) | Polymarket Perps, Deribit, OKX, Hyperliquid (check each venue's restrictions) |
+| **US person** | Kalshi + Polymarket US (CFTC-regulated; 15m/60m Up/Down on CF Benchmarks BRTI ✅) — Polymarket international is **close-only** for US ✅ | Deribit/OKX data for pricing only (trading barred ✅) | Kalshi BTC perp (rolling out), Coinbase Derivatives, CME via a futures broker |
+
+Never use a VPN or foreign server to get around a restriction — it violates
+the venues' terms and can freeze funds.
 
 ---
 
-## 3. The economics (numbers you can check)
+## 3. Strategy book
 
-All produced by `reference/edge_math.py` (stdlib-only, 19 passing tests,
-mutation-checked — see `reference/`).
+Ranked by (evidence × capacity) ÷ effort. "Ref" = tested function in
+`reference/`.
 
-**Taker fee** = `shares × 0.07 × p × (1−p)` (docs.polymarket.com/trading/fees;
-crypto rate). The changelog (Jan 2026) cited a 1.56% peak while the current
-fees page implies 1.75¢/share at 50¢ — the schedule has evidently moved, so
-**read the rate per market from the API, never hard-code** **[VERIFY endpoint]**.
+| ID | Strategy | Horizon | Edge source | Evidence | Capacity | Build order |
+|---|---|---|---|---|---|---|
+| **A1** | Tail-fade touch markets vs options | day → year | Polymarket YES rich vs options | 📄 + live scan | **High** | **1** |
+| **A2** | Price strike ladders & range buckets off options | hours → days | same, plus too-wide distributions | 📄 + live scan | **High** | **1** |
+| A3 | Options-anchored market making on A1/A2 markets | day → month | spread + 20% rebate + fair-value anchor | 📄 makers win | High | 3 |
+| A4 | Favourite harvesting (maker bids on 95–99¢) | day → month | small positive drift | 📄 | Medium | with A2 |
+| **B1** | Complete-set arb (YES+NO ≠ $1) | all | mechanical | 📄 ✅ | Low–Med | **2** |
+| **B2** | Neg-risk range buckets (Σ ≠ 1) | daily | mechanical | 📄 ✅ | Medium | **2** |
+| **B3** | Dominance lattice across linked markets | hours → year | mechanical | 📄 | Low–Med | **2** |
+| B4 | Post-close / settled-not-resolved sweeps | 1h → year | known outcome, slow UMA | live observation ✅ | Low | 4 |
+| C1 | Same-claim cross-venue (Kalshi ↔ Polymarket US, both BRTI) | 15m, 60m | identical claims, different prices | ✅ settlement match | Medium | 5 (US only) |
+| C2 | Near-claim cross-venue (Binance/Chainlink ↔ BRTI) | 15m → day | basis-adjusted mispricing | — | Low | research |
+| D1 | Short-horizon fair-value maker quoting | 15m, 1h, 4h | spread + rebate + taker-delay protection | 📄 makers win | Low | 6 |
+| D2 | ML direction (Kronos, TimesFM) | 15m → 1h | forecast | 📄 null + our test | — | research only |
+| E1 | Carry & fee programs (holding rewards, rebates, taker-rebate tiers, reward pools) | — | program cash flows | ✅ docs | — | with everything |
+| E2 | Non-trading: builder fees, data products | — | business | ✅ docs | — | optional |
 
-| Price | Fee/share | Fee as % of stake | Taker break-even win prob |
-|------:|----------:|------------------:|--------------------------:|
-| 0.50 | 1.75¢ | 3.50% | 51.75% |
-| 0.60 | 1.68¢ | 2.80% | 61.68% |
-| 0.70 | 1.47¢ | 2.10% | 71.47% |
-| 0.80 | 1.12¢ | 1.40% | 81.12% |
-| 0.90 | 0.63¢ | 0.70% | 90.63% |
-| 0.95 | 0.33¢ | 0.35% | 95.33% |
+Rejected: Martingale/loss-chasing, copy-trading, "smart-money" alerts, taker
+direction bots on 5m/15m, settlement manipulation.
 
-**Worked example (why fees dominate).** Buy "Up" at 50¢ with a true win
-probability of 51%: cost = 51.75¢, EV = −0.75¢ per share = **−1.45% per $**.
-A 1-point edge *loses money* as a taker. At a true 55%: EV = +3.25¢ = +6.3%
-per $. The article's "55% confidence" only works if 55% is *real*.
+### A1 — Tail-fade touch markets ("what price will Bitcoin hit")
 
-**How long to know** (one-sided, 95% confidence, 80% power, payoff sd ≈ 1):
+- **What:** day/week/month/year touch markets. For each strike compute the
+  options-implied touch probability; where Polymarket's YES is above it by
+  more than a margin, **buy NO** (or post NO bids as maker); where YES is
+  below, buy YES.
+- **Pricing (Ref `pricing.touch_prob_skew`):** barrier-strike implied vol from
+  the Deribit/OKX smile, total-variance-interpolated to the market's end
+  time; skew-consistent "≈ 2× digital" correction; Binance +4.3 bp basis on
+  the barrier. **Ignore the skew and you get the sign wrong on the put wing**
+  — that happened in our first scan (§5).
+- **Why it should pay:** published Polymarket-vs-Deribit gaps in exactly these
+  markets; longshot bias; risk-neutral probabilities already *overstate*
+  real-world tail odds (variance risk premium), so fading YES against them is
+  conservative.
+- **Risks:** you are short tail risk across correlated markets — one crash
+  hits every "dip to K" position at once. Mitigate with per-event and
+  crash-scenario caps (§8), diversification across strikes/expiries, and
+  (non-US) cheap OTM option hedges. Capital is locked until expiry.
+- **Bonus carry:** yearly "what price will BTC/ETH/SOL/XRP/HYPE hit in 2026"
+  events pay holding rewards (docs say 4.00% annualised; help centre says
+  3.25%) ✅⚠️.
+- **Kill rule:** shadow P&L lower bound < 0 after the Phase-1 window, or the
+  realised touch frequency of faded strikes exceeds the options-implied rate.
 
-| True net edge per $ staked | Independent bets needed |
+### A2 — Strike ladders and range buckets
+
+- **What:** daily "above ___" ladders (11 strikes, noon ET), "price on date"
+  ranges (bucket = difference of two digitals), hourly ladders.
+- **Pricing (Ref `pricing.digital_prob_with_skew`, `interp_vol`):** Deribit
+  expiries are 08:00 UTC; noon ET sits between two of them → interpolate total
+  variance; skew-adjusted digital; Binance basis.
+- **Today's pattern:** the market's distribution was **wider** than options —
+  YES too cheap near the money (84k: 0.745 vs 0.781 fair) and too rich in the
+  tails (86k: 0.185 vs 0.127). That is a classic "sell the wings, buy the
+  body" relative-value trade, and it compounds daily (7 ladders listed ahead).
+- **Execution:** maker inside the spread first; take only when edge after fee
+  exceeds the IV±3-point uncertainty band.
+- **Kill rule:** as A1, measured per strike bucket (moneyness × time-to-noon).
+
+### A3 — Options-anchored market making (after A1/A2 pricing is proven)
+
+Quote both sides around fair value; skew quotes by inventory; widen when no
+taker delay protects you (daily/weekly/monthly); hedge net BTC delta with
+perps when it exceeds a threshold (non-US); earn spread + 20% rebate. Ref
+`pricing.digital_delta` sizes the hedge. Measure **markouts** (+1 min, +10 min)
+to see whether fills are toxic.
+
+### A4 — Favourite harvesting
+
+Maker bids on 95–99¢ outcomes that options price above the bid (e.g. far-ITM
+ladder strikes). Fee at 97¢ is ~0.2%. Tiny edge, negative skew: strict caps,
+only where the options fair value clears the bid by more than its error band.
+
+### B1–B3 — Structural arbitrage scanner (one engine)
+
+- **B1 complete sets:** `ask_yes + ask_no + fees < 1` → buy both and merge;
+  `bid_yes + bid_no − fees > 1` → split and sell. Ref `arb.complete_set_*`.
+  Note: at ~50¢ taker fees eat ~3.5¢ per set — most "arbs" vanish unless one
+  leg is a maker fill.
+- **B2 neg-risk buckets:** Σ YES asks < 1 (buy all), or NO set < N−1 (buy all
+  NO; convert early) ✅ conversion returns N−1. Ref `arb.bucket_*`. Check that
+  buckets are exhaustive.
+- **B3 dominance lattice:** if event B ⊆ A on the **same source and time**,
+  buy YES(A) + NO(B) for < $1 → ≥ $1 back. Relations available here:
+  ladder strikes; daily-above(K) ⊆ daily-touch(K) ⊆ monthly-touch(K) when the
+  day is in the month; hourly-above vs 1h Up/Down; yearly touch ⊇ monthly
+  touch (only for strikes listed before the month). Ref
+  `arb.dominance_arb_profit`, `arb.best_ladder_arb`.
+- **Reality:** fast arbs close in seconds and bots dominate; the scanner earns
+  mostly by resting maker orders at arb-consistent prices and catching
+  stale quotes. Small, nearly riskless, worth automating.
+
+### B4 — Post-close and settled-not-resolved sweeps
+
+Binance-settled markets know their outcome at the candle close but resolve
+via UMA ~12–14 minutes later; touch markets resolve "Yes at once" but books
+can linger. Buy the known winner below $1 **only** when the settlement value
+is clear of the strike by a safe margin (rules ambiguity: the noon market uses
+the candle *opening* at 12:00 ET ✅). Risks: misread rules, UMA disputes
+(bond 250, 600 s liveness ✅). Small, fast capital turnover.
+
+### C1 — Same-claim cross-venue (US persons)
+
+Kalshi `KXBTC15M` and Polymarket US 15-minute Up/Down both settle on the
+CF Benchmarks BRTI 60-second average at open and close ✅. When YES on one
+venue + NO on the other costs < $1 after both fees, lock the difference.
+Verify window boundaries and strike computation match exactly before trading;
+use maker on at least one leg (Polymarket US pays makers a rebate ✅).
+
+### D1 — Short-horizon maker quoting (15m, 1h, 4h)
+
+The 150 ms taker delay protects makers on 15m/1h. Quote around a TWAP- or
+candle-aware fair value (Ref `edge_math.fair_prob_up`); cancel on spot moves;
+never take. Only fund if Phase-1 markouts are positive after rebates.
+
+### D2 — ML direction (research only)
+
+Kronos and TimesFM stay in the research lane (§6). Licence note:
+**TimesFM 3.0 weights are non-commercial, non-production only** ✅ —
+production use needs Google Cloud (BigQuery ML) or the Apache-2.0 TimesFM
+2.5.
+
+### E1–E2 — Programs and adjacent income
+
+- **Maker rebates:** 20% of taker fees, pro-rata, daily ✅. At 50¢ a maker
+  fill earns ~0.35¢/share (Ref `arb.maker_rebate_per_share`).
+- **Taker rebate program:** 3–50% of fees back by tier; crypto volume counts
+  2.3× ✅.
+- **Holding rewards:** see A1.
+- **Liquidity reward pools:** none active on crypto today ✅; programmes appear
+  (e.g. a $1M TWAP pool in Aug 2026) — a ready quoting engine captures them
+  early when competition is thin.
+- **Builder fees (optional business):** apps can add ≤100 bps taker / ≤50 bps
+  maker on top ✅. Building tools others use is a different, lower-variance
+  way to earn from these markets.
+
+---
+
+## 4. Economics
+
+### 4.1 Fees and the maker/taker swing
+
+Taker fee per share `0.07·p·(1−p)`: 1.75¢ at 50¢ (3.5% of stake), 0.33¢ at 95¢.
+A maker pays nothing and earns ~20% of the fee back, so the swing between
+taking and making is **4.2% of stake at 50¢**. Over hundreds of trades this
+decides whether the same signal makes or loses money.
+
+### 4.2 Worked examples from today's scan (snapshot, before depth checks)
+
+| Trade | Price paid (incl. fee) | Options fair | EV / share | EV per $ | ¼-Kelly stake |
+|---|---:|---:|---:|---:|---:|
+| NO "BTC dips to $82.5k in Oct" (taker) | 0.232 | 0.279 (0.262 at IV+3) | +4.7¢ (+3.0¢) | +20% (+13%) over 30 days | 1.5% (1.0%) |
+| NO "BTC above $86k on Oct 2" (taker) | 0.830 | 0.873 (0.854) | +4.3¢ (+2.4¢) | +5.1% (+2.9%) over ~20 h | capped at 1–2% |
+| YES "BTC above $84k on Oct 2" | 0.763 | 0.781 (0.761) | +1.8¢ (−0.2¢) | not robust → **skip** | — |
+
+The NO on $82.5k still loses ~72% of the time — positive EV is not a
+high hit rate. Size from the lower-bound fair (IV+3), never the point
+estimate.
+
+### 4.3 Capital velocity and capacity
+
+Return per dollar per unit time matters as much as edge per trade. A 5% edge
+over 20 hours (≈ 2,000% simple APR if repeatable daily) and a 13% edge over 30
+days (≈ 160%) are both excellent *if the size exists*; the binding limit is
+book depth and correlation, not APR (Ref `arb.simple_apr`). Daily ladders
+recycle capital daily; monthly/yearly touch markets offer size but lock it.
+
+### 4.4 How long until you know (one-sided 95%, 80% power)
+
+| True net edge per $ | Independent bets needed |
 |---:|---:|
 | 5% | 2,474 |
 | 3% | 6,870 |
 | 2% | 15,457 |
-| 1% | 61,826 |
 
-Consequences: (a) win/loss P&L is a very slow instrument; use probability
-scores on all 288 windows/day/asset; (b) cluster by time window — BTC and ETH
-bets in the same 5 minutes are not independent; (c) small edges are only
-confirmed *while* trading small, which is why the capital ladder exists.
-
-**Money model.** `profit/day = net_edge_per_$ × turnover/day − costs/day`,
-`turnover/day = bankroll × stake% × trades/day`. Illustrative only:
-
-| Scenario | Net edge/$ | Turnover/day | Profit/day | ≈ per 30 days |
-|---|---:|---:|---:|---:|
-| Naive taker, real 51% win rate at 50¢ | −1.45% | $3,000 | −$44 | −$1,300 |
-| Modest edge, ¼-Kelly, $2k bankroll | +0.5% | $3,000 | +$15 | +$450 |
-| Good maker/late-favourite mix | +1% | $3,000 | +$30 | +$900 |
-| Strong edge, scaled + multi-asset | +2% | $10,000 | +$200 | +$6,000 |
-
-Nobody knows the P&L distribution of these markets (one industry write-up
-says so outright); **assume the first row until measurement says otherwise.**
+Strike-level bets on the same day are correlated, so count **days/events**,
+not strikes. That is why §7 also validates the pricing model historically
+(DVOL-based backtest over past months) instead of waiting for live P&L alone.
 
 ---
 
-## 4. Target system
+## 5. Live fair-value scan (2026-10-01 20:16 UTC)
 
-```
- Exchange WS (Binance/Coinbase/Kraken) ─┐
- Polymarket RTDS  price.crypto.twap ────┤
- Polymarket CLOB WS (book/price_change/ ├─> Feed handlers ──> Recorder (Parquet, append-only)
-   last_trade/best_bid_ask/resolved)    │   (NTP/chrony clock,        │
- Gamma API (market discovery)  ─────────┘    ts_exch + ts_recv)       v
-                                                              Research / Backtest / Paper replay
-        ┌───────────────────────────────────────────────────────────┘
-        v
- Model layer:  fair_value(TWAP) ─> [Kronos P(up)] ─> calibrator ─> fused q (+ uncertainty)
-        v
- Edge layer:   all-in cost (fee, spread, depth) ─> net EV/$ ─> pick MAKER vs TAKER vs SKIP
-        v
- Sizer:        shrunk, lower-bounded edge ─> ¼-Kelly ─> caps (per-trade, per-window, portfolio, depth)
-        v
- Risk gate:    limits + kill switches + data/clock/feed health  (cannot be loosened by config)
-        v
- Executor:     PaperBroker | LiveBroker  (identical interface; live needs explicit arming)
-        v
- Ledger (CSV+SQLite) ─> Telegram alerts ─> Dashboard (localhost)
-```
+`experiments/fair-value-scan/scan.py` (read-only) priced three live families
+off the Deribit smile. Full table: `experiments/fair-value-scan/results/`.
 
-**Repo layout for the build** (created in Phase 3; if it outgrows this
-folder, graduate it to its own repository per the root `CLAUDE.md`):
-
-```
-src/pmbot/
-  config.py  clock.py
-  feeds/      exchange_ws.py  poly_clob_ws.py  poly_rtds.py  gamma.py
-  recorder/   writer.py  schema.py  replay.py
-  markets/    scheduler.py  labels.py            # windows, strikes, outcomes
-  models/     fair_value.py  kronos_adapter.py  calibrate.py  meta.py
-  signal/     features.py  ev.py  gates.py       # gates explain every rejection
-  sizing/     kelly.py
-  risk/       limits.py  killswitch.py  health.py
-  exec/       broker.py  paper.py  live.py  orders.py  reconcile.py
-  backtest/   engine.py  costs.py  walkforward.py  report.py
-  ui/         server.py  static/dashboard.html
-  ops/        telegram.py  logging.py
-tests/   configs/{paper.yaml,live.yaml}   docker/   scripts/
-```
-
-**Stack:** Python 3.11, `asyncio` + `websockets`, `numpy/pandas/pyarrow/duckdb`,
-`scikit-learn` (isotonic/logistic), `torch` (Kronos only), the official
-Polymarket SDK (`pip install polymarket-client`; classes `PublicClient` /
-`SecureClient`, async variants — **[VERIFY]** against
-docs.polymarket.com/getting-started/python), FastAPI for the dashboard,
-`pytest`, `ruff`. Dependencies live in the project folder, never repo-wide.
+- **Monthly touch (October):** YES above fair on 15 of 19 open strikes; the
+  largest gaps were near-the-money down strikes (82.5k: +6.4 pts, 80k: +4.4,
+  77.5k: +3.5) and mid up strikes (+1–2 pts).
+- **Weekly touch:** far tails (70k–78k down; 90k–94k up) priced 0.7–2.3 pts
+  above fair — small in absolute terms but large relative to fair (2–10×).
+- **Daily "above" (Oct 2 noon):** the market's distribution was wider than
+  options: 84k YES 3.6 pts cheap, 86k YES 5.8 pts rich, 88k 2.2 pts rich.
+- **Method lesson:** our first pass ignored the smile's slope in touch pricing
+  and showed the *opposite* sign on the downside. With the skew-consistent
+  correction (Ref `touch_prob_skew`, tested) the scan matches the literature.
+  Pricing details decide the sign of the trade.
+- **Not yet known:** book depth at those prices, persistence over time, and
+  real-world vs risk-neutral gap — all Phase-1 measurements.
 
 ---
 
-## 5. Phases, tasks, and gates
+## 6. Model shootout: Kronos vs TimesFM 3 (2026-10-01)
 
-Calendar assumes ~10–15 focused hours/week with Claude Code doing most of the
-typing. The long poles are *data accumulation* and *paper trading*, not code.
+_Results pending at time of writing — filled in from
+`experiments/model-shootout/results/` once the live horizons resolve._
+
+---
+
+## 7. Phases, tasks and gates
 
 | Phase | Window | Goal | Money at risk |
 |---|---|---|---|
-| 0 | Days 1–3 | Decide, verify, set up | $0 |
-| 1 | Days 2–14 | Data foundation (recorder live 24/7) | $0 |
-| 2 | Weeks 2–4 | Find out whether any edge exists | $0 |
-| 3 | Weeks 4–9 | Build engine; paper trade ≥ 4 weeks | $0 |
-| 4 | Weeks 9–13 | Live micro ($200–$500) | ≤ $500 |
-| 5 | Month 4+ | Scale by gates; add assets/strategies | ladder (§9) |
+| 0 | Days 1–3 | Venue matrix, compliance, verification, infra | $0 |
+| 1 | Weeks 1–2 | Catalogue + options surface + scanner + **shadow ledger for all strategies**; historical pricing backtest | $0 |
+| 2 | Weeks 3–5 | Build execution for the top 2–3; micro-live structural ones | ≤ $1,000 |
+| 3 | Weeks 5–10 | Market-making engine + hedging; scale winners by ladder | ladder (§9) |
+| 4 | Month 3+ | Capital allocation across strategies; add ETH/SOL/XRP; continuous re-validation | ladder |
 
-Ready-to-paste Claude Code prompts for each phase: `prompts/PROMPTS.md`.
+Copy-paste Claude Code prompts for each phase: `prompts/PROMPTS.md`.
 
 ### Phase 0 — Decide, verify, set up (Days 1–3)
 
-- [ ] **Compliance first.** Check that you may use Polymarket from your
-  jurisdiction (`GET https://polymarket.com/api/geoblock`; docs.polymarket.com
-  geographic restrictions). Terms of Use prohibit circumventing geoblocks and
-  detection can close the account — **do not use a VPN/server location to
-  get around a restriction.** If you're in a restricted region, stop here.
-- [ ] Fresh **dedicated wallet** holding only the bankroll. Never your main
-  wallet. Collateral appears to be **pUSD** in current docs (older sources
-  say USDC) **[VERIFY funding path]**.
-- [ ] **Verify every [VERIFY] item** (checklist in §11) by calling the real
-  APIs read-only. Write results to `docs/verified-facts.md` with timestamps.
-- [ ] Spin up a small VPS (2–4 vCPU, 8 GB). Benchmark RTT/p95 to the CLOB from
-  2–3 *permitted* regions; pick the lowest. Install `chrony`.
-- [ ] Clone Kronos, run the sample predict, then **benchmark** mini/small/base
-  on your hardware: latency p50/p95 for `sample_count` ∈ {1, 10, 30}.
-  Budget: ≤ 2 s per forecast so it can refresh at t = 0, 60, 120, 180 s.
-- [ ] Build a **resolution oracle test**: for ≥ 200 resolved 5-min markets,
-  recompute the outcome from the TWAP feed and compare to Polymarket's result.
+- [ ] **Venue matrix (§2.3):** confirm which venues you may use (Polymarket
+  geoblock endpoint ✅ `GET https://polymarket.com/api/geoblock`, Kalshi,
+  Polymarket US, Deribit/OKX trading vs data-only). Stop if none qualify.
+- [ ] Dedicated wallet/accounts holding only the bankroll; collateral is
+  **pUSD** on Polymarket ✅.
+- [ ] Verify the remaining ⚠️ items (§11); write `docs/verified-facts.md`.
+- [ ] VPS + chrony; RTT to CLOB and Deribit from a permitted region.
 
-**Gate G0 (Day 3):** compliance clear · API facts recorded · Kronos latency
-known · outcome labels match Polymarket ≥ 99% (every mismatch explained).
-*Fail → fix or stop.*
+### Phase 1 — Measure everything (Weeks 1–2, read-only)
 
-### Phase 1 — Data foundation (Days 2–14)
+- [ ] **Catalogue + rules normaliser:** crawl Gamma for every crypto market;
+  parse each into a canonical claim `{source, instrument, time window,
+  operator, threshold}` (templates per series; new templates need human
+  review). This is what lets B3 find relations automatically.
+- [ ] **Options surface:** Deribit (and OKX as backup) smiles every minute;
+  forwards; DVOL; store.
+- [ ] **Pricing engine:** touch (skew-consistent), digital (skew), buckets,
+  TWAP/candle fair values — reuse `reference/` and keep its tests.
+- [ ] **Recorder:** Polymarket books (all crypto markets), Binance 1m, RTDS
+  TWAP, Deribit — every record with `ts_exch` and `ts_recv`.
+- [ ] **Scanner + shadow ledger:** every strategy in §3 posts the trades it
+  *would* make at executable prices (taker) or would-be-filled prices (maker,
+  conservative queue model), with fees, and marks them to resolution.
+- [ ] **Historical pricing backtest (A1/A2):** for past months of daily
+  ladders and monthly touch markets, rebuild fair values from DVOL (+ skew
+  proxy) and Polymarket's `prices-history` ✅, score against Binance
+  outcomes. Hundreds of strike-days without waiting.
+- [ ] Daily report: opportunities seen, size available, edge after fees,
+  persistence (seconds/minutes), who took them (if visible).
 
-- [ ] **Recorder v0 on Day 2**, running as a systemd service: for each live
-  5-min market (BTC first, then ETH/SOL/XRP) store raw CLOB WS events, trades,
-  RTDS TWAP ticks, exchange ticks and market metadata (strike, tokens, start/
-  end, fee rate, resolution). Every record carries `ts_exch` **and** `ts_recv`.
-- [ ] Reconnect with backoff, `PING` every 10 s (docs), sequence/hash checks to
-  detect gaps, gap markers written to the stream (never silently interpolate).
-- [ ] Parquet (ZSTD) partitioned by day/asset; measure GB/day in the first 24 h
-  and set retention + off-box backup.
-- [ ] **Backfill:** free datasets (e.g. marketlens' free sample — 2,278 markets
-  across several events incl. BTC 5-min; PolyOrderBooks' 1 s single-market sample) for pipeline development only —
-  **[VERIFY]** their snapshot semantics before trusting them for fills. Paid
-  archives are optional; your own recorder is the source of truth.
-- [ ] Exchange 1-minute OHLCV backfill (≥ 90 days) for Kronos/feature work.
-- [ ] Data-quality report: gaps, staleness, clock skew, duplicate events.
+**Gate G1 (end of week 2):** a league table per strategy: shadow net P&L
+with time-block bootstrap 95% CI, capacity ($/day at the observed depth),
+persistence, correlation with the others. Fund only strategies with
+**lower bound > 0** (or, for A1/A2, historical backtest LB > 0 **and** shadow
+P&L ≥ 0). Kill the rest — write down why.
 
-**Deliverable:** ≥ 14 days of clean, replayable BTC data by the end of week 2
-(and growing). *Everything in Phase 2 runs on this.*
+### Phase 2 — Build and go micro-live (Weeks 3–5)
 
-### Phase 2 — Does any edge exist? (Weeks 2–4)
+- [ ] Executor: post-only maker orders, FAK takers, multi-leg with leg-risk
+  unwinds (B1–B3), heartbeat (orders cancel if no heartbeat within 10 s ✅).
+- [ ] Risk engine (§8) with code-constant limits.
+- [ ] Micro-live: structural strategies (B1–B3) at $300–$1,000 as soon as
+  the executor passes chaos drills; A1/A2 at ≤ $1,000 after G1.
+- [ ] Weekly paper-vs-live gap report.
 
-Pre-register **before** looking at the held-out data (write it into
-`docs/preregistration.md` and commit it): the variant list (§6.5), the primary
-metric (**net EV per $ staked, cluster-bootstrap 95% lower bound**), the
-cost model (§8), and the hold-out (last 20% of time, touched exactly once).
+**Gate G2 (end of week 5):** live results within the shadow model's error
+bars; zero unreconciled positions; zero limit breaches.
 
-- [ ] Replay engine: reconstruct the L2 book at any `ts_recv`; deterministic.
-- [ ] Baselines: B0 "always buy Up at the ask" (measures pure fee drag);
-  B1 market mid as the forecast.
-- [ ] Fair-value model (§6.1) with vol estimators; calibrate (§6.3).
-- [ ] Kronos adapter (§6.2): sample-path P(up), cached, latency-logged.
-- [ ] Ablation matrix A0–A5 (§6.5) with walk-forward training, purged splits.
-- [ ] **Edge map:** net EV/$ by (seconds-into-window × price bucket × taker/
-  maker) with bootstrap bounds. This is the central artifact.
-- [ ] Markout study for maker fills (+1/+5/+30 s) = adverse-selection cost.
+### Phase 3 — Market making and hedging (Weeks 5–10)
 
-**Gate G1 (end of week 4):** on the untouched hold-out, at least one
-pre-registered cell family has **net EV/$ lower bound > 0** with ≥ 500
-(cluster-counted) trades under *conservative* fills. Also report model-vs-
-market log-loss as a diagnostic.
-*Fail → do not build the trading engine.* Options: extend data/horizons,
-research market-making only, or stop. Having spent ~$50 is a win.
+- [ ] A3 quoting engine on daily ladders and touch markets; inventory skew;
+  markout monitoring; auto-widen on toxic flow.
+- [ ] Hedge book (non-US: perps/options; US: CME/Coinbase/Kalshi perp).
+- [ ] D1 on 15m/1h only if Phase-1 markouts were positive.
 
-### Phase 3 — Build the engine and paper trade (Weeks 4–9)
+### Phase 4 — Allocate, expand, re-validate (Month 3+)
 
-- [ ] Executor interface with `PaperBroker` (live data, simulated fills per §8)
-  and `LiveBroker` (**not wired to run** yet).
-- [ ] Sizer + risk gate (§7) with unit tests; hard caps are code constants.
-- [ ] Gate/reason logging: every skipped signal records `reason_code`.
-- [ ] Ledger → CSV + SQLite; Telegram alerts; dashboard (§10).
-- [ ] **Chaos drills** (scripted): kill exchange feed, kill CLOB WS, stale
-  RTDS, 5xx storm, clock skew +2 s, disk full, process crash mid-order. Each
-  must end in "flat or safely cancelled, alert sent".
-- [ ] Monte-Carlo bankroll sims: drawdown/ruin distribution under *uncertain*
-  edge (draw edge from its posterior, not a point estimate).
-- [ ] Paper trade ≥ 4 weeks on live data, all assets you recorded.
-
-**Gate G2 (end of week 9):** ≥ 2,500 cluster-counted paper trades or ≥ 4 weeks;
-net EV/$ 95% LB > 0 **or** (for the $200–$500 micro stage only) posterior
-P(edge > 0) ≥ 0.90; paper-vs-backtest drift within tolerance (CUSUM, no alarm);
-paper max drawdown < 10% at planned sizing; **all chaos drills pass.**
-
-### Phase 4 — Live micro (Weeks 9–13)
-
-- [ ] Arm live with: `LIVE_TRADING=1` **and** `--confirm-live <config-sha>`
-  **and** passing pre-flight (geoblock OK, balance, NTP skew < 100 ms, feeds
-  fresh, no `KILL` file, heartbeat to CLOB working).
-- [ ] Bankroll $200–$500; stake ≤ 1% (≈ $2–5, or the venue's minimum — **[VERIFY]**).
-  Purpose: measure fills, slippage, rebates and surprises — *not income.*
-- [ ] Daily reconciliation: venue positions/balances vs ledger; any mismatch
-  halts trading until explained.
-- [ ] Weekly review: realized vs paper edge, fill rates, markouts, rebates.
-
-**Gate G3 (≈4 weeks or ≥ 1,000 live trades):** realized net EV/$ ≥ 50% of the
-paper estimate, fill/slippage within 30% of the paper model, zero unreconciled
-positions, zero limit breaches. *Fail → back to paper, find the gap.*
-
-### Phase 5 — Scale and extend (Month 4+)
-
-Climb the ladder in §9 only when each gate passes. Extensions, in this order:
-1. More assets (ETH → SOL → XRP) as one correlated risk bucket.
-2. 15-minute and 1-hour markets (same engine, new fee/TWAP parameters).
-3. Quoting engine (two-sided maker with inventory limits) if L1/L4 data
-   shows consistent positive markout and rebate capture.
-4. News/macro blackout calendar (FOMC/CPI) — simple, reduces tail risk.
-5. Only after all that: any copy-trading research (see §1 row 12).
+- [ ] Weekly capital allocation: weight = lower-bound edge × capacity, with
+  per-family caps; idle capital → holding-reward positions (if permitted) or
+  withdrawn.
+- [ ] Add ETH, SOL, XRP (same engines; options data for ETH/SOL on Deribit).
+- [ ] C1 cross-venue (US) and any new reward pools.
+- [ ] Monthly re-run of the historical backtest; retire decaying strategies.
 
 ---
 
-## 6. Modelling spec
+## 8. Portfolio risk and capital allocation
 
-### 6.1 Analytic fair value (the baseline Kronos must beat)
+| Limit | Start | Enforced by |
+|---|---:|---|
+| Per-trade stake | ≤ 1% of bankroll (¼-Kelly on lower-bound fair) | code constant |
+| Per-event exposure (all strikes of one event) | ≤ 5% | code |
+| **Crash scenario** (BTC −15% in 24 h, IV +20 pts) | loss ≤ 10% of bankroll | code, recomputed every minute |
+| **Squeeze scenario** (BTC +15% in 24 h) | loss ≤ 10% | code |
+| Net BTC delta (USD P&L per 1% move) | ≤ 1.5% of bankroll | code; hedge above |
+| Capital in UMA-pending resolution | ≤ 15% | code |
+| Per-venue balance | ≤ 50% of total capital | ops |
+| Daily / weekly realised loss | 3% → halt day / 8% → halt, manual restart | code |
+| Peak-to-trough drawdown | 15% → halt, review | code |
 
-Let the window end at `T`, settlement price `A1` = average of the price over
-the last `L = 60 s` (Chainlink TWAP), strike `K` = the market's "price to
-beat" (itself a TWAP per third-party documentation — **[VERIFY in each
-market's rules text]**). Model price as driftless Brownian motion with
-per-√second price vol `σ`. With `τ = T − t` and `S` the current composite
-price:
+Config may only tighten these. Never size up after losses. Kill switches
+(cancel-all + alert): stale feeds, options-surface staleness, clock skew,
+reject storms, reconciliation mismatch, realised-vs-expected drift, `KILL`
+file, Telegram `/halt`.
 
-- `τ > L`: `A1 ~ N(S, σ²·((τ−L) + L/3))`
-- `τ ≤ L`: `A1 ~ N((I + τ·S)/L, σ²·τ³/(3L²))` where `I` = ∫ observed so far.
-- `P(up) = Φ((mean − K)/sd)`.
-
-Implemented and Monte-Carlo-tested in `reference/edge_math.py::fair_prob_up`.
-Vol `σ`: blend of EWMA of 1-second returns (several half-lives), 1-minute
-realised vol, and time-of-day seasonality; floor it; add a **vol-of-vol**
-feature. Gaussian tails are too thin, so the output is *always* passed through
-the calibrator (§6.3).
-
-### 6.2 Kronos adapter
-
-- Input: last ≤ 512 one-minute OHLCV bars (small/base context limit) from the
-  same exchange composite as the vol model.
-- Output: draw `sample_count` paths (start N = 20, T = 1.0, top_p = 0.9) over
-  `pred_len = ceil(secs_remaining / 60)`; `P_kronos(up)` = fraction of paths
-  whose end price exceeds the strike reference. **A distribution, not an
-  invented "confidence".**
-- **[VERIFY]** whether `predict(..., sample_count=N)` returns the *average* of
-  the N paths (the README describes it as paths to "generate/average"). If it
-  does, get individual paths by calling with `sample_count=1` N times or by
-  using the lower-level generation function; otherwise you only get a point
-  forecast and cannot build a P(up).
-- Refresh at most every 30–60 s; cache; log latency; never block the order
-  path (stale-but-labelled beats late).
-- Zero-shot first. Fine-tuning is Phase-2b and only if zero-shot shows
-  incremental value; fine-tuning on a tiny regime sample is how you overfit.
-
-### 6.3 Calibration and uncertainty
-
-- Walk-forward **isotonic** (or Platt when bucket counts are thin) mapping
-  raw P → realised frequency, fit only on data before each test fold.
-- `q = shrink(q_cal → p_market, weight)` where `weight` is the OOS slope of
-  outcome on (model − market). Expect weights well under 0.5.
-- Carry an effective-n per bucket; the sizer uses the **lower bound** of the
-  edge (`prob_lower_bound`), not the point estimate.
-- Monitor rolling Brier/log-loss vs the market; drift → shrink weight toward 0
-  automatically and alert.
-
-### 6.4 Features and "gates"
-
-Candidate features (all computed only from data with `ts_recv ≤ decision time`):
-time into window, `(S−K)/σ√τ`, spread, depth imbalance, last-trade side, 1-s
-and 1-min realised vol, vol-of-vol, 1-min ATR(14), 1-min ADX(14), exchange-vs-
-RTDS basis, hour-of-day, minutes since scheduled macro event.
-ATR/ADX are **inputs to a regime filter fitted walk-forward**; "[YOUR
-THRESHOLD]" is replaced by a CV-chosen value reported with its spread. Every
-skipped decision is logged with a machine-readable `reason_code`
-(`LOW_EDGE`, `EDGE_LCB<=0`, `STALE_FEED`, `WIDE_SPREAD`, `LOW_DEPTH`,
-`RISK_LIMIT`, `KILL`, …) shown in the dashboard.
-
-### 6.5 Ablation matrix (replaces the article's four variants)
-
-| ID | Model | Execution | Question answered |
-|----|-------|-----------|-------------------|
-| B0 | always buy Up at ask | taker | pure fee drag baseline |
-| A1 | analytic fair value | taker | does simple pricing beat the market? |
-| A2 | A1 + calibration + shrink | taker | does calibration help? |
-| A3 | A2 + Kronos P as feature | taker | **does Kronos add anything?** |
-| A4 | A3 + regime features (ATR/ADX/…) | taker | do the "gates" add anything? |
-| A5 | best of A1–A4 | maker / hybrid | how much does fee avoidance add, net of adverse selection? |
-| S1 | best of A1–A5 | flat stake vs ¼-Kelly | does sizing improve growth/drawdown? |
-
-Martingale is intentionally absent. The count of variants tried is recorded
-and reported next to results (multiple-testing honesty); selection happens on
-validation folds, the hold-out is evaluated **once**.
-
-### 6.6 Decision rule
-
-For each market at each decision time compute, for TAKER and MAKER:
-`cost` (all-in), `q_LCB`, `EV/$ = (q_LCB − cost)/cost`. Trade the best mode
-if `EV/$ ≥ hurdle` (start 1.5% taker / 0.5% maker, tuned on validation),
-spread and depth pass, and the edge-map cell is "green". Otherwise skip and
-log why.
-
----
-
-## 7. Sizing and risk spec
-
-Sizing: `stake = min(¼ × Kelly(q_LCB, cost_incl_fee), per_trade_cap,
-depth_cap) × bankroll`, with `Kelly = (q − c)/(1 − c)` (derivation and
-brute-force check in tests). Never scale up *after losses*.
-
-| Limit | Start | After Stage 3 (earned) | Enforced by |
-|---|---:|---:|---|
-| Per-trade stake | 1% bankroll | up to 2% | code constant |
-| Depth cap | ≤ 20% of displayed best-level size | same | code |
-| Per-window exposure (all assets) | 2% | 3% | code |
-| Concurrent open exposure | 5% | 6% | code |
-| Daily realised loss | 3% → halt for the day | 3% | code |
-| Weekly realised loss | 8% → halt, manual restart | 8% | code |
-| Peak-to-trough drawdown | 15% → halt, manual review | 15% | code |
-
-Config may only **tighten** these. Loosening requires a code change + review.
-
-**Kill switches (auto-halt + cancel-all + Telegram):** feed stale > N s; clock
-skew > 100 ms; CLOB WS down > 10 s; order-reject storm; position mismatch on
-reconciliation; realised-vs-expected CUSUM alarm; calibration drift alarm;
-`KILL` file present; Telegram `/halt`. Use the CLOB heartbeat (docs describe
-5 s intervals) so resting orders are cancelled if the bot dies **[VERIFY
-semantics]**.
-
----
-
-## 8. Backtest / paper realism rules
-
-1. **No look-ahead:** features see only `ts_recv ≤ t`; fit calibrators only on
-   earlier folds; label from the venue outcome (cross-checked, §5 Phase 0).
-2. **Purged, walk-forward** splits with a gap ≥ one window; hold-out last 20%.
-3. **Taker fills:** walk the recorded book at `t + taker_delay (150 ms, as of
-   Sep 4 2026 — read live) + measured RTT`, apply the fee schedule in force,
-   reject if price moved past your limit.
-4. **Maker fills:** assume back-of-queue; fill only when trades print through
-   your price or ahead-queue volume trades; then apply the +5/+30 s markout.
-   If in doubt, the sim must under-fill.
-5. **Costs always on:** fee, spread, rebate (credited only on filled maker
-   volume, pro-rata, ≥ $1/day threshold **[VERIFY]**), gas/withdrawal if any.
-6. **Cluster everything by time window** for CIs (block bootstrap).
-7. Report: net EV/$ with CI, hit rate by price bucket, profit factor, max DD,
-   longest losing streak, turnover, fill rate, markout, capacity (stake the
-   book could absorb), equity-curve stability, and a **paper-vs-live gap**
-   table once live.
+**Allocation rule:** each strategy gets `min(cap_family, LB_edge × capacity
+share)`; structural (B) can scale faster than model-based (A) because its
+risk is operational, not forecast-based; D-family stays smallest.
 
 ---
 
@@ -460,68 +439,60 @@ semantics]**.
 
 | Stage | Bankroll | Entry condition | Demotion trigger |
 |---|---:|---|---|
-| 0 Paper | n/a | G0–G1 passed | — |
-| 1 Micro | $200–$500 | **G2** | any limit breach, or posterior P(edge>0) < 0.5 |
-| 2 Small | $1,000–$2,000 | **G3** | realised EV/$ LB < 0 over rolling 1,000 trades |
-| 3 Medium | $5,000 | ≥ 3 months live, 95% LB > 0, DD < 10% | as above |
-| 4 Large | ≤ capacity | capacity study shows book depth supports it | as above |
+| 0 Shadow | $0 | Phase 0 done | — |
+| 1 Micro | $300–$1,000 | G1 league table, executor chaos-tested | any limit breach |
+| 2 Small | $2,000–$5,000 | G2 | rolling 4-week LB < 0 for that strategy |
+| 3 Medium | $10,000–$25,000 | 3 months live, LB > 0 on ≥ 2 families, DD < 10% | as above |
+| 4 Large | ≤ measured capacity | capacity study per market family | as above |
 
-Rule of thumb: stage up only with new *evidence*, never because the equity
-curve went up. Withdraw profits on a schedule so the bankroll isn't a number
-you can talk yourself into raising. Only risk money you can afford to lose.
-
----
-
-## 10. Dashboard (kept from the article, reprioritised)
-
-Build **after** Phase 2 so it displays real things. Mock it in Claude Artifacts
-from a screenshot as in the article, then wire to data:
-
-- Live price vs strike, TWAP progress bar, seconds remaining.
-- Model P (fair value / Kronos / fused) vs market bid/ask/mid; net EV/$ for
-  taker & maker; stake and the Kelly inputs (q, LCB, cost, ¼-Kelly, caps).
-- Gate panel: pass/fail per rule with `reason_code` for every skip.
-- Equity curve (paper vs live), drawdown, daily/weekly loss meters.
-- Reliability diagram (calibration) and rolling Brier vs market.
-- Execution: fill rate, slippage, markout, rebates, latency p50/p95.
-- Health: feed freshness, clock skew, WS state, kill-switch status.
-
-Serve on `127.0.0.1` only (SSH tunnel to view remotely). No order buttons
-except "halt".
+Stage up only on new evidence, never because the equity curve rose. Withdraw
+profits on a schedule. Only risk money you can afford to lose.
 
 ---
 
-## 11. Ops, security, and the [VERIFY] checklist
+## 10. Realism rules (backtest, shadow, paper)
 
-**Security:** dedicated hot wallet with bankroll only; keys only in env/secret
-store, `.env` in `.gitignore`, secret scanning pre-commit; pin dependencies;
-install only the **official** SDK from the docs page — copy-pasted "Polymarket
-bot" repos from social media are a classic way to get a wallet drained; run
-the bot as a non-root user; logs never contain keys; off-box encrypted backups
-of the ledger.
+1. No look-ahead: everything keyed on `ts_recv`; options surfaces as of the
+   decision time; outcomes from the venue's official resolution.
+2. Taker fills walk the recorded book at decision time + taker delay + RTT;
+   maker fills assume back-of-queue and fill only on trade-through.
+3. Fees, rebates, spreads always on; rebates credited only on filled maker
+   volume.
+4. Cluster statistics by event/day (block bootstrap).
+5. Pre-register strategy variants and thresholds before looking at hold-out
+   data; report how many variants were tried.
 
-**Compliance/tax:** jurisdiction check (Phase 0), no geoblock circumvention,
-keep the CSV ledger and venue statements for tax reporting; talk to a tax
-professional. This plan is not financial or legal advice.
+---
 
-**Deploy:** Docker or systemd units for `recorder`, `engine`, `dashboard`;
-automatic restart; log rotation; healthcheck pings; alert if the recorder
-produces no data for 60 s.
+## 11. Ops, security, compliance, verification
 
-**[VERIFY] on Day 1–3** (docs were incomplete on these when checked):
+**Security:** dedicated wallets holding only the bankroll; keys in env/secret
+store; `.env` git-ignored; pinned dependencies; official SDK only
+(`pip install polymarket-client` ✅) — copy-pasted "Polymarket bot" repos are a
+common way to get drained; non-root service user; encrypted off-box backups.
 
-- [ ] Live per-market **fee-rate** endpoint/field; does it match 0.07 for crypto?
-- [ ] Exact 5-min market **strike/"price to beat" definition** and rules text.
-- [ ] Gamma/market **discovery** query and slug pattern for 5-min up/down;
-  current asset list (BTC/ETH/SOL/XRP/…?).
-- [ ] **Order types** (GTC/GTD/FOK/FAK), **post-only** support, tick size,
-  minimum order size, rate limits.
-- [ ] Credential derivation + signature type for the dedicated wallet.
-- [ ] Heartbeat semantics (cancel-on-miss) and current **taker delay**.
-- [ ] Kronos `predict()` `sample_count` semantics (average vs individual paths).
-- [ ] Maker-rebate accrual details (pro-rata base, payout in pUSD, $1 minimum).
-- [ ] RTDS `price.crypto.twap` payload (`source`, symbols, rate).
-- [ ] Funding path (USDC vs pUSD) and any withdrawal costs.
+**Compliance/tax:** venue matrix (§2.3), no geoblock circumvention, keep the
+ledger for tax, talk to a tax professional. Licences: TimesFM 3.0 weights are
+non-commercial ✅; Kronos is MIT ✅.
+
+**Resolved since v2 ✅:** fee rate (0.07, all crypto horizons); 15m/4h rules
+(Chainlink 60 s TWAP, `eventMetadata.priceToBeat/finalPrice`); 1h/daily/touch
+rules (Binance candles); slug patterns; order types (GTC/GTD/FOK/FAK,
+post-only, batch ≤ 15, min size 5); heartbeat (cancel after 10 s without
+one); taker delay (150 ms, only 5m/15m/1h); rebates (20%, daily, pUSD,
+$1 minimum); Kronos `predict(sample_count=N)` averages paths (use
+batch-of-1 sampling for distributions).
+
+**Still ⚠️ (Phase 0):**
+- [ ] Holding-reward rate (4.00% vs 3.25%) and whether complete sets may be
+  parked for it under the Terms.
+- [ ] Neg-risk conversion fee (`feeBips`) on BTC range markets.
+- [ ] Sell-side fee mechanics (fee in shares vs pUSD) — affects arb maths.
+- [ ] Kalshi and Polymarket US 15-minute window alignment and strike
+  computation (C1).
+- [ ] Chainlink TWAP vs Binance/BRTI basis (feed needs credentials).
+- [ ] Your jurisdiction's treatment of prediction-market and derivatives
+  income.
 
 ---
 
@@ -529,45 +500,36 @@ produces no data for 60 s.
 
 | Risk | Likelihood | Impact | Mitigation |
 |---|---|---|---|
-| No edge exists after costs | **High** | Wasted time, tiny $ | Gates G1/G2 stop you before real money |
-| Fee/TWAP/taker-delay rules change again (fees Jan & Mar, TWAP Aug 7 & 14, taker delay Sep 4 — all 2026) | High | Edge disappears | Read params live; changelog watch; re-run edge map monthly |
-| Adverse selection kills maker edge | Medium | Negative EV | Markout monitor; auto-widen/pause |
-| Late-favourite blow-up in vol spike | Medium | Large single loss | Vol-of-vol gate, 1% cap, calendar blackout |
-| Thin books cap capacity | High | Can't scale | Depth caps; capacity study before Stage 4 |
-| Data gaps corrupt research | Medium | False conclusions | Gap markers, replay QA, quality report |
-| Bug sends bad orders | Medium | Real loss | Paper default, arming ritual, caps in code, chaos drills |
-| Key theft / malicious dependency | Low–Med | Total loss of hot wallet | Dedicated wallet, official SDK only, pinned deps |
-| Overfitting via many variants | High | Fake edge | Pre-registration, hold-out once, report variant count |
-| Account restriction (geoblock/ToS) | Low if compliant | Frozen funds | Phase-0 compliance, no circumvention |
+| The options-vs-Polymarket gap is a risk premium you're paid to bear, not a free lunch (crashes) | Medium | Large drawdown | Crash/squeeze scenario caps; diversify expiries; option hedges where legal |
+| Pricing model error (skew, interpolation, basis) flips the sign | Medium | Systematic losses | Tested reference maths; IV±3 bands; historical backtest; size from lower bound |
+| Rules misread (candle open vs close, tie rules, strikes added later) | Medium | Loss on "sure" trades | Rules normaliser + human-reviewed templates; margin from strike |
+| UMA dispute / oracle error | Low | Single-event loss | Cap UMA-pending capital; avoid near-strike post-close sweeps |
+| Bots take arbs first | High | Low revenue | Maker-resting scanner; don't depend on B for income |
+| Venue rule/fee changes (frequent in 2026) | High | Edge shifts | Read parameters live; changelog watch; monthly re-validation |
+| Thin books cap size | High | Can't scale | Capacity study before Stage 4; spread across families/assets |
+| Leg risk on multi-leg trades | Medium | Unintended exposure | FAK legs, immediate unwind logic, chaos drills |
+| Key theft / malicious dependency | Low–Med | Total loss of hot wallet | Dedicated wallet, official SDK, pinned deps |
+| Regulatory/jurisdiction | Low if compliant | Frozen funds | Venue matrix, no circumvention |
 
 ---
 
-## 13. Definition of done (per phase)
+## 13. Sources
 
-- **P0:** `docs/verified-facts.md` filled; Kronos latency table; oracle test ≥ 99%.
-- **P1:** recorder uptime ≥ 99% over 14 days; data-quality report; replay
-  reproduces a recorded market tick-for-tick.
-- **P2:** `docs/preregistration.md` committed *before* hold-out; edge map;
-  ablation table; G1 verdict written down (go / pivot / stop).
-- **P3:** all tests + chaos drills green; 4 weeks paper results; G2 verdict.
-- **P4:** weekly paper-vs-live gap reports; G3 verdict.
-- **P5:** each ladder step has a written evidence note before bankroll moves.
+Primary / official ✅: Polymarket docs (fees, maker rebates, liquidity rewards,
+holding rewards, order placement/management, perps, geoblock, changelog) —
+https://docs.polymarket.com · Gamma/CLOB live APIs · Deribit public API —
+https://docs.deribit.com · Kalshi API/series and contract terms —
+https://docs.kalshi.com · Polymarket US docs — https://docs.polymarket.us ·
+Kronos — https://github.com/shiyu-coder/Kronos · TimesFM —
+https://github.com/google-research/timesfm (TimesFM 3.0 licence notice).
 
----
-
-## 14. Sources (checked 2026-10-01)
-
-Primary / official:
-- Kronos — https://github.com/shiyu-coder/Kronos (model table, API, MIT license, backtest disclaimer)
-- Polymarket fees — https://docs.polymarket.com/trading/fees
-- Polymarket changelog (TWAP, fees, taker delay) — https://docs.polymarket.com/changelog/predictions
-- Maker rebates — https://docs.polymarket.com/programs/maker-rebates
-- Market WebSocket — https://docs.polymarket.com/market-data/websocket/market-channel
-- Order management — https://docs.polymarket.com/trading/orders/overview
-- Python SDK — https://docs.polymarket.com/getting-started/python
-- Geographic restrictions — https://docs.polymarket.com/api-reference/geoblock
-
-Third-party (treat as leads, not facts):
-- TWAP settlement write-up — https://tradoxvps.com/polymarket-twap-settlement/
-- Market-structure write-up — https://dyutam.com/news/polymarket-5-minute-bitcoin-bets-60m-bots-retail/
-- Free order-book dataset — https://github.com/marketlenstrade/polymarket-historical-data
+Research 📄: Saguillo et al. 2025 https://arxiv.org/abs/2508.03474 · Young 2026
+https://arxiv.org/abs/2607.26245 · Bürgi, Deng & Whelan 2025
+https://papers.ssrn.com/sol3/papers.cfm?abstract_id=5502658 · Becker 2026
+https://www.jbecker.dev/research/prediction-market-microstructure · Akey et al.
+2026 (CEPR DP21615) · Fabi et al. 2025 http://www.aifinconf.org/file/2025/7-1.pdf ·
+Portnaya 2026 https://arxiv.org/abs/2606.19517 · Lee, Lee & Lee 2026
+https://papers.ssrn.com/sol3/papers.cfm?abstract_id=6748186 · Gebele, Mutzel &
+Matthes 2026 https://arxiv.org/abs/2608.00666 · Cardozo & Rivero-Wildemauwe 2026
+https://arxiv.org/abs/2609.12878 · Dai, Jia & Yu 2026
+https://arxiv.org/abs/2606.31675.

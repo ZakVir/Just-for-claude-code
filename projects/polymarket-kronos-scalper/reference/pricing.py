@@ -102,6 +102,27 @@ def touch_prob(
     return min(1.0, max(0.0, p))
 
 
+def touch_prob_skew(
+    S0: float, F: float, B: float, sigma: float, T: float, dsigma_dK: float
+) -> float:
+    """Touch probability consistent with the volatility smile.
+
+    A flat-vol touch formula evaluated at the barrier's implied vol ignores
+    the smile's slope, which on BTC's put wing overstates downside touch odds
+    by several points. Practitioner fix ("one-touch ≈ 2 × digital"): scale
+    the flat touch odds by smile-implied / flat odds of finishing beyond B.
+    """
+    flat_touch = touch_prob(S0, B, sigma, T)
+    up = B > S0
+    flat_beyond = digital_prob(F, B, sigma, T)
+    skew_beyond = digital_prob_with_skew(F, B, sigma, T, dsigma_dK)
+    if not up:
+        flat_beyond, skew_beyond = 1.0 - flat_beyond, 1.0 - skew_beyond
+    if flat_beyond <= 1e-12:
+        return flat_touch
+    return min(1.0, max(0.0, flat_touch * skew_beyond / flat_beyond))
+
+
 def interp_vol(T: float, T1: float, sigma1: float, T2: float, sigma2: float) -> float:
     """Implied vol at T by linear interpolation in total variance.
 

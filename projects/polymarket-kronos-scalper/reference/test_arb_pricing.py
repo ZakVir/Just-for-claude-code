@@ -194,6 +194,27 @@ class TouchTests(unittest.TestCase):
         self.assertAlmostEqual(self._mc_touch(*args), pr.touch_prob(*args), delta=0.015)
 
 
+class TouchSkewTests(unittest.TestCase):
+    S0, SIG, T = 84_800.0, 0.45, 30 / 365
+
+    def test_no_slope_reduces_to_flat_touch(self):
+        for B in (70_000.0, 100_000.0):
+            self.assertAlmostEqual(
+                pr.touch_prob_skew(self.S0, self.S0, B, self.SIG, self.T, 0.0),
+                pr.touch_prob(self.S0, B, self.SIG, self.T), places=12)
+
+    def test_put_skew_lowers_downside_touch_and_raises_upside(self):
+        slope = -1e-5  # IV falls as strike rises (puts rich)
+        down_flat = pr.touch_prob(self.S0, 70_000.0, self.SIG, self.T)
+        down_skew = pr.touch_prob_skew(self.S0, self.S0, 70_000.0, self.SIG, self.T, slope)
+        up_flat = pr.touch_prob(self.S0, 100_000.0, self.SIG, self.T)
+        up_skew = pr.touch_prob_skew(self.S0, self.S0, 100_000.0, self.SIG, self.T, slope)
+        self.assertLess(down_skew, down_flat)
+        self.assertGreater(up_skew, up_flat)
+        # the correction is material: several points on the downside wing
+        self.assertGreater(down_flat - down_skew, 0.02)
+
+
 class VolInterpTests(unittest.TestCase):
     def test_endpoints_and_middle(self):
         self.assertAlmostEqual(pr.interp_vol(1 / 365, 1 / 365, 0.5, 2 / 365, 0.6), 0.5)

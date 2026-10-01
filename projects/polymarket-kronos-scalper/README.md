@@ -1,51 +1,55 @@
 # polymarket-kronos-scalper
 
-> An executable, gated plan for a Polymarket 5-minute crypto up/down trading
-> bot — a fee-aware, honestly-validated rewrite of a popular "Claude + Kronos
-> scalping" article. **Plan + tested reference math only; no trading code yet.**
+> An executable, gated plan for making money on Polymarket's Bitcoin markets
+> from 15-minute Up/Down to yearly "what price will Bitcoin hit", plus
+> tested reference maths and live experiments. **Plan, maths and read-only
+> experiments only; no trading code.**
 
 ## What it is
 
-The original article wires a time-series model (Kronos) to Polymarket's
-5-minute BTC markets with ATR/ADX gates and Kelly sizing. This project keeps
-the good skeleton and fixes what would lose money: it ignores taker fees,
-treats model confidence as a probability, includes a Martingale variant, and
-predates Polymarket's August 2026 switch to TWAP settlement.
+It started as a rewrite of a popular "Claude + Kronos 5-minute scalper"
+article (v2: fixed the fee, settlement and sizing mistakes). **v3** re-plans
+it around what the evidence says actually makes money in these markets:
 
-The plan's core ideas:
-
-- Price the contract analytically (TWAP-aware fair value), calibrate it, and make
-  Kronos *earn its place* via ablation.
-- Cut cost first: maker-first execution, and trade where fees are small.
-- Size with ¼-Kelly on a shrunk, lower-bounded, **fee-inclusive** edge; hard
-  risk limits in code.
-- Record order-book data from Day 2; pre-register tests; go/no-go gates and a
-  capital ladder so you risk $0 until the edge is evidenced.
+- **Price contracts off the options market** (Deribit/OKX implied vol), sell
+  what Polymarket overprices, buy what it underprices — strike ladders, range
+  buckets and touch markets, day to year.
+- **Be the maker**, not the taker (0 fee + 20% rebate vs 3.5% fee at 50¢).
+- **Run a structural-arbitrage scanner** (complete sets, neg-risk buckets, a
+  dominance lattice across linked markets).
+- **Measure every strategy in a shadow ledger first**; fund only the ones
+  with a positive lower bound; scale by a capital ladder.
+- Kronos / TimesFM direction forecasts stay research-only — we tested them
+  live (see `experiments/model-shootout/`).
 
 ## Contents
 
 | Path | What |
 |---|---|
-| [`PLAN.md`](./PLAN.md) | The full plan: critique, economics, architecture, phases/gates, model/risk specs, ops, risk register |
-| [`prompts/PROMPTS.md`](./prompts/PROMPTS.md) | Copy-paste Claude Code prompts for each phase |
-| [`reference/`](./reference) | Stdlib-only fee / Kelly / TWAP fair-value / power-analysis math with 19 tests |
+| [`PLAN.md`](./PLAN.md) | The v3 plan: evidence, market map, venue matrix, 14 strategies, economics, live scan, model shootout, phases/gates, risk, ladder |
+| [`prompts/PROMPTS.md`](./prompts/PROMPTS.md) | Copy-paste Claude Code prompts per phase |
+| [`reference/`](./reference) | Stdlib-only, tested maths: fees, Kelly, TWAP fair value, arbitrage, options-implied digitals/touch (48 tests) |
+| [`experiments/fair-value-scan/`](./experiments/fair-value-scan) | Read-only scan: live Polymarket ladders/touch vs Deribit-implied fair value |
+| [`experiments/model-shootout/`](./experiments/model-shootout) | Kronos vs TimesFM 3 on live BTC: snapshot, scoring vs Polymarket resolution, backtest |
 | [`CLAUDE.md`](./CLAUDE.md) | Guardrails for Claude Code in this folder |
 
 ## How to run
 
 ```bash
 cd projects/polymarket-kronos-scalper/reference
-python3 -m unittest -v     # 19 tests
-python3 edge_math.py       # prints the fee/break-even and sample-size tables
+python3 -m unittest -v        # 48 tests, stdlib only
+python3 edge_math.py          # fee / break-even / sample-size tables
 ```
 
-Then follow `PLAN.md` §5 starting at Phase 0 (compliance + verification).
+Experiments need the project-local venv (see
+`experiments/model-shootout/README.md`). Then follow `PLAN.md` §7 from
+Phase 0 (venue matrix + compliance).
 
 ## Notes
 
-- Facts were checked against primary docs on 2026-10-01; unverified items are
-  tagged **[VERIFY]** and listed in `PLAN.md` §11.
-- Not financial or legal advice. Prediction markets are zero-sum before fees;
-  there may be no exploitable edge, and the plan is designed to find that out
-  cheaply. Check that using Polymarket is permitted where you live, and never
-  circumvent geoblocks.
+- Facts checked against primary docs and live APIs on 2026-10-01; unverified
+  items are tagged ⚠️ in `PLAN.md`.
+- TimesFM 3.0 weights are licensed for non-commercial, non-production use;
+  Kronos is MIT.
+- Not financial or legal advice. Check that each venue is permitted where you
+  live, and never circumvent geoblocks.

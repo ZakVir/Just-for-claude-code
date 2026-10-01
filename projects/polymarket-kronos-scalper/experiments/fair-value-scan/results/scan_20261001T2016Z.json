@@ -1,0 +1,717 @@
+{
+ "generated": "2026-10-01T20:15:56.574010+00:00",
+ "deribit_index": 84751.66,
+ "assumptions": {
+  "basis_binance_over_index": 0.00043,
+  "touch_vol": "smile IV at barrier, skew-consistent (2x digital) adjustment",
+  "probabilities": "risk-neutral, zero rates"
+ },
+ "families": {
+  "monthly touch": {
+   "slug": "what-price-will-bitcoin-hit-in-october-2026",
+   "end": "2026-11-01T04:00:00Z",
+   "rows": [
+    {
+     "strike": 60000.0,
+     "dir": "down",
+     "bid": 0.021,
+     "ask": 0.022,
+     "mid": 0.0215,
+     "fair": 0.0221,
+     "fair_band_iv_pm3": [
+      0.0161,
+      0.0289
+     ],
+     "iv": 0.6151,
+     "mid_minus_fair": -0.0006,
+     "yes_taker_edge": -0.0015,
+     "no_taker_edge": -0.0025
+    },
+    {
+     "strike": 62500.0,
+     "dir": "down",
+     "bid": 0.043,
+     "ask": 0.044,
+     "mid": 0.0435,
+     "fair": 0.03,
+     "fair_band_iv_pm3": [
+      0.0222,
+      0.0388
+     ],
+     "iv": 0.5746,
+     "mid_minus_fair": 0.0135,
+     "yes_taker_edge": -0.017,
+     "no_taker_edge": 0.0102
+    },
+    {
+     "strike": 65000.0,
+     "dir": "down",
+     "bid": 0.047,
+     "ask": 0.05,
+     "mid": 0.0485,
+     "fair": 0.0371,
+     "fair_band_iv_pm3": [
+      0.0275,
+      0.0478
+     ],
+     "iv": 0.5342,
+     "mid_minus_fair": 0.0114,
+     "yes_taker_edge": -0.0162,
+     "no_taker_edge": 0.0068
+    },
+    {
+     "strike": 67500.0,
+     "dir": "down",
+     "bid": 0.06,
+     "ask": 0.07,
+     "mid": 0.065,
+     "fair": 0.0525,
+     "fair_band_iv_pm3": [
+      0.0398,
+      0.0664
+     ],
+     "iv": 0.4973,
+     "mid_minus_fair": 0.0125,
+     "yes_taker_edge": -0.022,
+     "no_taker_edge": 0.0035
+    },
+    {
+     "strike": 70000.0,
+     "dir": "down",
+     "bid": 0.09,
+     "ask": 0.1,
+     "mid": 0.095,
+     "fair": 0.0808,
+     "fair_band_iv_pm3": [
+      0.0633,
+      0.0993
+     ],
+     "iv": 0.4612,
+     "mid_minus_fair": 0.0142,
+     "yes_taker_edge": -0.0255,
+     "no_taker_edge": 0.0034
+    },
+    {
+     "strike": 72500.0,
+     "dir": "down",
+     "bid": 0.14,
+     "ask": 0.15,
+     "mid": 0.145,
+     "fair": 0.1439,
+     "fair_band_iv_pm3": [
+      0.1182,
+      0.1695
+     ],
+     "iv": 0.4294,
+     "mid_minus_fair": 0.0011,
+     "yes_taker_edge": -0.015,
+     "no_taker_edge": -0.0123
+    },
+    {
+     "strike": 75000.0,
+     "dir": "down",
+     "bid": 0.22,
+     "ask": 0.23,
+     "mid": 0.225,
+     "fair": 0.2081,
+     "fair_band_iv_pm3": [
+      0.1769,
+      0.238
+     ],
+     "iv": 0.3994,
+     "mid_minus_fair": 0.0169,
+     "yes_taker_edge": -0.0343,
+     "no_taker_edge": -0.0001
+    },
+    {
+     "strike": 77500.0,
+     "dir": "down",
+     "bid": 0.35,
+     "ask": 0.36,
+     "mid": 0.355,
+     "fair": 0.3198,
+     "fair_band_iv_pm3": [
+      0.2848,
+      0.3518
+     ],
+     "iv": 0.378,
+     "mid_minus_fair": 0.0352,
+     "yes_taker_edge": -0.0563,
+     "no_taker_edge": 0.0143
+    },
+    {
+     "strike": 80000.0,
+     "dir": "down",
+     "bid": 0.54,
+     "ask": 0.55,
+     "mid": 0.545,
+     "fair": 0.5005,
+     "fair_band_iv_pm3": [
+      0.4678,
+      0.5291
+     ],
+     "iv": 0.3618,
+     "mid_minus_fair": 0.0445,
+     "yes_taker_edge": -0.0668,
+     "no_taker_edge": 0.0221
+    },
+    {
+     "strike": 82500.0,
+     "dir": "down",
+     "bid": 0.78,
+     "ask": 0.79,
+     "mid": 0.785,
+     "fair": 0.7213,
+     "fair_band_iv_pm3": [
+      0.7018,
+      0.7379
+     ],
+     "iv": 0.3513,
+     "mid_minus_fair": 0.0637,
+     "yes_taker_edge": -0.0803,
+     "no_taker_edge": 0.0467
+    },
+    {
+     "strike": 87500.0,
+     "dir": "up",
+     "bid": 0.73,
+     "ask": 0.74,
+     "mid": 0.735,
+     "fair": 0.7391,
+     "fair_band_iv_pm3": [
+      0.7165,
+      0.7583
+     ],
+     "iv": 0.3433,
+     "mid_minus_fair": -0.0041,
+     "yes_taker_edge": -0.0143,
+     "no_taker_edge": -0.0229
+    },
+    {
+     "strike": 90000.0,
+     "dir": "up",
+     "bid": 0.53,
+     "ask": 0.54,
+     "mid": 0.535,
+     "fair": 0.5174,
+     "fair_band_iv_pm3": [
+      0.4815,
+      0.5486
+     ],
+     "iv": 0.3438,
+     "mid_minus_fair": 0.0176,
+     "yes_taker_edge": -0.04,
+     "no_taker_edge": -0.0049
+    },
+    {
+     "strike": 92500.0,
+     "dir": "up",
+     "bid": 0.35,
+     "ask": 0.36,
+     "mid": 0.355,
+     "fair": 0.3352,
+     "fair_band_iv_pm3": [
+      0.2962,
+      0.3704
+     ],
+     "iv": 0.3471,
+     "mid_minus_fair": 0.0198,
+     "yes_taker_edge": -0.0409,
+     "no_taker_edge": -0.0011
+    },
+    {
+     "strike": 95000.0,
+     "dir": "up",
+     "bid": 0.22,
+     "ask": 0.23,
+     "mid": 0.225,
+     "fair": 0.2021,
+     "fair_band_iv_pm3": [
+      0.1685,
+      0.234
+     ],
+     "iv": 0.3548,
+     "mid_minus_fair": 0.0229,
+     "yes_taker_edge": -0.0403,
+     "no_taker_edge": 0.0059
+    },
+    {
+     "strike": 97500.0,
+     "dir": "up",
+     "bid": 0.14,
+     "ask": 0.15,
+     "mid": 0.145,
+     "fair": 0.1347,
+     "fair_band_iv_pm3": [
+      0.1068,
+      0.1625
+     ],
+     "iv": 0.3657,
+     "mid_minus_fair": 0.0103,
+     "yes_taker_edge": -0.0242,
+     "no_taker_edge": -0.0031
+    },
+    {
+     "strike": 100000.0,
+     "dir": "up",
+     "bid": 0.08,
+     "ask": 0.09,
+     "mid": 0.085,
+     "fair": 0.082,
+     "fair_band_iv_pm3": [
+      0.0616,
+      0.1033
+     ],
+     "iv": 0.3784,
+     "mid_minus_fair": 0.003,
+     "yes_taker_edge": -0.0138,
+     "no_taker_edge": -0.0071
+    },
+    {
+     "strike": 102500.0,
+     "dir": "up",
+     "bid": 0.06,
+     "ask": 0.07,
+     "mid": 0.065,
+     "fair": 0.0544,
+     "fair_band_iv_pm3": [
+      0.0392,
+      0.071
+     ],
+     "iv": 0.3932,
+     "mid_minus_fair": 0.0106,
+     "yes_taker_edge": -0.0202,
+     "no_taker_edge": 0.0017
+    },
+    {
+     "strike": 105000.0,
+     "dir": "up",
+     "bid": 0.03,
+     "ask": 0.031,
+     "mid": 0.0305,
+     "fair": 0.0339,
+     "fair_band_iv_pm3": [
+      0.0234,
+      0.0461
+     ],
+     "iv": 0.4085,
+     "mid_minus_fair": -0.0034,
+     "yes_taker_edge": 0.0008,
+     "no_taker_edge": -0.006
+    },
+    {
+     "strike": 150000.0,
+     "dir": "up",
+     "bid": 0.002,
+     "ask": 0.003,
+     "mid": 0.0025,
+     "fair": 0.0,
+     "fair_band_iv_pm3": [
+      0.0,
+      0.0001
+     ],
+     "iv": 0.4742,
+     "mid_minus_fair": 0.0025,
+     "yes_taker_edge": -0.0032,
+     "no_taker_edge": 0.0018
+    }
+   ]
+  },
+  "daily above": {
+   "slug": "bitcoin-above-on-october-2-2026",
+   "end": "2026-10-02T16:00:00Z",
+   "rows": [
+    {
+     "strike": 74000.0,
+     "dir": "up",
+     "bid": 0.999,
+     "ask": 1.0,
+     "mid": 0.9995,
+     "fair": 1.0,
+     "fair_band_iv_pm3": [
+      0.9999,
+      1.0
+     ],
+     "iv": 0.7269,
+     "mid_minus_fair": -0.0005,
+     "yes_taker_edge": -0.0001,
+     "no_taker_edge": -0.001
+    },
+    {
+     "strike": 76000.0,
+     "dir": "up",
+     "bid": 0.999,
+     "ask": 1.0,
+     "mid": 0.9995,
+     "fair": 0.9997,
+     "fair_band_iv_pm3": [
+      0.9994,
+      0.9998
+     ],
+     "iv": 0.7019,
+     "mid_minus_fair": -0.0002,
+     "yes_taker_edge": -0.0004,
+     "no_taker_edge": -0.0007
+    },
+    {
+     "strike": 78000.0,
+     "dir": "up",
+     "bid": 0.998,
+     "ask": 0.999,
+     "mid": 0.9985,
+     "fair": 0.9991,
+     "fair_band_iv_pm3": [
+      0.9986,
+      0.9995
+     ],
+     "iv": 0.6241,
+     "mid_minus_fair": -0.0006,
+     "yes_taker_edge": 0.0001,
+     "no_taker_edge": -0.0013
+    },
+    {
+     "strike": 80000.0,
+     "dir": "up",
+     "bid": 0.993,
+     "ask": 0.994,
+     "mid": 0.9935,
+     "fair": 0.9955,
+     "fair_band_iv_pm3": [
+      0.9933,
+      0.9972
+     ],
+     "iv": 0.5104,
+     "mid_minus_fair": -0.002,
+     "yes_taker_edge": 0.0011,
+     "no_taker_edge": -0.003
+    },
+    {
+     "strike": 82000.0,
+     "dir": "up",
+     "bid": 0.971,
+     "ask": 0.974,
+     "mid": 0.9725,
+     "fair": 0.9817,
+     "fair_band_iv_pm3": [
+      0.975,
+      0.9875
+     ],
+     "iv": 0.4073,
+     "mid_minus_fair": -0.0092,
+     "yes_taker_edge": 0.0059,
+     "no_taker_edge": -0.0127
+    },
+    {
+     "strike": 84000.0,
+     "dir": "up",
+     "bid": 0.74,
+     "ask": 0.75,
+     "mid": 0.745,
+     "fair": 0.7807,
+     "fair_band_iv_pm3": [
+      0.7615,
+      0.8029
+     ],
+     "iv": 0.2931,
+     "mid_minus_fair": -0.0357,
+     "yes_taker_edge": 0.0175,
+     "no_taker_edge": -0.0541
+    },
+    {
+     "strike": 86000.0,
+     "dir": "up",
+     "bid": 0.18,
+     "ask": 0.19,
+     "mid": 0.185,
+     "fair": 0.1274,
+     "fair_band_iv_pm3": [
+      0.1066,
+      0.1465
+     ],
+     "iv": 0.307,
+     "mid_minus_fair": 0.0576,
+     "yes_taker_edge": -0.0734,
+     "no_taker_edge": 0.0422
+    },
+    {
+     "strike": 88000.0,
+     "dir": "up",
+     "bid": 0.03,
+     "ask": 0.035,
+     "mid": 0.0325,
+     "fair": 0.0107,
+     "fair_band_iv_pm3": [
+      0.0067,
+      0.0158
+     ],
+     "iv": 0.3911,
+     "mid_minus_fair": 0.0218,
+     "yes_taker_edge": -0.0266,
+     "no_taker_edge": 0.0172
+    },
+    {
+     "strike": 90000.0,
+     "dir": "up",
+     "bid": 0.007,
+     "ask": 0.008,
+     "mid": 0.0075,
+     "fair": 0.003,
+     "fair_band_iv_pm3": [
+      0.0018,
+      0.0047
+     ],
+     "iv": 0.5062,
+     "mid_minus_fair": 0.0045,
+     "yes_taker_edge": -0.0055,
+     "no_taker_edge": 0.0035
+    },
+    {
+     "strike": 92000.0,
+     "dir": "up",
+     "bid": 0.001,
+     "ask": 0.002,
+     "mid": 0.0015,
+     "fair": 0.0007,
+     "fair_band_iv_pm3": [
+      0.0004,
+      0.0012
+     ],
+     "iv": 0.5607,
+     "mid_minus_fair": 0.0008,
+     "yes_taker_edge": -0.0014,
+     "no_taker_edge": 0.0002
+    }
+   ]
+  },
+  "weekly touch": {
+   "slug": "what-price-will-bitcoin-hit-september-28-october-4-2026",
+   "end": "2026-10-05T04:00:00Z",
+   "rows": [
+    {
+     "strike": 70000.0,
+     "dir": "down",
+     "bid": 0.01,
+     "ask": 0.011,
+     "mid": 0.0105,
+     "fair": 0.0009,
+     "fair_band_iv_pm3": [
+      0.0005,
+      0.0016
+     ],
+     "iv": 0.5992,
+     "mid_minus_fair": 0.0096,
+     "yes_taker_edge": -0.0109,
+     "no_taker_edge": 0.0084
+    },
+    {
+     "strike": 72000.0,
+     "dir": "down",
+     "bid": 0.011,
+     "ask": 0.013,
+     "mid": 0.012,
+     "fair": 0.0046,
+     "fair_band_iv_pm3": [
+      0.0028,
+      0.007
+     ],
+     "iv": 0.5992,
+     "mid_minus_fair": 0.0074,
+     "yes_taker_edge": -0.0093,
+     "no_taker_edge": 0.0056
+    },
+    {
+     "strike": 74000.0,
+     "dir": "down",
+     "bid": 0.011,
+     "ask": 0.012,
+     "mid": 0.0115,
+     "fair": 0.0111,
+     "fair_band_iv_pm3": [
+      0.0076,
+      0.0154
+     ],
+     "iv": 0.5992,
+     "mid_minus_fair": 0.0004,
+     "yes_taker_edge": -0.0018,
+     "no_taker_edge": -0.0008
+    },
+    {
+     "strike": 76000.0,
+     "dir": "down",
+     "bid": 0.017,
+     "ask": 0.018,
+     "mid": 0.0175,
+     "fair": 0.0067,
+     "fair_band_iv_pm3": [
+      0.0039,
+      0.0103
+     ],
+     "iv": 0.5082,
+     "mid_minus_fair": 0.0108,
+     "yes_taker_edge": -0.0126,
+     "no_taker_edge": 0.0092
+    },
+    {
+     "strike": 78000.0,
+     "dir": "down",
+     "bid": 0.03,
+     "ask": 0.05,
+     "mid": 0.04,
+     "fair": 0.0174,
+     "fair_band_iv_pm3": [
+      0.011,
+      0.0253
+     ],
+     "iv": 0.4433,
+     "mid_minus_fair": 0.0226,
+     "yes_taker_edge": -0.0359,
+     "no_taker_edge": 0.0105
+    },
+    {
+     "strike": 80000.0,
+     "dir": "down",
+     "bid": 0.032,
+     "ask": 0.045,
+     "mid": 0.0385,
+     "fair": 0.0377,
+     "fair_band_iv_pm3": [
+      0.0245,
+      0.053
+     ],
+     "iv": 0.3637,
+     "mid_minus_fair": 0.0008,
+     "yes_taker_edge": -0.0103,
+     "no_taker_edge": -0.0079
+    },
+    {
+     "strike": 82000.0,
+     "dir": "down",
+     "bid": 0.18,
+     "ask": 0.2,
+     "mid": 0.19,
+     "fair": 0.1718,
+     "fair_band_iv_pm3": [
+      0.1336,
+      0.2088
+     ],
+     "iv": 0.3,
+     "mid_minus_fair": 0.0182,
+     "yes_taker_edge": -0.0394,
+     "no_taker_edge": -0.0022
+    },
+    {
+     "strike": 86000.0,
+     "dir": "up",
+     "bid": 0.54,
+     "ask": 0.55,
+     "mid": 0.545,
+     "fair": 0.5485,
+     "fair_band_iv_pm3": [
+      0.5051,
+      0.5846
+     ],
+     "iv": 0.2741,
+     "mid_minus_fair": -0.0035,
+     "yes_taker_edge": -0.0188,
+     "no_taker_edge": -0.0259
+    },
+    {
+     "strike": 88000.0,
+     "dir": "up",
+     "bid": 0.14,
+     "ask": 0.15,
+     "mid": 0.145,
+     "fair": 0.1366,
+     "fair_band_iv_pm3": [
+      0.101,
+      0.1722
+     ],
+     "iv": 0.294,
+     "mid_minus_fair": 0.0084,
+     "yes_taker_edge": -0.0223,
+     "no_taker_edge": -0.005
+    },
+    {
+     "strike": 90000.0,
+     "dir": "up",
+     "bid": 0.046,
+     "ask": 0.047,
+     "mid": 0.0465,
+     "fair": 0.0302,
+     "fair_band_iv_pm3": [
+      0.0184,
+      0.0445
+     ],
+     "iv": 0.3374,
+     "mid_minus_fair": 0.0163,
+     "yes_taker_edge": -0.02,
+     "no_taker_edge": 0.0127
+    },
+    {
+     "strike": 92000.0,
+     "dir": "up",
+     "bid": 0.026,
+     "ask": 0.028,
+     "mid": 0.027,
+     "fair": 0.0085,
+     "fair_band_iv_pm3": [
+      0.0045,
+      0.014
+     ],
+     "iv": 0.3913,
+     "mid_minus_fair": 0.0185,
+     "yes_taker_edge": -0.0214,
+     "no_taker_edge": 0.0157
+    },
+    {
+     "strike": 94000.0,
+     "dir": "up",
+     "bid": 0.018,
+     "ask": 0.02,
+     "mid": 0.019,
+     "fair": 0.0091,
+     "fair_band_iv_pm3": [
+      0.0056,
+      0.0137
+     ],
+     "iv": 0.4695,
+     "mid_minus_fair": 0.0099,
+     "yes_taker_edge": -0.0123,
+     "no_taker_edge": 0.0077
+    },
+    {
+     "strike": 96000.0,
+     "dir": "up",
+     "bid": 0.005,
+     "ask": 0.007,
+     "mid": 0.006,
+     "fair": 0.0054,
+     "fair_band_iv_pm3": [
+      0.003,
+      0.0088
+     ],
+     "iv": 0.4712,
+     "mid_minus_fair": 0.0006,
+     "yes_taker_edge": -0.0021,
+     "no_taker_edge": -0.0007
+    },
+    {
+     "strike": 98000.0,
+     "dir": "up",
+     "bid": 0.002,
+     "ask": 0.003,
+     "mid": 0.0025,
+     "fair": 0.0012,
+     "fair_band_iv_pm3": [
+      0.0005,
+      0.0023
+     ],
+     "iv": 0.4712,
+     "mid_minus_fair": 0.0013,
+     "yes_taker_edge": -0.002,
+     "no_taker_edge": 0.0007
+    }
+   ]
+  }
+ }
+}

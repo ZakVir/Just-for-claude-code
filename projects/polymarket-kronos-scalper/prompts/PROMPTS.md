@@ -1,181 +1,128 @@
-# Claude Code prompts, one per phase
+# Claude Code prompts, one per phase (plan v3)
 
-Paste these in order. Each assumes `PLAN.md` is in the repo and tells Claude to
-read the relevant section first. Don't skip a gate: if a phase's gate fails,
-the correct next prompt is the "Gate review" prompt at the bottom, not the next
-phase.
-
-Every prompt inherits the rules in `../CLAUDE.md` (paper by default, no keys in
-code, fees read live, tests required, no Martingale).
+Paste these in order. Each tells Claude to read the relevant part of
+`PLAN.md`. If a gate fails, use the "Gate review" prompt — not the next phase.
+Every prompt inherits `../CLAUDE.md` (paper by default, no keys in code, fees
+read live, tested maths, no loss-chasing sizing, no geoblock circumvention).
 
 ---
 
-## Phase 0 — Verify and set up
+## Phase 0 — Venue matrix, verification, setup
 
 ```
-Read PLAN.md sections 0, 1, 3, 5 (Phase 0) and 11.
+Read PLAN.md sections 0, 2.3 and 11.
 
-Goal: complete Phase 0 and produce docs/verified-facts.md.
-
-Do, in order, READ-ONLY against real endpoints (no orders, no keys needed):
-1. GET https://polymarket.com/api/geoblock and report the result verbatim.
-   If blocked, STOP and tell me; do not try to work around it.
-2. Work through every [VERIFY] checklist item in PLAN.md section 11. For each:
-   the question, the exact endpoint/doc URL used, the raw evidence (short
-   excerpt), the conclusion, and a timestamp. Anything you cannot verify
-   stays marked UNVERIFIED — do not guess.
-3. Write scripts/oracle_check.py: for >=200 resolved 5-minute BTC markets,
-   recompute the outcome from the TWAP feed and compare to Polymarket's
-   resolved outcome. Report agreement % and explain every mismatch.
-4. Clone Kronos into ./vendor/Kronos (git-ignored), run its sample predict,
-   then write scripts/kronos_bench.py reporting p50/p95 latency for
-   mini/small/base x sample_count in {1,10,30} on this machine. State
-   whether predict() returns the averaged path or individual paths.
-5. Write scripts/rtt_probe.py measuring RTT p50/p95 to the CLOB and WS
-   endpoints from this host.
-
-Constraints: stdlib + requests/websockets only for probes; pin versions in
-scripts/requirements.txt; never print secrets; commit as
-"polymarket-kronos-scalper: phase 0 verification".
-
-Finish with: a Gate G0 table (criterion / result / pass-fail) and your honest
-recommendation to proceed or stop.
+1. Ask me which country/state I trade from. Using primary sources only, fill
+   docs/venue-matrix.md: which prediction venues (Polymarket international,
+   Polymarket US, Kalshi), options data sources, and hedging venues I may
+   lawfully use. Call https://polymarket.com/api/geoblock and report it
+   verbatim. If no prediction venue qualifies, STOP.
+2. Work through every ⚠️ item in PLAN.md §11 read-only against live
+   endpoints/docs. For each: question, URL, short raw evidence, conclusion,
+   timestamp. Unverifiable stays UNVERIFIED.
+3. Write scripts/rtt_probe.py (CLOB, Deribit, Kalshi as applicable).
+Commit as "polymarket-kronos-scalper: phase 0 verification". End with a
+Gate G0 table and an honest proceed/stop recommendation.
 ```
 
-## Phase 1 — Recorder and data foundation
+## Phase 1a — Catalogue, rules normaliser, options surface, recorder
 
 ```
-Read PLAN.md sections 4, 5 (Phase 1) and 8.
+Read PLAN.md sections 2, 3 (B3), 7 (Phase 1) and 10. Reuse reference/ maths
+(edge_math.py, arb.py, pricing.py) and keep their tests passing.
 
-Goal: a 24/7 recorder that captures everything needed to replay a market
-tick-for-tick, plus a data-quality report.
-
-Build src/pmbot/{clock.py,feeds/,recorder/} with tests:
-- Feeds: exchange WS (Binance public market data, with Coinbase as a
-  fallback — use whichever is reachable from this host), Polymarket CLOB
-  market WS (book, price_change, last_trade_price, best_bid_ask,
-  market_resolved; PING every 10 s; dynamic subscribe/unsubscribe), and the
-  RTDS price.crypto.twap channel. Auto-discover each upcoming 5-minute
-  BTC market via the Gamma API and subscribe before it opens.
-- Every record stores ts_exch AND ts_recv (monotonic + wall clock).
-- Reconnect with jittered backoff; detect gaps via book hash/sequence and
-  write explicit GAP markers. Never interpolate.
-- Writer: append-only Parquet (ZSTD) partitioned by date/asset; flush every
-  <=5 s; a crash must lose <=5 s of data.
-- recorder/replay.py reconstructs the L2 book at any ts_recv, deterministic.
-- scripts/data_quality.py: gaps, staleness, duplicates, clock skew, GB/day.
-- docker/ or systemd unit; healthcheck that alerts if no data for 60 s.
-
-Acceptance: a recorded market replays tick-for-tick (unit test with a
-fixture); chaos test kills the WS mid-market and shows a GAP marker and clean
-resume. Do NOT write any trading or order-placing code in this phase.
+Build src/pmbot/ with tests:
+- catalogue/: crawl Gamma for all open crypto events; store markets with
+  slug, condition id, token ids, start/end, rules text, resolutionSource,
+  negRisk, fee schedule, taker-delay flag.
+- rules/: parse each market into a canonical claim
+  {source: chainlink_twap|binance_1m|binance_1h|brti, symbol, window_start,
+   window_end, operator: touch_up|touch_down|close_gt|close_ge|twap_ge_start,
+   threshold}. One template per series; unknown text -> UNPARSED (never
+  guess). Unit-test every template against real rules text fixtures.
+- relations/: from canonical claims derive implication (B ⊆ A), equivalence
+  and partition relations — only when source, symbol and time match exactly.
+- options/: Deribit public smiles every 60 s (OKX fallback): per expiry
+  forward, strikes, mark IV; DVOL. Interpolate total variance to any time.
+- recorder/: Polymarket CLOB books for all crypto markets, Binance 1m,
+  Polymarket RTDS TWAP, Deribit snapshots; ts_exch + ts_recv; Parquet.
+No order-placing code in this phase.
 ```
 
-## Phase 2 — Does any edge exist?
+## Phase 1b — Pricing engine, scanner, shadow ledger, historical backtest
 
 ```
-Read PLAN.md sections 3, 6, 8 and 5 (Phase 2). Use reference/edge_math.py
-as the source of truth for fee, Kelly, fair-value and power math (import or
-port it, keeping the tests).
+Read PLAN.md sections 3, 4, 5, 7 (Phase 1) and 10.
 
-Step 1 (before touching data): write docs/preregistration.md containing the
-variant list from section 6.5, the primary metric (net EV per $ staked with a
-time-block-bootstrap 95% lower bound), the cost model from section 8, the
-hold-out rule (last 20% of time, evaluated exactly once), and the hurdle
-values. Commit it. Do not edit it after the hold-out is evaluated.
-
-Step 2: build src/pmbot/{models,signal,backtest}/:
-- fair_value.py (TWAP-aware; match edge_math.fair_prob_up, add vol
-  estimators + vol-of-vol), calibrate.py (walk-forward isotonic/Platt,
-  shrink-to-market with OOS-fitted weight), kronos_adapter.py (sample-path
-  P(up), cached, latency logged), features.py.
-- backtest/engine.py: deterministic replay from recorded L2; taker fills at
-  t + taker_delay + RTT walking the book; maker fills back-of-queue with
-  under-fill bias; fees from the schedule in force; purged walk-forward.
-- Run ablation B0, A1..A5, S1 exactly as pre-registered.
-
-Step 3: produce reports/edge_map.html (net EV/$ by seconds-into-window x
-price bucket x taker/maker, with CI) and reports/ablation.md (variant count
-printed next to results). Include model-vs-market log-loss and a maker
-markout study.
-
-Rules: no look-ahead (assert it in tests with a poisoned-future fixture);
-no peeking at the hold-out until the final run; if results are negative say
-so plainly. End with a Gate G1 verdict: GO / PIVOT / STOP, with evidence.
+- pricing/: fair values per claim type using reference/pricing.py
+  (touch_prob_skew, digital_prob_with_skew, bucket = digital difference,
+  interp_vol, Binance basis) and reference/edge_math.py (TWAP fair value).
+  Every fair value carries an IV±3-point band.
+- scanner/: every 10 s evaluate strategies A1, A2, A4, B1, B2, B3, B4, C1
+  (if venue matrix allows), D1. Emit candidate trades with executable price,
+  size available, fee, edge, lower-bound edge, and reason codes for skips.
+- shadow/: a ledger that "takes" candidates at executable prices (takers) or
+  conservative maker fills (back of queue, fill on trade-through only),
+  marks to official resolution, and reports per-strategy P&L with
+  event-block bootstrap CIs, capacity and persistence.
+- backtest/historical_pricing.py: for the last 3-6 months of daily "above"
+  ladders and monthly touch markets, rebuild fair values from Deribit DVOL
+  (flat vol + documented skew proxy) at fixed times, fetch Polymarket
+  prices-history, score against Binance outcomes; report edge by moneyness
+  and time-to-expiry with CIs.
+- reports/daily.md generated every day.
+End with the Gate G1 league table: fund / kill per strategy, with evidence.
 ```
 
-## Phase 3 — Engine, risk, paper trading, dashboard
-
-*(Only if G1 = GO.)*
+## Phase 2 — Execution, risk, micro-live (only after G1)
 
 ```
-Read PLAN.md sections 4, 7, 8, 10 and 5 (Phase 3).
+Read PLAN.md sections 7 (Phase 2), 8, 9 and 11. I confirm G1 passed for:
+<list strategies>.
 
-Build src/pmbot/{sizing,risk,exec,ops,ui}/ and wire the engine:
-- exec/broker.py interface; PaperBroker (live data, fills per section 8);
-  LiveBroker exists but is unreachable unless ALL of: LIVE_TRADING=1,
-  --confirm-live <sha256 of live.yaml>, and passing pre-flight (geoblock,
-  balance, clock skew <100 ms, feeds fresh, no KILL file, heartbeat OK).
-- sizing/kelly.py: stake = min(0.25*Kelly(q_LCB, cost_incl_fee),
-  per_trade_cap, depth_cap)*bankroll. Never increase size after a loss.
-- risk/limits.py: the limit table in section 7 as code CONSTANTS; config may
-  only tighten them (test that loosening raises). Kill switches per section 7.
-- Every skipped decision logs a reason_code; every trade logs
-  timestamp, market, mode, q, q_LCB, market price, fee, cost, edge, kelly raw/
-  fractional/final, stake, fill, outcome, P&L to CSV + SQLite.
-- ops/telegram.py: alerts on trade placed, market resolved, any halt;
-  /halt command. Token from env only.
-- ui/: single-page dashboard (see section 10) served on 127.0.0.1 only,
-  SSE updates, no order buttons except Halt. If I give you an HTML mock from
-  Claude Artifacts, use it as the visual template.
-- scripts/chaos.py runs the section-5 chaos drills against PaperBroker.
-- scripts/bankroll_sim.py: Monte-Carlo drawdown/ruin with edge drawn from its
-  posterior, at the planned sizing.
-
-Acceptance: pytest + ruff green; every chaos drill ends flat/cancelled with an
-alert; secrets scan clean; `python -m pmbot --mode paper` runs for 24 h
-unattended. Then start paper trading and STOP — do not enable live.
+- exec/: post-only maker orders, FAK takers, batch ≤ 15, heartbeat every 5 s
+  (orders auto-cancel after 10 s without one), multi-leg orders with
+  leg-risk unwind for B1-B3, reconciliation against venue positions.
+- risk/: every limit in PLAN.md §8 as a code constant (config can only
+  tighten; test that loosening raises), crash/squeeze scenario P&L recomputed
+  every minute, kill switches, Telegram alerts and /halt.
+- Live trading requires LIVE_TRADING=1 AND --confirm-live <config sha256>
+  AND passing pre-flight. Never arm it yourself; print the command for me.
+- scripts/chaos.py: kill feeds, stale options surface, WS drop, 5xx storm,
+  clock skew, crash mid multi-leg order. Each must end flat or safely hedged
+  with an alert.
+- reports/paper_vs_live.md weekly.
 ```
 
-## Phase 4 — Live micro (only after Gate G2 passes)
+## Phase 3 — Market making and hedging
 
 ```
-Read PLAN.md sections 5 (Phase 4), 7, 9 and 11. I confirm Gate G2 passed (see
-reports/g2_verdict.md) and I will fund a dedicated wallet with $<=500.
-
-Do:
-1. Review the LiveBroker end to end as a skeptical code reviewer. List every
-   path by which it could place an order unintentionally; fix or document.
-2. Add a dry-run mode that signs and validates orders but does not submit.
-3. Add daily reconciliation (venue balances/positions vs ledger) that halts
-   trading on any mismatch.
-4. Write runbook.md: how to arm, how to halt, how to withdraw, what to do on
-   each alert.
-5. Add scripts/paper_vs_live.py producing the weekly gap table (fill rate,
-   slippage, markout, rebates, realised vs expected EV/$).
-
-Do not arm live trading yourself. Print the exact arming command for me to run.
+Read PLAN.md sections 3 (A3, D1), 8 and 10.
+Build the quoting engine for the strategies that passed G2: quotes around
+fair value with inventory skew, wider quotes where no taker delay applies,
+cancel on spot/IV moves, markout tracking (+1 min, +10 min), auto-widen or
+pause on toxic flow, delta hedging via the hedge venue allowed by
+docs/venue-matrix.md (size with reference/pricing.digital_delta). Start in
+shadow mode, then micro-live. Report rebates earned and markout-adjusted P&L.
 ```
 
-## Phase 5 — Scale (per ladder step)
+## Phase 4 — Allocation and expansion (per ladder step)
 
 ```
-Read PLAN.md sections 7 and 9. I am requesting a move from Stage <N> to
-Stage <N+1>. Produce reports/stage_<N+1>_evidence.md with: live trade count,
-net EV/$ with time-block 95% bounds, drawdown, limit breaches (should be
-zero), paper-vs-live gap, capacity estimate from recorded depth, and a clear
-recommendation. If evidence is insufficient, say so and recommend staying.
-Do not change any limit constant; list proposed changes for my review.
+Read PLAN.md sections 8 and 9. Produce reports/allocation_<date>.md: per
+strategy live P&L with bootstrap bounds, capacity, correlation, drawdown,
+and a proposed allocation using the PLAN.md §8 rule. Do not change limit
+constants; list proposed changes for my review. If evidence is insufficient
+for a stage-up, say so and recommend staying.
 ```
 
-## Gate review (use whenever a gate fails)
+## Gate review (whenever a gate fails)
 
 ```
-A gate failed (see reports/). Read PLAN.md section 5 and the failing report.
-Do NOT adjust thresholds, re-slice data, or add variants to rescue the
-result. Instead: (1) state which criterion failed and by how much; (2) list
-plausible, testable reasons (data gaps, cost-model error, regime change,
-no edge); (3) propose at most 2 next experiments, each with a pre-registered
-success criterion and a cost in time/money; (4) give an honest
-continue / pivot / stop recommendation.
+A gate failed (see reports/). Read PLAN.md §7 and the failing report. Do NOT
+adjust thresholds, re-slice data, or add variants to rescue the result.
+(1) State which criterion failed and by how much; (2) list testable reasons
+(data gaps, pricing error, cost model, regime change, no edge); (3) propose
+at most 2 experiments with pre-registered success criteria and cost;
+(4) give an honest continue / pivot / stop recommendation.
 ```

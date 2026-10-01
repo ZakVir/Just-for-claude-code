@@ -1,8 +1,9 @@
 # Project instructions — polymarket-kronos-scalper
 
-Plan-first project: `PLAN.md` is the source of truth; `prompts/PROMPTS.md` has
-the per-phase prompts; `reference/` has tested stdlib math the real code must
-match.
+Plan-first project: `PLAN.md` (v3, multi-strategy, 15-minute to yearly) is
+the source of truth; `prompts/PROMPTS.md` has the per-phase prompts;
+`reference/` has tested stdlib maths the real code must match;
+`experiments/` holds read-only experiments with their own git-ignored venv.
 
 ## Non-negotiable rules
 
@@ -17,6 +18,12 @@ match.
   lower-bounded probabilities. Model "confidence" is not a probability.
 - **No Martingale or loss-chasing sizing**, ever. Sizing responds to edge only.
 - **Risk limits are code constants**; config may tighten, never loosen.
+- **Price off the options market, trade as a maker.** Strategy edges come from
+  options-implied fair values, arbitrage relations and maker economics, not
+  from BTC direction forecasts (see PLAN.md §1). Touch/digital pricing must be
+  skew-consistent (`reference/pricing.py`).
+- **Licences:** TimesFM 3.0 weights are non-commercial/non-production — never
+  wire them into live trading. Kronos is MIT.
 - **No look-ahead.** Features use only `ts_recv <= decision time`. Pre-register
   variants/metrics before touching the hold-out; evaluate the hold-out once.
 - **Don't circumvent geoblocks** or Polymarket's Terms of Use.
@@ -28,8 +35,9 @@ match.
 ## Run / test
 
 ```bash
-cd reference && python3 -m unittest -v      # math tests (stdlib only)
+cd reference && python3 -m unittest -v      # 48 maths tests (stdlib only)
 python3 edge_math.py                        # fee + power tables
+cd ../experiments/fair-value-scan && ../model-shootout/.venv/bin/python scan.py
 ```
 
 When code under `src/` exists: `pytest`, `ruff check .`. Keep dependencies in
