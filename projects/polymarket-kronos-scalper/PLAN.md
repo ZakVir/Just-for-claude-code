@@ -30,8 +30,9 @@
 3. **We ran Kronos and TimesFM 3 live and on recent history** (§6). Over 96
    recent 15-minute windows TimesFM 3 was *statistically worse than the
    market's own price* (Brier +0.03, CI excludes zero) and trading on it lost
-   ~20% per $. Kronos started 4/5 live in one falling hour; its backtest is
-   the deciding test. Research inputs only.
+   ~20% per $. Kronos was a coin flip at the window open (51%) with false
+   confidence, also significantly worse than the market. Live, the two
+   models went 6/11 each. Neither predicts BTC well enough to trade.
 4. **14 strategies in 5 families** (§3). Build order, re-ranked on our data:
    (1) maker-first execution + structural-arbitrage scanner + favourite
    harvesting, (2) carry and fee programs, (3) cross-venue arbitrage (US:
@@ -435,10 +436,14 @@ times, scored against Polymarket's official results** (`backtest_report.md`).
 | | random walk | 71% | 0.186 | +0.011 (−0.010, +0.035) | −1.3% (−23%, +22%) |
 | | Kronos-base | 68% | 0.205 | +0.030 (−0.008, +0.072) worse | −7.4% (−27%, +14%) |
 | | merged (Kronos+TimesFM) | 69% | 0.195 | +0.020 (−0.006, +0.049) worse | **−25.1% (−43%, −6.6%)** |
-| window open | Kronos-base | _running (CPU-bound); added when complete_ | | | |
+| window open | Kronos-base | 51% | **0.321** | **+0.069 (+0.014, +0.125) worse** | −2.6% (−21%, +17%) |
+| window open | merged | 51% | 0.278 | +0.026 (−0.004, +0.057) worse | −1.3% (−21%, +17%) |
 
 TimesFM 3 is **statistically worse than the market price** at both decision
-points, and trading on its disagreements lost ~20% per $. Kronos carries real
+points, and trading on its disagreements lost ~20% per $. At the window open
+— the pure "predict the next 15 minutes" test — Kronos hit 51% (a coin flip)
+with false confidence: when it said P(Up) < 20%, Up happened 52% of the time,
+so its Brier (0.321) was significantly worse than the market's. Kronos carries real
 information mid-window (when it said < 20%, Up happened 21% of the time; > 80%,
 100%) but the market prices the same information better, and trading the
 merged forecast against the market lost 25% per $ (CI excludes zero). This
