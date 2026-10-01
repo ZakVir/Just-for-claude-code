@@ -27,8 +27,11 @@
    2.4% / 4.6% of the time vs 0.6% / 0.9% priced (§5.2–5.3). Fading tails
    would have **lost** money. The cheap side was the near-certain favourite:
    95–98¢ ladder strikes won 56/56.
-3. **We ran Kronos and TimesFM 3 live and on recent history** (§6). Use them
-   as research inputs only; don't build the business on them.
+3. **We ran Kronos and TimesFM 3 live and on recent history** (§6). Over 96
+   recent 15-minute windows TimesFM 3 was *statistically worse than the
+   market's own price* (Brier +0.03, CI excludes zero) and trading on it lost
+   ~20% per $. Kronos started 4/5 live in one falling hour; its backtest is
+   the deciding test. Research inputs only.
 4. **14 strategies in 5 families** (§3). Build order, re-ranked on our data:
    (1) maker-first execution + structural-arbitrage scanner + favourite
    harvesting, (2) carry and fee programs, (3) cross-venue arbitrage (US:
@@ -407,8 +410,49 @@ must clear the shadow ledger and this kind of calibration test before money.
 
 ## 6. Model shootout: Kronos vs TimesFM 3 (2026-10-01)
 
-_Results pending at time of writing — filled in from
-`experiments/model-shootout/results/` once the live horizons resolve._
+Can the time-series foundation models the original article relied on predict
+Polymarket's BTC Up/Down markets better than the market itself? We ran them
+on this machine (CPU) three ways. Everything is in
+`experiments/model-shootout/` and was committed **before** each market
+resolved.
+
+**Setup.** Kronos-base (MIT; sampled paths → share ending above the strike)
+and TimesFM 3.0 (Google; deciles → probability; deterministic, so its 3 runs
+are identical by construction), on Binance BTCUSDT candles; merged = the
+average of the two; baselines = the market's own price, a volatility-scaled
+random walk, and (for 4h/daily) Deribit options.
+
+**1. Statistics: walk-forward backtest, last 24 h, 96 windows × 2 decision
+times, scored against Polymarket's official results** (`backtest_report.md`).
+
+| Decision | Forecaster | Hit rate | Brier | vs market (95% CI) | naive trading, per $ |
+|---|---|---:|---:|---|---|
+| window open | market | 51% | 0.252 | — | — |
+| | TimesFM 3 | **44%** | 0.280 | **+0.028 (+0.007, +0.050) worse** | −19.6% (−42%, +2%) |
+| | random walk | 50% | 0.250 | −0.002 (−0.006, +0.002) | — (23 trades) |
+| 5 min in | market | 74% | 0.175 | — | — |
+| | TimesFM 3 | 69% | 0.207 | **+0.032 (+0.008, +0.059) worse** | **−21.7% (−40%, −3.5%)** |
+| | random walk | 71% | 0.186 | +0.011 (−0.010, +0.035) | −1.3% (−23%, +22%) |
+| both | Kronos-base | _running (CPU-bound); added when complete_ | | | |
+
+TimesFM 3 is **statistically worse than the market price** at both decision
+points, and trading on its disagreements lost ~20% per $. This replicates
+the published null result for 15-minute markets (Young 2026).
+
+**2. Live forecasts, frozen before the outcome** (`report_1790885700.md`,
+`predictions_1790887500*.md`, `live_loop.md`). Early record (one falling
+afternoon): Kronos right on 4 of 5 resolved calls, TimesFM 2 of 5, merged 4
+of 5 — e.g. the 20:15–20:30 window resolved Down with Kronos at P(Up) 0.05,
+TimesFM 0.69, market 0.485. A handful of calls in one trending hour cannot
+separate skill from a bearish drift; Kronos also showed overconfidence
+(its sampled paths span ~6 bp vs ~19 bp typical 15-minute moves). The
+rolling live loop and the 4-hour/daily/ladder predictions keep scoring; see
+the results folder.
+
+**Verdict so far:** don't trade direction on these models. Keep them as
+research inputs, test any new model the same way (frozen predictions,
+official outcomes, Brier vs the market), and remember the licence: TimesFM
+3.0 weights are non-commercial.
 
 ---
 
