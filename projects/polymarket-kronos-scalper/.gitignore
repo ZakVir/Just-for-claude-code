@@ -1,0 +1,18 @@
+# secrets and local state — never commit
+.env
+.env.*
+*.pem
+*.key
+
+# data and vendored code (re-creatable)
+vendor/
+data/
+*.parquet
+*.sqlite
+*.db
+logs/
+reports/*.html
+
+__pycache__/
+.venv/
+KILL
