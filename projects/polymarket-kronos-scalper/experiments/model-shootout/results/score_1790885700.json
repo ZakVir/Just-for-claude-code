@@ -145,5 +145,40 @@
    "brier": 0.136,
    "log_loss": 0.46
   }
+ },
+ "market_hourly": {
+  "hour_open": 84675.36,
+  "hour_close": 84634.0,
+  "binance_up": false,
+  "official": {
+   "winner": "Down",
+   "up": false,
+   "closed": false,
+   "uma_status": "proposed"
+  },
+  "market_mid_at_snapshot": {
+   "p_up": 0.665,
+   "hit": false,
+   "brier": 0.4422,
+   "log_loss": 1.0936
+  },
+  "kronos": {
+   "p_up": 0.3333,
+   "hit": true,
+   "brier": 0.1111,
+   "log_loss": 0.4055
+  },
+  "timesfm": {
+   "p_up": 0.5593,
+   "hit": false,
+   "brier": 0.3128,
+   "log_loss": 0.8194
+  },
+  "ensemble": {
+   "p_up": 0.4463,
+   "hit": true,
+   "brier": 0.1992,
+   "log_loss": 0.5912
+  }
  }
 }
