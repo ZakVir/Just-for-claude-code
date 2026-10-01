@@ -1,0 +1,149 @@
+{
+ "scored_at": "2026-10-01T21:15:24.385039+00:00",
+ "targets": {
+  "15m": {
+   "status": "resolved",
+   "up": true,
+   "kronos": {
+    "p": 0.2419,
+    "hit": false,
+    "brier": 0.5747
+   },
+   "timesfm": {
+    "p": 0.7428,
+    "hit": true,
+    "brier": 0.0662
+   },
+   "merged": {
+    "p": 0.4924,
+    "hit": false,
+    "brier": 0.2577
+   },
+   "baseline": {
+    "p": 0.5,
+    "hit": false,
+    "brier": 0.25
+   },
+   "market": {
+    "p": 0.505,
+    "hit": true,
+    "brier": 0.245
+   }
+  },
+  "hourly": {
+   "status": "resolved",
+   "up": false,
+   "kronos": {
+    "p": 0.0806,
+    "hit": true,
+    "brier": 0.0065
+   },
+   "timesfm": {
+    "p": 0.5928,
+    "hit": false,
+    "brier": 0.3514
+   },
+   "merged": {
+    "p": 0.3367,
+    "hit": true,
+    "brier": 0.1134
+   },
+   "baseline": {
+    "p": 0.266,
+    "hit": true,
+    "brier": 0.0708
+   },
+   "market": {
+    "p": 0.505,
+    "hit": false,
+    "brier": 0.255
+   }
+  },
+  "4h": {
+   "status": "pending",
+   "settles_utc": 1790899200
+  },
+  "daily": {
+   "status": "pending",
+   "settles_utc": 1790956800
+  }
+ },
+ "ladder": [
+  {
+   "strike": 74000.0,
+   "status": "pending"
+  },
+  {
+   "strike": 76000.0,
+   "status": "pending"
+  },
+  {
+   "strike": 78000.0,
+   "status": "pending"
+  },
+  {
+   "strike": 80000.0,
+   "status": "pending"
+  },
+  {
+   "strike": 82000.0,
+   "status": "pending"
+  },
+  {
+   "strike": 84000.0,
+   "status": "pending"
+  },
+  {
+   "strike": 86000.0,
+   "status": "pending"
+  },
+  {
+   "strike": 88000.0,
+   "status": "pending"
+  },
+  {
+   "strike": 90000.0,
+   "status": "pending"
+  },
+  {
+   "strike": 92000.0,
+   "status": "pending"
+  },
+  {
+   "strike": 94000.0,
+   "status": "pending"
+  }
+ ],
+ "totals": {
+  "kronos": {
+   "n": 2,
+   "brier_sum": 0.5811999999999999,
+   "hits": 1,
+   "mean_brier": 0.2906
+  },
+  "timesfm": {
+   "n": 2,
+   "brier_sum": 0.41759999999999997,
+   "hits": 1,
+   "mean_brier": 0.2088
+  },
+  "merged": {
+   "n": 2,
+   "brier_sum": 0.3711,
+   "hits": 1,
+   "mean_brier": 0.1855
+  },
+  "baseline": {
+   "n": 2,
+   "brier_sum": 0.3208,
+   "hits": 1,
+   "mean_brier": 0.1604
+  },
+  "market": {
+   "n": 2,
+   "brier_sum": 0.5,
+   "hits": 1,
+   "mean_brier": 0.25
+  }
+ }
+}

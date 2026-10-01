@@ -42,7 +42,8 @@ def outcome(start: int) -> bool | None:
     try:
         m = requests.get(GAMMA, params={"slug": f"btc-updown-15m-{start}"}, timeout=20).json()[0]["markets"][0]
         p = [float(x) for x in json.loads(m["outcomePrices"])]
-        return p[0] > 0.5 if max(p) >= 0.99 and min(p) <= 0.01 else None
+        settled = m.get("closed") is True or m.get("umaResolutionStatus") in ("proposed", "resolved")
+        return p[0] > 0.5 if settled and max(p) >= 0.99 and min(p) <= 0.01 else None
     except Exception:
         return None
 

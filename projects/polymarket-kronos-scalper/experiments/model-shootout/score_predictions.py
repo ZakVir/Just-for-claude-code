@@ -37,7 +37,10 @@ def resolved_markets(slug: str) -> dict[str, bool] | None:
             p = [float(x) for x in json.loads(m["outcomePrices"])]
         except (KeyError, TypeError, ValueError):
             continue
-        if max(p) >= 0.99 and min(p) <= 0.01:
+        # Extreme prices alone are NOT resolution: deep ITM/OTM strikes trade at
+        # 0.999/0.001 while still open. Require closure or a UMA proposal.
+        settled = m.get("closed") is True or m.get("umaResolutionStatus") in ("proposed", "resolved")
+        if settled and max(p) >= 0.99 and min(p) <= 0.01:
             out[m["question"]] = p[0] > 0.5
     return out
 
