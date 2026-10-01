@@ -16,3 +16,6 @@ reports/*.html
 __pycache__/
 .venv/
 KILL
+
+# experiment run logs (results live in the JSON/MD outputs)
+experiments/*/results/*.log

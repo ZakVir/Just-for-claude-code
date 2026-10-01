@@ -206,8 +206,11 @@ only where the options fair value clears the bid by more than its error band.
 - **B3 dominance lattice:** if event B ⊆ A on the **same source and time**,
   buy YES(A) + NO(B) for < $1 → ≥ $1 back. Relations available here:
   ladder strikes; daily-above(K) ⊆ daily-touch(K) ⊆ monthly-touch(K) when the
-  day is in the month; hourly-above vs 1h Up/Down; yearly touch ⊇ monthly
-  touch (only for strikes listed before the month). Ref
+  day is in the month; hourly-above vs 1h Up/Down on the **same candle** (the
+  hourly ladder's title time is the candle's *end*, Up/Down's is its
+  *start*); yearly touch ⊇ monthly touch. Touch strikes added after a period
+  starts may only count prices after listing ✅ (yearly) — check each strike's
+  listing time before treating a relation as guaranteed. Ref
   `arb.dominance_arb_profit`, `arb.best_ladder_arb`.
 - **Reality:** fast arbs close in seconds and bots dominate; the scanner earns
   mostly by resting maker orders at arb-consistent prices and catching
@@ -307,11 +310,13 @@ not strikes. That is why §7 also validates the pricing model historically
 `experiments/fair-value-scan/scan.py` (read-only) priced three live families
 off the Deribit smile. Full table: `experiments/fair-value-scan/results/`.
 
-- **Monthly touch (October):** YES above fair on 15 of 19 open strikes; the
-  largest gaps were near-the-money down strikes (82.5k: +6.4 pts, 80k: +4.4,
-  77.5k: +3.5) and mid up strikes (+1–2 pts).
-- **Weekly touch:** far tails (70k–78k down; 90k–94k up) priced 0.7–2.3 pts
-  above fair — small in absolute terms but large relative to fair (2–10×).
+- **Monthly touch (October):** YES above fair on 16 of 19 open strikes
+  (several only by 0.1–0.3 pts, inside the error band); the largest gaps were
+  near-the-money down strikes (82.5k: +6.4 pts, 80k: +4.4, 77.5k: +3.5) and
+  mid up strikes (+1–2 pts).
+- **Weekly touch:** most far-tail strikes (70k–78k down; 90k–94k up) priced
+  1–2.3 pts above fair — small in absolute terms but 1.5–10× the fair
+  probability.
 - **Daily "above" (Oct 2 noon):** the market's distribution was wider than
   options: 84k YES 3.6 pts cheap, 86k YES 5.8 pts rich, 88k 2.2 pts rich.
 - **Method lesson:** our first pass ignored the smile's slope in touch pricing
