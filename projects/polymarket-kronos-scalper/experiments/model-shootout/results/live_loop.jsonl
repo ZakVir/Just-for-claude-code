@@ -1,0 +1,7 @@
+{"start": 1790888400, "ref": 84634.0, "kronos": 0.371, "timesfm": 0.6481, "merged": 0.5095, "market": 0.495, "market_book": {"bid": 0.49, "ask": 0.5, "mid": 0.495}, "seconds": 354.9, "up": true}
+{"start": 1790889300, "ref": 84619.56, "kronos": 0.3387, "timesfm": 0.4679, "merged": 0.4033, "market": 0.505, "market_book": {"bid": 0.5, "ask": 0.51, "mid": 0.505}, "seconds": 358.9, "up": false}
+{"start": 1790890200, "ref": 84591.35, "kronos": 0.2742, "timesfm": 0.4314, "merged": 0.3528, "market": 0.505, "market_book": {"bid": 0.5, "ask": 0.51, "mid": 0.505}, "seconds": 352.0, "up": false}
+{"start": 1790891100, "ref": 84494.07, "kronos": 0.3387, "timesfm": 0.3957, "merged": 0.3672, "market": 0.515, "market_book": {"bid": 0.51, "ask": 0.52, "mid": 0.515}, "seconds": 354.8, "up": true}
+{"start": 1790892000, "ref": 84544.99, "kronos": 0.2419, "timesfm": 0.4019, "merged": 0.3219, "market": 0.515, "market_book": {"bid": 0.51, "ask": 0.52, "mid": 0.515}, "seconds": 347.6, "up": true}
+{"start": 1790892900, "ref": 84748.6, "kronos": 0.2742, "timesfm": 0.372, "merged": 0.3231, "market": 0.505, "market_book": {"bid": 0.5, "ask": 0.51, "mid": 0.505}, "seconds": 341.3, "up": false}
+{"start": 1790893800, "kronos": 0.597, "timesfm": 0.486, "merged": 0.5415, "market": 0.495, "note": "scored after the loop hit the 2 h background limit", "up": false}
