@@ -174,10 +174,19 @@ direction bots on 5m/15m, settlement manipulation.
   variance; skew-adjusted digital; Binance basis.
 - **Today's pattern:** the market's distribution was **wider** than options —
   YES too cheap near the money (84k: 0.745 vs 0.781 fair) and too rich in the
-  tails (86k: 0.185 vs 0.127). That is a classic "sell the wings, buy the
-  body" relative-value trade, and it compounds daily (7 ladders listed ahead).
+  tails (86k: 0.185 vs 0.127). Against options that looks like "sell the
+  wings, buy the body"…
+- **…but history says the ladder is already well calibrated (§5.2).** Over
+  116 days (3,915 strike snapshots, 20/4/1 h before noon) cheap tails resolved
+  YES about as often as priced; buying NO on them **lost** money after fee and
+  spread. So the options gap on daily ladders is more likely short-dated
+  implied vol understating BTC's realised moves than free money. What *did*
+  show up: 95–98¢ favourites won 56/56 (+2.5% per $ in ~20 h after costs).
+- **So A2 becomes:** favourite harvesting (A4) plus maker quoting around a
+  fair value **calibrated to realised outcomes**, not raw options; options
+  serve as a cross-check. Tail-selling here waits for shadow-ledger evidence.
 - **Execution:** maker inside the spread first; take only when edge after fee
-  exceeds the IV±3-point uncertainty band.
+  exceeds the uncertainty band.
 - **Kill rule:** as A1, measured per strike bucket (moneyness × time-to-noon).
 
 ### A3 — Options-anchored market making (after A1/A2 pricing is proven)
@@ -325,6 +334,39 @@ off the Deribit smile. Full table: `experiments/fair-value-scan/results/`.
   Pricing details decide the sign of the trade.
 - **Not yet known:** book depth at those prices, persistence over time, and
   real-world vs risk-neutral gap — all Phase-1 measurements.
+
+### 5.2 Historical calibration — does the bias actually pay? (model-free)
+
+Options-implied gaps are a model's opinion. The direct test is whether
+Polymarket prices matched what happened. `experiments/fair-value-scan/`
+pulled resolved markets and each strike's price before settlement
+(`prices-history`), bucketed by price, with day-clustered bootstrap CIs and
+returns after taker fee + 0.5¢ half-spread.
+
+**Daily "above" ladders, 116 days, 3,915 strike-snapshots** (`ladder_calibration.md`):
+
+| YES price (20 h before noon) | n | avg price | YES rate | buy YES | buy NO |
+|---|---:|---:|---:|---:|---:|
+| < 2¢ | 466 | 0.003 | 0.006 | −61% | −0.5% (CI −1.3%, +0.1%) |
+| 2–5¢ | 45 | 0.031 | 0.044 | +30% | −2.0% |
+| 95–98¢ | 56 | 0.969 | **1.000** | **+2.5%** | −100% |
+| ≥ 98¢ | 517 | 0.997 | 1.000 | +0.2% | −100% |
+
+- **No longshot bias to sell** in daily ladders after costs: cheap tails
+  resolved YES at least as often as priced. Middle buckets are noisy (CIs
+  ±20 pts) — no exploitable pattern at this sample size.
+- **Near-certain favourites looked underpriced:** 95–98¢ won 56/56 (+2.5% per $
+  in ~20 h). Caveat: 56 straight wins still allow a true loss rate up to ~5%
+  (rule of three), which would erase it; treat as a lead for A4, sized small.
+
+**Touch markets (daily/weekly):** _see §5.3 once the corrected run finishes._
+A first run produced a spectacular but **spurious** "NO edge": newly listed
+strikes report the midpoint of an empty book (0.50) until quoted. Filtering
+unquoted snapshots is mandatory in any Polymarket history study.
+
+**Lesson for the plan:** published biases and options gaps are hypotheses;
+recent Polymarket BTC ladders were efficient in the tails. Every strategy
+must clear the shadow ledger and this kind of calibration test before money.
 
 ---
 

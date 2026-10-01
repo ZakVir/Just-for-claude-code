@@ -3,11 +3,16 @@
 Usage: ../model-shootout/.venv/bin/python touch_calibration.py [--days 120] [--weeks 30]
 
 Daily (ET day) and weekly (Mon-Sun ET) touch markets: take each strike's YES
-price shortly after the period opens (1 h for daily, 2 h for weekly, before
-most strikes can have been touched; prices >= 0.99 are dropped as already
-touched), compare with the official outcome by price bucket, and compute
-YES/NO buyer returns after taker fee + half spread. CIs bootstrap whole
-periods. Strategy A1 in PLAN.md rests on YES being overpriced here.
+price after the period opens (3 h for daily, 12 h for weekly; prices >= 0.99
+are dropped as already touched), compare with the official outcome by price
+bucket, and compute YES/NO buyer returns after taker fee + half spread. CIs
+bootstrap whole periods. Strategy A1 in PLAN.md rests on YES being
+overpriced here.
+
+Quality filter: freshly listed strikes report the midpoint of an empty book
+(bid 0.01 / ask 0.99 -> 0.50) until someone quotes them. A first version of
+this study counted those as prices and produced a large, spurious "NO edge".
+Snapshots now need >= 2 distinct prices in the preceding window.
 """
 
 from __future__ import annotations
@@ -20,7 +25,7 @@ import numpy as np
 
 from ladder_calibration import BUCKETS, ET, GAMMA, HERE, HIST, buy_return, get
 
-SNAP_HOURS = {"daily": 1, "weekly": 2}
+SNAP_HOURS = {"daily": 3, "weekly": 12}
 
 
 def periods(days: int, weeks: int):
@@ -60,11 +65,11 @@ def collect(days: int, weeks: int) -> list[dict]:
                 title = m.get("groupItemTitle") or ""
             except (ValueError, KeyError, TypeError):
                 continue
-            h = get(HIST, {"market": tok, "startTs": int(snap - 3 * 3600),
+            h = get(HIST, {"market": tok, "startTs": int(snap - SNAP_HOURS[family] * 3600),
                            "endTs": int(snap), "fidelity": 10})
             pts = [x["p"] for x in (h or {}).get("history", []) if x["t"] <= snap]
-            if not pts or pts[-1] >= 0.99:
-                continue
+            if not pts or pts[-1] >= 0.99 or len(set(round(x, 4) for x in pts)) < 2:
+                continue  # no price, already touched, or never actually quoted
             rows.append({"family": family, "period": period, "dir": "down" if "↓" in title else "up",
                          "price": float(pts[-1]), "yes_won": prices[0] > 0.5})
         print(f"{family} {period}: {len(rows)} rows", flush=True)
