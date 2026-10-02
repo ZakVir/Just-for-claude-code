@@ -10,11 +10,61 @@
   "trend": "up",
   "trail": 84572.28,
   "calls": [
-   {"type": "sell", "time": "2026-10-02T13:00Z", "counted": false,
-    "note": "Crest drawn at the chart's right edge, at screenshot time: not a forecast"},
-   {"type": "buy", "time": "2026-10-04T04:00Z", "counted": true, "note": "Main projected low"},
-   {"type": "sell", "time": "2026-10-05T06:00Z", "counted": true, "note": "Small bounce"},
-   {"type": "buy", "time": "2026-10-05T20:00Z", "counted": true, "note": "Second, higher low; path rises into Oct 7"}
+   {
+    "type": "sell",
+    "time": "2026-10-02T13:00Z",
+    "counted": false,
+    "note": "Crest drawn at the chart's right edge, at screenshot time: not a forecast"
+   },
+   {
+    "type": "buy",
+    "time": "2026-10-04T04:00Z",
+    "counted": true,
+    "note": "Main projected low"
+   },
+   {
+    "type": "sell",
+    "time": "2026-10-05T06:00Z",
+    "counted": true,
+    "note": "Small bounce"
+   },
+   {
+    "type": "buy",
+    "time": "2026-10-05T20:00Z",
+    "counted": true,
+    "note": "Second, higher low; path rises into Oct 7"
+   }
+  ]
+ },
+ {
+  "id": "elcaro-btc-1h-2026-10-02-b",
+  "source": "Elcaro FM forecast, BTCUSD 1h, TradingView snapshot by trushkovskiy (stamped Oct 02, 2026 11:08 UTC-7) shared by the user",
+  "read": "Read by eye; chart in Pacific time (UTC-7). The vertical lines are the author's own; the projected low is read off the dotted path. Times are UTC, about +/-2 h. The chart is also labelled '1d sell' at Oct 2 ~17:00 UTC.",
+  "asset": "BTC",
+  "tf": "1h",
+  "seen_at": "2026-10-02T18:08Z",
+  "as_of": "2026-10-02T18:00Z",
+  "trend": "up",
+  "trail": 84572.28,
+  "calls": [
+   {
+    "type": "buy",
+    "time": "2026-10-01T12:00Z",
+    "counted": false,
+    "note": "Line 'we gonna buy here' on a past bar; when it was first drawn is unknown"
+   },
+   {
+    "type": "buy",
+    "time": "2026-10-03T21:00Z",
+    "counted": true,
+    "note": "Low of the dotted path (was Oct 4 04:00 at 14:30 UTC)"
+   },
+   {
+    "type": "sell",
+    "time": "2026-10-04T20:00Z",
+    "counted": true,
+    "note": "Line 'IDIOTS WILL BUY HERE', read as a top; dotted crest ~2 h earlier"
+   }
   ]
  }
 ]
