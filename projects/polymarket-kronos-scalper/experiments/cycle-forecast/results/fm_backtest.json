@@ -1,0 +1,810 @@
+{
+ "generated": "2026-10-02T17:02:13.400579+00:00",
+ "rules": {
+  "pivot_half_width_bars": 5,
+  "hit_window_bars": 2,
+  "fee_per_side": 0.001,
+  "shift_baseline_runs": 300,
+  "methods": {
+   "ehlers": {
+    "min_p": 10,
+    "max_p": 60,
+    "hp": 60,
+    "ss": 10
+   },
+   "fft": {
+    "min_p": 10,
+    "max_p": 120,
+    "window": 256
+   }
+  },
+  "lastguru": {
+   "estimators": [
+    "mama",
+    "pearson",
+    "dft",
+    "phase"
+   ],
+   "dyn_low": 10,
+   "dyn_high": 48
+  }
+ },
+ "results": {
+  "1d/ehlers": {
+   "bars": 2932,
+   "from": "2018-09-22 00:00:00+00:00",
+   "to": "2026-10-01 00:00:00+00:00",
+   "median_period_bars": 43.0,
+   "turn_density": {
+    "troughs_per_100_bars": 6.514324693042292,
+    "peaks_per_100_bars": 6.2755798090040935
+   },
+   "buy_date_hit_rate": 0.327076816127911,
+   "buy_baseline_mean": 0.31934379194479057,
+   "buy_p_value": 0.37,
+   "sell_date_hit_rate": 0.3305728088336784,
+   "sell_baseline_mean": 0.3162756151924531,
+   "sell_p_value": 0.3433333333333333,
+   "long_only": {
+    "log_return": 0.7740179435892328,
+    "sharpe": 0.20475378013628748,
+    "max_drawdown": 1.1454648209536067,
+    "trades": 159
+   },
+   "long_only_p_value": 0.6433333333333333,
+   "long_short": {
+    "log_return": -0.9886612755787312,
+    "sharpe": -0.19691385359158559,
+    "max_drawdown": 2.667325314671115,
+    "trades": 159
+   },
+   "long_short_p_value": 0.6433333333333333,
+   "buy_and_hold": {
+    "log_return": 2.534697162757197,
+    "sharpe": 0.5049483338231923,
+    "max_drawdown": 1.4536851302210483,
+    "trades": 0
+   }
+  },
+  "1d/fft": {
+   "bars": 2846,
+   "from": "2018-12-17 00:00:00+00:00",
+   "to": "2026-10-01 00:00:00+00:00",
+   "median_period_bars": 100.0,
+   "turn_density": {
+    "troughs_per_100_bars": 6.500351370344343,
+    "peaks_per_100_bars": 6.324666198172873
+   },
+   "buy_date_hit_rate": 0.33831571272329564,
+   "buy_baseline_mean": 0.3212350224037841,
+   "buy_p_value": 0.2833333333333333,
+   "sell_date_hit_rate": 0.3443496801705757,
+   "sell_baseline_mean": 0.31492643863017133,
+   "sell_p_value": 0.11,
+   "long_only": {
+    "log_return": 0.9452674148407672,
+    "sharpe": 0.29154406162540925,
+    "max_drawdown": 0.7980297143853792,
+    "trades": 57
+   },
+   "long_only_p_value": 0.6933333333333334,
+   "long_short": {
+    "log_return": -1.2943503588316465,
+    "sharpe": -0.2663504907525377,
+    "max_drawdown": 2.5437090019999533,
+    "trades": 57
+   },
+   "long_short_p_value": 0.6933333333333334,
+   "buy_and_hold": {
+    "log_return": 3.184885188513181,
+    "sharpe": 0.6557389299972751,
+    "max_drawdown": 1.4536851302210483,
+    "trades": 0
+   }
+  },
+  "1d/lastguru-mama": {
+   "bars": 2957,
+   "from": "2018-08-28 00:00:00+00:00",
+   "to": "2026-10-01 00:00:00+00:00",
+   "median_period_bars": 20.924495802336395,
+   "turn_density": {
+    "troughs_per_100_bars": 6.526885356780521,
+    "peaks_per_100_bars": 6.323977003719987
+   },
+   "buy_date_hit_rate": 0.332651670074983,
+   "buy_baseline_mean": 0.32805024113598164,
+   "buy_p_value": 0.4066666666666667,
+   "sell_date_hit_rate": 0.26453587215232915,
+   "sell_baseline_mean": 0.3154525427520804,
+   "sell_p_value": 0.9933333333333333,
+   "long_only": {
+    "log_return": 0.32623699680960583,
+    "sharpe": 0.09283362638613493,
+    "max_drawdown": 1.2381692396508268,
+    "trades": 319
+   },
+   "long_only_p_value": 0.79,
+   "long_short": {
+    "log_return": -1.8330407680706169,
+    "sharpe": -0.3623677972772562,
+    "max_drawdown": 2.311532427031902,
+    "trades": 319
+   },
+   "long_short_p_value": 0.79,
+   "buy_and_hold": {
+    "log_return": 2.4835147616898285,
+    "sharpe": 0.49132750002108605,
+    "max_drawdown": 1.4536851302210483,
+    "trades": 0
+   }
+  },
+  "1d/lastguru-pearson": {
+   "bars": 2957,
+   "from": "2018-08-28 00:00:00+00:00",
+   "to": "2026-10-01 00:00:00+00:00",
+   "median_period_bars": 20.63551650735865,
+   "turn_density": {
+    "troughs_per_100_bars": 6.526885356780521,
+    "peaks_per_100_bars": 6.323977003719987
+   },
+   "buy_date_hit_rate": 0.35498129887793267,
+   "buy_baseline_mean": 0.3291571294736427,
+   "buy_p_value": 0.10666666666666667,
+   "sell_date_hit_rate": 0.29507640067911717,
+   "sell_baseline_mean": 0.31747870993463556,
+   "sell_p_value": 0.87,
+   "long_only": {
+    "log_return": 0.9122359544455892,
+    "sharpe": 0.26212303919775914,
+    "max_drawdown": 0.9903201308546219,
+    "trades": 335
+   },
+   "long_only_p_value": 0.54,
+   "long_short": {
+    "log_return": -0.6610428527986496,
+    "sharpe": -0.13073550071513132,
+    "max_drawdown": 2.3187384642383138,
+    "trades": 335
+   },
+   "long_short_p_value": 0.54,
+   "buy_and_hold": {
+    "log_return": 2.4835147616898285,
+    "sharpe": 0.49132750002108605,
+    "max_drawdown": 1.4536851302210483,
+    "trades": 0
+   }
+  },
+  "1d/lastguru-dft": {
+   "bars": 2957,
+   "from": "2018-08-28 00:00:00+00:00",
+   "to": "2026-10-01 00:00:00+00:00",
+   "median_period_bars": 36.198674307700735,
+   "turn_density": {
+    "troughs_per_100_bars": 6.526885356780521,
+    "peaks_per_100_bars": 6.323977003719987
+   },
+   "buy_date_hit_rate": 0.3276508694169792,
+   "buy_baseline_mean": 0.32757219242299224,
+   "buy_p_value": 0.49,
+   "sell_date_hit_rate": 0.32042494859492804,
+   "sell_baseline_mean": 0.31473970476378194,
+   "sell_p_value": 0.38666666666666666,
+   "long_only": {
+    "log_return": 2.0799816602971175,
+    "sharpe": 0.5608621253086221,
+    "max_drawdown": 0.8151181580334319,
+    "trades": 230
+   },
+   "long_only_p_value": 0.09666666666666666,
+   "long_short": {
+    "log_return": 1.6744485589044062,
+    "sharpe": 0.33124751190866836,
+    "max_drawdown": 1.1841700553899326,
+    "trades": 230
+   },
+   "long_short_p_value": 0.09666666666666666,
+   "buy_and_hold": {
+    "log_return": 2.4835147616898285,
+    "sharpe": 0.49132750002108605,
+    "max_drawdown": 1.4536851302210483,
+    "trades": 0
+   }
+  },
+  "1d/lastguru-phase": {
+   "bars": 2957,
+   "from": "2018-08-28 00:00:00+00:00",
+   "to": "2026-10-01 00:00:00+00:00",
+   "median_period_bars": 41.0,
+   "turn_density": {
+    "troughs_per_100_bars": 6.526885356780521,
+    "peaks_per_100_bars": 6.323977003719987
+   },
+   "buy_date_hit_rate": 0.3319713993871297,
+   "buy_baseline_mean": 0.3278665798100253,
+   "buy_p_value": 0.43333333333333335,
+   "sell_date_hit_rate": 0.36341798215511323,
+   "sell_baseline_mean": 0.3163038110340752,
+   "sell_p_value": 0.05,
+   "long_only": {
+    "log_return": 1.707921914276487,
+    "sharpe": 0.4672655587653299,
+    "max_drawdown": 1.077629702976187,
+    "trades": 158
+   },
+   "long_only_p_value": 0.20666666666666667,
+   "long_short": {
+    "log_return": 0.9323290668631453,
+    "sharpe": 0.18435492883350324,
+    "max_drawdown": 1.5142347335677175,
+    "trades": 158
+   },
+   "long_short_p_value": 0.20333333333333334,
+   "buy_and_hold": {
+    "log_return": 2.4835147616898285,
+    "sharpe": 0.49132750002108605,
+    "max_drawdown": 1.4536851302210483,
+    "trades": 0
+   }
+  },
+  "4h/ehlers": {
+   "bars": 4210,
+   "from": "2024-10-31 00:00:00+00:00",
+   "to": "2026-10-02 12:00:00+00:00",
+   "median_period_bars": 44.0,
+   "turn_density": {
+    "troughs_per_100_bars": 6.128266033254157,
+    "peaks_per_100_bars": 6.294536817102138
+   },
+   "buy_date_hit_rate": 0.30266634638481865,
+   "buy_baseline_mean": 0.30794912935933677,
+   "buy_p_value": 0.5533333333333333,
+   "sell_date_hit_rate": 0.31357142857142856,
+   "sell_baseline_mean": 0.3166511462494134,
+   "sell_p_value": 0.5333333333333333,
+   "long_only": {
+    "log_return": -0.0520508321431723,
+    "sharpe": -0.08477859625169595,
+    "max_drawdown": 0.471364279952846,
+    "trades": 222
+   },
+   "long_only_p_value": 0.41,
+   "long_short": {
+    "log_return": -0.27001373400525186,
+    "sharpe": -0.31563163820044604,
+    "max_drawdown": 0.8490720763963902,
+    "trades": 222
+   },
+   "long_short_p_value": 0.41,
+   "buy_and_hold": {
+    "log_return": 0.16391206971890726,
+    "sharpe": 0.19205298939947463,
+    "max_drawdown": 0.7645873767690663,
+    "trades": 0
+   }
+  },
+  "4h/fft": {
+   "bars": 4124,
+   "from": "2024-11-14 08:00:00+00:00",
+   "to": "2026-10-02 12:00:00+00:00",
+   "median_period_bars": 96.0,
+   "turn_density": {
+    "troughs_per_100_bars": 6.159068865179437,
+    "peaks_per_100_bars": 6.280310378273521
+   },
+   "buy_date_hit_rate": 0.3016264169541646,
+   "buy_baseline_mean": 0.3100653944879933,
+   "buy_p_value": 0.6266666666666667,
+   "sell_date_hit_rate": 0.35549558390579,
+   "sell_baseline_mean": 0.3148554884239875,
+   "sell_p_value": 0.04666666666666667,
+   "long_only": {
+    "log_return": 0.3443131354863719,
+    "sharpe": 0.5603151368944265,
+    "max_drawdown": 0.4411998932526282,
+    "trades": 109
+   },
+   "long_only_p_value": 0.023333333333333334,
+   "long_short": {
+    "log_return": 0.7573970629296404,
+    "sharpe": 0.9163719154852139,
+    "max_drawdown": 0.37603537972719625,
+    "trades": 109
+   },
+   "long_short_p_value": 0.023333333333333334,
+   "buy_and_hold": {
+    "log_return": -0.07077079195689662,
+    "sharpe": -0.085634900840777,
+    "max_drawdown": 0.7645873767690663,
+    "trades": 0
+   }
+  },
+  "4h/lastguru-mama": {
+   "bars": 4235,
+   "from": "2024-10-26 20:00:00+00:00",
+   "to": "2026-10-02 12:00:00+00:00",
+   "median_period_bars": 21.238412233240716,
+   "turn_density": {
+    "troughs_per_100_bars": 6.092089728453365,
+    "peaks_per_100_bars": 6.2809917355371905
+   },
+   "buy_date_hit_rate": 0.3094393186657204,
+   "buy_baseline_mean": 0.3058981313415985,
+   "buy_p_value": 0.4166666666666667,
+   "sell_date_hit_rate": 0.331435349940688,
+   "sell_baseline_mean": 0.3143846468773682,
+   "sell_p_value": 0.13333333333333333,
+   "long_only": {
+    "log_return": -0.4906288278005114,
+    "sharpe": -0.8099219109477181,
+    "max_drawdown": 0.7785956680694319,
+    "trades": 456
+   },
+   "long_only_p_value": 0.7133333333333334,
+   "long_short": {
+    "log_return": -1.2206607307221984,
+    "sharpe": -1.4218555873879688,
+    "max_drawdown": 1.3240868438980256,
+    "trades": 456
+   },
+   "long_short_p_value": 0.71,
+   "buy_and_hold": {
+    "log_return": 0.23940307512117565,
+    "sharpe": 0.27927129493017966,
+    "max_drawdown": 0.7645873767690663,
+    "trades": 0
+   }
+  },
+  "4h/lastguru-pearson": {
+   "bars": 4235,
+   "from": "2024-10-26 20:00:00+00:00",
+   "to": "2026-10-02 12:00:00+00:00",
+   "median_period_bars": 23.619336067165545,
+   "turn_density": {
+    "troughs_per_100_bars": 6.092089728453365,
+    "peaks_per_100_bars": 6.2809917355371905
+   },
+   "buy_date_hit_rate": 0.3022043138184404,
+   "buy_baseline_mean": 0.3070233756704512,
+   "buy_p_value": 0.6033333333333334,
+   "sell_date_hit_rate": 0.28564638783269963,
+   "sell_baseline_mean": 0.3156044472732232,
+   "sell_p_value": 0.9566666666666667,
+   "long_only": {
+    "log_return": -0.514466790579721,
+    "sharpe": -0.8407627027550229,
+    "max_drawdown": 0.8465810651990562,
+    "trades": 424
+   },
+   "long_only_p_value": 0.76,
+   "long_short": {
+    "log_return": -1.2683366562806175,
+    "sharpe": -1.4771897248364603,
+    "max_drawdown": 1.4435937941627484,
+    "trades": 424
+   },
+   "long_short_p_value": 0.76,
+   "buy_and_hold": {
+    "log_return": 0.23940307512117565,
+    "sharpe": 0.27927129493017966,
+    "max_drawdown": 0.7645873767690663,
+    "trades": 0
+   }
+  },
+  "4h/lastguru-dft": {
+   "bars": 4235,
+   "from": "2024-10-26 20:00:00+00:00",
+   "to": "2026-10-02 12:00:00+00:00",
+   "median_period_bars": 35.96705026697647,
+   "turn_density": {
+    "troughs_per_100_bars": 6.092089728453365,
+    "peaks_per_100_bars": 6.2809917355371905
+   },
+   "buy_date_hit_rate": 0.28703484237971083,
+   "buy_baseline_mean": 0.3061357518699496,
+   "buy_p_value": 0.87,
+   "sell_date_hit_rate": 0.32564224548049475,
+   "sell_baseline_mean": 0.31612288745513223,
+   "sell_p_value": 0.29,
+   "long_only": {
+    "log_return": -0.2631561711589845,
+    "sharpe": -0.44923728205146607,
+    "max_drawdown": 0.7834437252052389,
+    "trades": 330
+   },
+   "long_only_p_value": 0.57,
+   "long_short": {
+    "log_return": -0.7677154174391446,
+    "sharpe": -0.8944134712734354,
+    "max_drawdown": 1.298398723076407,
+    "trades": 330
+   },
+   "long_short_p_value": 0.57,
+   "buy_and_hold": {
+    "log_return": 0.23940307512117565,
+    "sharpe": 0.27927129493017966,
+    "max_drawdown": 0.7645873767690663,
+    "trades": 0
+   }
+  },
+  "4h/lastguru-phase": {
+   "bars": 4235,
+   "from": "2024-10-26 20:00:00+00:00",
+   "to": "2026-10-02 12:00:00+00:00",
+   "median_period_bars": 40.0,
+   "turn_density": {
+    "troughs_per_100_bars": 6.092089728453365,
+    "peaks_per_100_bars": 6.2809917355371905
+   },
+   "buy_date_hit_rate": 0.2732461355529132,
+   "buy_baseline_mean": 0.30650529341826477,
+   "buy_p_value": 0.96,
+   "sell_date_hit_rate": 0.30734490135488474,
+   "sell_baseline_mean": 0.31273393885357526,
+   "sell_p_value": 0.5833333333333334,
+   "long_only": {
+    "log_return": 0.2685577161248701,
+    "sharpe": 0.4629487922227899,
+    "max_drawdown": 0.3100850293587094,
+    "trades": 218
+   },
+   "long_only_p_value": 0.14333333333333334,
+   "long_short": {
+    "log_return": 0.2977123571285646,
+    "sharpe": 0.34705660211563427,
+    "max_drawdown": 0.3809814356489656,
+    "trades": 218
+   },
+   "long_short_p_value": 0.14333333333333334,
+   "buy_and_hold": {
+    "log_return": 0.23940307512117565,
+    "sharpe": 0.27927129493017966,
+    "max_drawdown": 0.7645873767690663,
+    "trades": 0
+   }
+  },
+  "1h/ehlers": {
+   "bars": 4222,
+   "from": "2026-04-09 19:00:00+00:00",
+   "to": "2026-10-02 16:00:00+00:00",
+   "median_period_bars": 46.0,
+   "turn_density": {
+    "troughs_per_100_bars": 6.631927996210327,
+    "peaks_per_100_bars": 6.442444339175745
+   },
+   "buy_date_hit_rate": 0.3719264740988303,
+   "buy_baseline_mean": 0.33255310058464504,
+   "buy_p_value": 0.06333333333333334,
+   "sell_date_hit_rate": 0.31536259541984735,
+   "sell_baseline_mean": 0.32341232450776486,
+   "sell_p_value": 0.6166666666666667,
+   "long_only": {
+    "log_return": -0.12225113709508134,
+    "sharpe": -0.9339576178653188,
+    "max_drawdown": 0.28444503223163686,
+    "trades": 231
+   },
+   "long_only_p_value": 0.38333333333333336,
+   "long_short": {
+    "log_return": -0.41003122887506216,
+    "sharpe": -2.215443990072744,
+    "max_drawdown": 0.4805933169347043,
+    "trades": 231
+   },
+   "long_short_p_value": 0.38333333333333336,
+   "buy_and_hold": {
+    "log_return": 0.1655289546848996,
+    "sharpe": 0.8964231932674249,
+    "max_drawdown": 0.3476422408972688,
+    "trades": 0
+   }
+  },
+  "1h/fft": {
+   "bars": 4136,
+   "from": "2026-04-13 09:00:00+00:00",
+   "to": "2026-10-02 16:00:00+00:00",
+   "median_period_bars": 103.0,
+   "turn_density": {
+    "troughs_per_100_bars": 6.600580270793037,
+    "peaks_per_100_bars": 6.479690522243714
+   },
+   "buy_date_hit_rate": 0.3793783917118895,
+   "buy_baseline_mean": 0.3330487606112429,
+   "buy_p_value": 0.03333333333333333,
+   "sell_date_hit_rate": 0.3623294346978557,
+   "sell_baseline_mean": 0.3225029856669784,
+   "sell_p_value": 0.08,
+   "long_only": {
+    "log_return": 0.0615997112216662,
+    "sharpe": 0.4545376806306044,
+    "max_drawdown": 0.19325560465378322,
+    "trades": 91
+   },
+   "long_only_p_value": 0.2966666666666667,
+   "long_short": {
+    "log_return": -0.06057410433703257,
+    "sharpe": -0.3331437486293294,
+    "max_drawdown": 0.32275494304721875,
+    "trades": 91
+   },
+   "long_short_p_value": 0.2966666666666667,
+   "buy_and_hold": {
+    "log_return": 0.18377352678036496,
+    "sharpe": 1.0132357914171413,
+    "max_drawdown": 0.3476422408972688,
+    "trades": 0
+   }
+  },
+  "1h/lastguru-mama": {
+   "bars": 4247,
+   "from": "2026-04-08 18:00:00+00:00",
+   "to": "2026-10-02 16:00:00+00:00",
+   "median_period_bars": 20.585859717415346,
+   "turn_density": {
+    "troughs_per_100_bars": 6.6399811631740056,
+    "peaks_per_100_bars": 6.428066870732281
+   },
+   "buy_date_hit_rate": 0.33498700685093313,
+   "buy_baseline_mean": 0.33320651217119013,
+   "buy_p_value": 0.45,
+   "sell_date_hit_rate": 0.3441266839990546,
+   "sell_baseline_mean": 0.32240188052325663,
+   "sell_p_value": 0.09,
+   "long_only": {
+    "log_return": -0.44282487857764435,
+    "sharpe": -3.515936652055594,
+    "max_drawdown": 0.4690432270193219,
+    "trades": 489
+   },
+   "long_only_p_value": 0.6233333333333333,
+   "long_short": {
+    "log_return": -1.065099581749041,
+    "sharpe": -5.692711879551718,
+    "max_drawdown": 1.091428416942108,
+    "trades": 489
+   },
+   "long_short_p_value": 0.62,
+   "buy_and_hold": {
+    "log_return": 0.1794498245937527,
+    "sharpe": 0.9656589263481955,
+    "max_drawdown": 0.3476422408972688,
+    "trades": 0
+   }
+  },
+  "1h/lastguru-pearson": {
+   "bars": 4247,
+   "from": "2026-04-08 18:00:00+00:00",
+   "to": "2026-10-02 16:00:00+00:00",
+   "median_period_bars": 20.61116654281757,
+   "turn_density": {
+    "troughs_per_100_bars": 6.6399811631740056,
+    "peaks_per_100_bars": 6.428066870732281
+   },
+   "buy_date_hit_rate": 0.35206611570247937,
+   "buy_baseline_mean": 0.33359438264201136,
+   "buy_p_value": 0.18333333333333332,
+   "sell_date_hit_rate": 0.29676046346654056,
+   "sell_baseline_mean": 0.32192367048287907,
+   "sell_p_value": 0.92,
+   "long_only": {
+    "log_return": -0.33921197259496705,
+    "sharpe": -2.652079715613035,
+    "max_drawdown": 0.37517854841702625,
+    "trades": 470
+   },
+   "long_only_p_value": 0.34,
+   "long_short": {
+    "log_return": -0.8578737697836866,
+    "sharpe": -4.583011512815067,
+    "max_drawdown": 0.8784500361669709,
+    "trades": 470
+   },
+   "long_short_p_value": 0.34,
+   "buy_and_hold": {
+    "log_return": 0.1794498245937527,
+    "sharpe": 0.9656589263481955,
+    "max_drawdown": 0.3476422408972688,
+    "trades": 0
+   }
+  },
+  "1h/lastguru-dft": {
+   "bars": 4247,
+   "from": "2026-04-08 18:00:00+00:00",
+   "to": "2026-10-02 16:00:00+00:00",
+   "median_period_bars": 35.194777362052406,
+   "turn_density": {
+    "troughs_per_100_bars": 6.6399811631740056,
+    "peaks_per_100_bars": 6.428066870732281
+   },
+   "buy_date_hit_rate": 0.33829435388613277,
+   "buy_baseline_mean": 0.3342959551497241,
+   "buy_p_value": 0.4066666666666667,
+   "sell_date_hit_rate": 0.34098981766516695,
+   "sell_baseline_mean": 0.32395693274893056,
+   "sell_p_value": 0.17,
+   "long_only": {
+    "log_return": -0.3467973340137407,
+    "sharpe": -2.753176685216683,
+    "max_drawdown": 0.3891856957763091,
+    "trades": 338
+   },
+   "long_only_p_value": 0.8,
+   "long_short": {
+    "log_return": -0.8750444926212342,
+    "sharpe": -4.662612851888336,
+    "max_drawdown": 0.9075456331010245,
+    "trades": 338
+   },
+   "long_short_p_value": 0.8,
+   "buy_and_hold": {
+    "log_return": 0.1794498245937527,
+    "sharpe": 0.9656589263481955,
+    "max_drawdown": 0.3476422408972688,
+    "trades": 0
+   }
+  },
+  "1h/lastguru-phase": {
+   "bars": 4247,
+   "from": "2026-04-08 18:00:00+00:00",
+   "to": "2026-10-02 16:00:00+00:00",
+   "median_period_bars": 40.0,
+   "turn_density": {
+    "troughs_per_100_bars": 6.6399811631740056,
+    "peaks_per_100_bars": 6.428066870732281
+   },
+   "buy_date_hit_rate": 0.34074249231496806,
+   "buy_baseline_mean": 0.33246184444530524,
+   "buy_p_value": 0.33,
+   "sell_date_hit_rate": 0.29633136094674556,
+   "sell_baseline_mean": 0.32062579647494316,
+   "sell_p_value": 0.8366666666666667,
+   "long_only": {
+    "log_return": -0.3996332692004806,
+    "sharpe": -3.1787594897684857,
+    "max_drawdown": 0.4310228991959786,
+    "trades": 215
+   },
+   "long_only_p_value": 0.9833333333333333,
+   "long_short": {
+    "log_return": -0.9807163629947137,
+    "sharpe": -5.25438486655881,
+    "max_drawdown": 1.0040419258466016,
+    "trades": 215
+   },
+   "long_short_p_value": 0.9833333333333333,
+   "buy_and_hold": {
+    "log_return": 0.1794498245937527,
+    "sharpe": 0.9656589263481955,
+    "max_drawdown": 0.3476422408972688,
+    "trades": 0
+   }
+  }
+ },
+ "live": {
+  "1d/ehlers": {
+   "as_of_close": "2026-10-02 00:00:00+00:00",
+   "period_bars": 51.0,
+   "next_buy_date": "2026-11-12 00:00:00+00:00",
+   "next_sell_date": "2026-10-18 00:00:00+00:00",
+   "phase": "rising (between BUY and SELL)"
+  },
+  "1d/fft": {
+   "as_of_close": "2026-10-02 00:00:00+00:00",
+   "period_bars": 120.0,
+   "next_buy_date": "2026-11-07 00:00:00+00:00",
+   "next_sell_date": "2027-01-06 00:00:00+00:00",
+   "phase": "falling (between SELL and BUY)"
+  },
+  "1d/lastguru-mama": {
+   "as_of_close": "2026-10-02 00:00:00+00:00",
+   "period_bars": 19.32481314737133,
+   "next_buy_date": "2026-10-20 00:00:00+00:00",
+   "next_sell_date": "2026-10-10 00:00:00+00:00",
+   "phase": "rising (between BUY and SELL)"
+  },
+  "1d/lastguru-pearson": {
+   "as_of_close": "2026-10-02 00:00:00+00:00",
+   "period_bars": 14.69211163260884,
+   "next_buy_date": "2026-10-16 00:00:00+00:00",
+   "next_sell_date": "2026-10-08 00:00:00+00:00",
+   "phase": "rising (between BUY and SELL)"
+  },
+  "1d/lastguru-dft": {
+   "as_of_close": "2026-10-02 00:00:00+00:00",
+   "period_bars": 36.73431306322319,
+   "next_buy_date": "2026-10-19 00:00:00+00:00",
+   "next_sell_date": "2026-11-07 00:00:00+00:00",
+   "phase": "falling (between SELL and BUY)"
+  },
+  "1d/lastguru-phase": {
+   "as_of_close": "2026-10-02 00:00:00+00:00",
+   "period_bars": 41.0,
+   "next_buy_date": "2026-10-25 00:00:00+00:00",
+   "next_sell_date": "2026-10-05 00:00:00+00:00",
+   "phase": "rising (between BUY and SELL)"
+  },
+  "4h/ehlers": {
+   "as_of_close": "2026-10-02 16:00:00+00:00",
+   "period_bars": 60.0,
+   "next_buy_date": "2026-10-06 00:00:00+00:00",
+   "next_sell_date": "2026-10-11 00:00:00+00:00",
+   "phase": "falling (between SELL and BUY)"
+  },
+  "4h/fft": {
+   "as_of_close": "2026-10-02 16:00:00+00:00",
+   "period_bars": 91.0,
+   "next_buy_date": "2026-10-15 12:00:00+00:00",
+   "next_sell_date": "2026-10-08 00:00:00+00:00",
+   "phase": "rising (between BUY and SELL)"
+  },
+  "4h/lastguru-mama": {
+   "as_of_close": "2026-10-02 16:00:00+00:00",
+   "period_bars": 17.24820519231685,
+   "next_buy_date": "2026-10-04 04:00:00+00:00",
+   "next_sell_date": "2026-10-02 16:00:00+00:00",
+   "phase": "rising (between BUY and SELL)"
+  },
+  "4h/lastguru-pearson": {
+   "as_of_close": "2026-10-02 16:00:00+00:00",
+   "period_bars": 34.569789186530436,
+   "next_buy_date": "2026-10-06 04:00:00+00:00",
+   "next_sell_date": "2026-10-03 08:00:00+00:00",
+   "phase": "rising (between BUY and SELL)"
+  },
+  "4h/lastguru-dft": {
+   "as_of_close": "2026-10-02 16:00:00+00:00",
+   "period_bars": 29.81184998639913,
+   "next_buy_date": "2026-10-04 12:00:00+00:00",
+   "next_sell_date": "2026-10-07 00:00:00+00:00",
+   "phase": "falling (between SELL and BUY)"
+  },
+  "4h/lastguru-phase": {
+   "as_of_close": "2026-10-02 16:00:00+00:00",
+   "period_bars": 43.0,
+   "next_buy_date": "2026-10-08 08:00:00+00:00",
+   "next_sell_date": "2026-10-04 20:00:00+00:00",
+   "phase": "rising (between BUY and SELL)"
+  },
+  "1h/ehlers": {
+   "as_of_close": "2026-10-02 17:00:00+00:00",
+   "period_bars": 38.0,
+   "next_buy_date": "2026-10-03 00:00:00+00:00",
+   "next_sell_date": "2026-10-03 19:00:00+00:00",
+   "phase": "falling (between SELL and BUY)"
+  },
+  "1h/fft": {
+   "as_of_close": "2026-10-02 17:00:00+00:00",
+   "period_bars": 115.0,
+   "next_buy_date": "2026-10-04 15:00:00+00:00",
+   "next_sell_date": "2026-10-07 00:00:00+00:00",
+   "phase": "falling (between SELL and BUY)"
+  },
+  "1h/lastguru-mama": {
+   "as_of_close": "2026-10-02 17:00:00+00:00",
+   "period_bars": 24.13269138025387,
+   "next_buy_date": "2026-10-02 21:00:00+00:00",
+   "next_sell_date": "2026-10-03 09:00:00+00:00",
+   "phase": "falling (between SELL and BUY)"
+  },
+  "1h/lastguru-pearson": {
+   "as_of_close": "2026-10-02 17:00:00+00:00",
+   "period_bars": 27.64317856927135,
+   "next_buy_date": "2026-10-03 13:00:00+00:00",
+   "next_sell_date": "2026-10-03 00:00:00+00:00",
+   "phase": "rising (between BUY and SELL)"
+  },
+  "1h/lastguru-dft": {
+   "as_of_close": "2026-10-02 17:00:00+00:00",
+   "period_bars": 43.140662380424885,
+   "next_buy_date": "2026-10-03 05:00:00+00:00",
+   "next_sell_date": "2026-10-04 02:00:00+00:00",
+   "phase": "falling (between SELL and BUY)"
+  },
+  "1h/lastguru-phase": {
+   "as_of_close": "2026-10-02 17:00:00+00:00",
+   "period_bars": 30.0,
+   "next_buy_date": "2026-10-03 21:00:00+00:00",
+   "next_sell_date": "2026-10-03 06:00:00+00:00",
+   "phase": "rising (between BUY and SELL)"
+  }
+ }
+}
