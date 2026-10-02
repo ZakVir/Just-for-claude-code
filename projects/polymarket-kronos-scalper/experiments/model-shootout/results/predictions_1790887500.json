@@ -1,0 +1,558 @@
+{
+ "at": 1790887500,
+ "frozen_at": "2026-10-01T20:45:05.000170+00:00",
+ "spot": 84609.99,
+ "deribit_index": 84554.7,
+ "config": {
+  "runs": 3,
+  "kronos_paths_per_run": 10,
+  "kronos": "NeoQuasar/Kronos-base",
+  "timesfm": "google/timesfm-3.0-pytorch",
+  "context": 512
+ },
+ "runs_meta": {
+  "15m:13": {
+   "kronos_seconds": [
+    69.8,
+    56.0,
+    54.5
+   ],
+   "timesfm_identical": true
+  },
+  "1h:20": {
+   "kronos_seconds": [
+    83.7,
+    81.7,
+    84.1
+   ],
+   "timesfm_identical": true
+  },
+  "1m:15": {
+   "kronos_seconds": [
+    62.8,
+    57.7,
+    56.3
+   ],
+   "timesfm_identical": true
+  }
+ },
+ "targets": {
+  "15m": {
+   "slug": "btc-updown-15m-1790887500",
+   "settles_utc": 1790888400,
+   "interval": "1m",
+   "steps": 15,
+   "strike": 84609.99,
+   "strike_note": "Binance close at open (TWAP proxy)",
+   "op": ">=",
+   "market": {
+    "bid": 0.5,
+    "ask": 0.51,
+    "mid": 0.505
+   },
+   "kronos_runs": [
+    0.5,
+    0.2273,
+    0.0455
+   ],
+   "kronos": 0.2419,
+   "kronos_final_mean": 84542.37,
+   "kronos_final_p10_p90": [
+    84457.92,
+    84647.74
+   ],
+   "timesfm_runs": [
+    0.7428,
+    0.7428,
+    0.7428
+   ],
+   "timesfm": 0.7428,
+   "timesfm_final_point": 84712.12,
+   "timesfm_final_p10_p90": [
+    84514.27,
+    84915.73
+   ],
+   "merged": 0.4924,
+   "baseline": "random walk",
+   "baseline_p": 0.5
+  },
+  "hourly": {
+   "slug": "bitcoin-up-or-down-october-1-2026-4pm-et",
+   "settles_utc": 1790888400,
+   "interval": "1m",
+   "steps": 15,
+   "strike": 84675.36,
+   "strike_note": "Binance 1h candle open",
+   "op": ">=",
+   "market": {
+    "bid": 0.5,
+    "ask": 0.51,
+    "mid": 0.505
+   },
+   "kronos_runs": [
+    0.2273,
+    0.0455,
+    0.0455
+   ],
+   "kronos": 0.0806,
+   "kronos_final_mean": 84542.37,
+   "kronos_final_p10_p90": [
+    84457.92,
+    84647.74
+   ],
+   "timesfm_runs": [
+    0.5928,
+    0.5928,
+    0.5928
+   ],
+   "timesfm": 0.5928,
+   "timesfm_final_point": 84712.12,
+   "timesfm_final_p10_p90": [
+    84514.27,
+    84915.73
+   ],
+   "merged": 0.3367,
+   "baseline": "random walk",
+   "baseline_p": 0.266
+  },
+  "4h": {
+   "slug": "btc-updown-4h-1790884800",
+   "settles_utc": 1790899200,
+   "interval": "15m",
+   "steps": 13,
+   "strike": 84632.43175876686,
+   "strike_note": "Chainlink priceToBeat",
+   "op": ">=",
+   "market": {
+    "bid": 0.48,
+    "ask": 0.51,
+    "mid": 0.495
+   },
+   "kronos_runs": [
+    0.0455,
+    0.0455,
+    0.1364
+   ],
+   "kronos": 0.0484,
+   "kronos_final_mean": 84281.55,
+   "kronos_final_p10_p90": [
+    84011.23,
+    84544.34
+   ],
+   "timesfm_runs": [
+    0.4463,
+    0.4463,
+    0.4463
+   ],
+   "timesfm": 0.4463,
+   "timesfm_final_point": 84561.09,
+   "timesfm_final_p10_p90": [
+    83825.92,
+    85180.67
+   ],
+   "merged": 0.2474,
+   "baseline": "options (Deribit)",
+   "baseline_p": 0.4327
+  },
+  "daily": {
+   "slug": "bitcoin-up-or-down-on-october-2-2026",
+   "settles_utc": 1790956800,
+   "interval": "1h",
+   "steps": 20,
+   "strike": 84162.65,
+   "strike_note": "priceToBeat",
+   "op": ">",
+   "market": {
+    "bid": 0.65,
+    "ask": 0.66,
+    "mid": 0.655
+   },
+   "kronos_runs": [
+    0.1364,
+    0.2273,
+    0.0455
+   ],
+   "kronos": 0.1129,
+   "kronos_final_mean": 82986.16,
+   "kronos_final_p10_p90": [
+    81566.16,
+    84104.28
+   ],
+   "timesfm_runs": [
+    0.551,
+    0.551,
+    0.551
+   ],
+   "timesfm": 0.551,
+   "timesfm_final_point": 84305.87,
+   "timesfm_final_p10_p90": [
+    83002.42,
+    85864.34
+   ],
+   "merged": 0.332,
+   "baseline": "options (Deribit)",
+   "baseline_p": 0.6718
+  }
+ },
+ "ladder": [
+  {
+   "strike": 74000.0,
+   "question": "Will the price of Bitcoin be above $74,000 on October 2?",
+   "market": {
+    "bid": 0.999,
+    "ask": 1.0,
+    "mid": 0.9995
+   },
+   "kronos_runs": [
+    0.9545,
+    0.9545,
+    0.9545
+   ],
+   "kronos": 0.9839,
+   "kronos_final_mean": 82986.16,
+   "kronos_final_p10_p90": [
+    81566.16,
+    84104.28
+   ],
+   "timesfm_runs": [
+    1.0,
+    1.0,
+    1.0
+   ],
+   "timesfm": 1.0,
+   "timesfm_final_point": 84305.87,
+   "timesfm_final_p10_p90": [
+    83002.42,
+    85864.34
+   ],
+   "merged": 0.9919,
+   "options": 1.0
+  },
+  {
+   "strike": 76000.0,
+   "question": "Will the price of Bitcoin be above $76,000 on October 2?",
+   "market": {
+    "bid": 0.999,
+    "ask": 1.0,
+    "mid": 0.9995
+   },
+   "kronos_runs": [
+    0.9545,
+    0.9545,
+    0.9545
+   ],
+   "kronos": 0.9839,
+   "kronos_final_mean": 82986.16,
+   "kronos_final_p10_p90": [
+    81566.16,
+    84104.28
+   ],
+   "timesfm_runs": [
+    1.0,
+    1.0,
+    1.0
+   ],
+   "timesfm": 1.0,
+   "timesfm_final_point": 84305.87,
+   "timesfm_final_p10_p90": [
+    83002.42,
+    85864.34
+   ],
+   "merged": 0.9919,
+   "options": 0.9996
+  },
+  {
+   "strike": 78000.0,
+   "question": "Will the price of Bitcoin be above $78,000 on October 2?",
+   "market": {
+    "bid": 0.998,
+    "ask": 0.999,
+    "mid": 0.9985
+   },
+   "kronos_runs": [
+    0.9545,
+    0.9545,
+    0.9545
+   ],
+   "kronos": 0.9839,
+   "kronos_final_mean": 82986.16,
+   "kronos_final_p10_p90": [
+    81566.16,
+    84104.28
+   ],
+   "timesfm_runs": [
+    1.0,
+    1.0,
+    1.0
+   ],
+   "timesfm": 1.0,
+   "timesfm_final_point": 84305.87,
+   "timesfm_final_p10_p90": [
+    83002.42,
+    85864.34
+   ],
+   "merged": 0.9919,
+   "options": 0.9991
+  },
+  {
+   "strike": 80000.0,
+   "question": "Will the price of Bitcoin be above $80,000 on October 2?",
+   "market": {
+    "bid": 0.99,
+    "ask": 0.991,
+    "mid": 0.9905
+   },
+   "kronos_runs": [
+    0.9545,
+    0.9545,
+    0.9545
+   ],
+   "kronos": 0.9839,
+   "kronos_final_mean": 82986.16,
+   "kronos_final_p10_p90": [
+    81566.16,
+    84104.28
+   ],
+   "timesfm_runs": [
+    0.9999,
+    0.9999,
+    0.9999
+   ],
+   "timesfm": 0.9999,
+   "timesfm_final_point": 84305.87,
+   "timesfm_final_p10_p90": [
+    83002.42,
+    85864.34
+   ],
+   "merged": 0.9919,
+   "options": 0.9949
+  },
+  {
+   "strike": 82000.0,
+   "question": "Will the price of Bitcoin be above $82,000 on October 2?",
+   "market": {
+    "bid": 0.97,
+    "ask": 0.973,
+    "mid": 0.9715
+   },
+   "kronos_runs": [
+    0.6818,
+    0.9545,
+    0.6818
+   ],
+   "kronos": 0.7903,
+   "kronos_final_mean": 82986.16,
+   "kronos_final_p10_p90": [
+    81566.16,
+    84104.28
+   ],
+   "timesfm_runs": [
+    0.9805,
+    0.9805,
+    0.9805
+   ],
+   "timesfm": 0.9805,
+   "timesfm_final_point": 84305.87,
+   "timesfm_final_p10_p90": [
+    83002.42,
+    85864.34
+   ],
+   "merged": 0.8854,
+   "options": 0.9778
+  },
+  {
+   "strike": 84000.0,
+   "question": "Will the price of Bitcoin be above $84,000 on October 2?",
+   "market": {
+    "bid": 0.7,
+    "ask": 0.71,
+    "mid": 0.705
+   },
+   "kronos_runs": [
+    0.1364,
+    0.3182,
+    0.0455
+   ],
+   "kronos": 0.1452,
+   "kronos_final_mean": 82986.16,
+   "kronos_final_p10_p90": [
+    81566.16,
+    84104.28
+   ],
+   "timesfm_runs": [
+    0.6079,
+    0.6079,
+    0.6079
+   ],
+   "timesfm": 0.6079,
+   "timesfm_final_point": 84305.87,
+   "timesfm_final_p10_p90": [
+    83002.42,
+    85864.34
+   ],
+   "merged": 0.3765,
+   "options": 0.7267
+  },
+  {
+   "strike": 86000.0,
+   "question": "Will the price of Bitcoin be above $86,000 on October 2?",
+   "market": {
+    "bid": 0.14,
+    "ask": 0.15,
+    "mid": 0.145
+   },
+   "kronos_runs": [
+    0.0455,
+    0.0455,
+    0.0455
+   ],
+   "kronos": 0.0161,
+   "kronos_final_mean": 82986.16,
+   "kronos_final_p10_p90": [
+    81566.16,
+    84104.28
+   ],
+   "timesfm_runs": [
+    0.0646,
+    0.0646,
+    0.0646
+   ],
+   "timesfm": 0.0646,
+   "timesfm_final_point": 84305.87,
+   "timesfm_final_p10_p90": [
+    83002.42,
+    85864.34
+   ],
+   "merged": 0.0404,
+   "options": 0.0943
+  },
+  {
+   "strike": 88000.0,
+   "question": "Will the price of Bitcoin be above $88,000 on October 2?",
+   "market": {
+    "bid": 0.03,
+    "ask": 0.031,
+    "mid": 0.0305
+   },
+   "kronos_runs": [
+    0.0455,
+    0.0455,
+    0.0455
+   ],
+   "kronos": 0.0161,
+   "kronos_final_mean": 82986.16,
+   "kronos_final_p10_p90": [
+    81566.16,
+    84104.28
+   ],
+   "timesfm_runs": [
+    0.0005,
+    0.0005,
+    0.0005
+   ],
+   "timesfm": 0.0005,
+   "timesfm_final_point": 84305.87,
+   "timesfm_final_p10_p90": [
+    83002.42,
+    85864.34
+   ],
+   "merged": 0.0083,
+   "options": 0.0073
+  },
+  {
+   "strike": 90000.0,
+   "question": "Will the price of Bitcoin be above $90,000 on October 2?",
+   "market": {
+    "bid": 0.007,
+    "ask": 0.008,
+    "mid": 0.0075
+   },
+   "kronos_runs": [
+    0.0455,
+    0.0455,
+    0.0455
+   ],
+   "kronos": 0.0161,
+   "kronos_final_mean": 82986.16,
+   "kronos_final_p10_p90": [
+    81566.16,
+    84104.28
+   ],
+   "timesfm_runs": [
+    0.0,
+    0.0,
+    0.0
+   ],
+   "timesfm": 0.0,
+   "timesfm_final_point": 84305.87,
+   "timesfm_final_p10_p90": [
+    83002.42,
+    85864.34
+   ],
+   "merged": 0.0081,
+   "options": 0.0022
+  },
+  {
+   "strike": 92000.0,
+   "question": "Will the price of Bitcoin be above $92,000 on October 2?",
+   "market": {
+    "bid": 0.001,
+    "ask": 0.002,
+    "mid": 0.0015
+   },
+   "kronos_runs": [
+    0.0455,
+    0.0455,
+    0.0455
+   ],
+   "kronos": 0.0161,
+   "kronos_final_mean": 82986.16,
+   "kronos_final_p10_p90": [
+    81566.16,
+    84104.28
+   ],
+   "timesfm_runs": [
+    0.0,
+    0.0,
+    0.0
+   ],
+   "timesfm": 0.0,
+   "timesfm_final_point": 84305.87,
+   "timesfm_final_p10_p90": [
+    83002.42,
+    85864.34
+   ],
+   "merged": 0.0081,
+   "options": 0.0004
+  },
+  {
+   "strike": 94000.0,
+   "question": "Will the price of Bitcoin be above $94,000 on October 2?",
+   "market": {},
+   "kronos_runs": [
+    0.0455,
+    0.0455,
+    0.0455
+   ],
+   "kronos": 0.0161,
+   "kronos_final_mean": 82986.16,
+   "kronos_final_p10_p90": [
+    81566.16,
+    84104.28
+   ],
+   "timesfm_runs": [
+    0.0,
+    0.0,
+    0.0
+   ],
+   "timesfm": 0.0,
+   "timesfm_final_point": 84305.87,
+   "timesfm_final_p10_p90": [
+    83002.42,
+    85864.34
+   ],
+   "merged": 0.0081,
+   "options": 0.0001
+  }
+ ]
+}

@@ -1,0 +1,18 @@
+waiting 512s for the window to open
+frozen 2026-10-01T20:15:05.000211+00:00 {"slug": "btc-updown-15m-1790885700", "question": "Bitcoin Up or Down - October 1, 4:15PM-4:30PM ET", "best_bid_up": 0.48, "best_ask_up": 0.49, "mid_up": 0.485, "last_trade_up": 0.49, "resolution_source": "https://data.chain.link/streams/btc-usd-twap-60s-streams", "fetched_at": "2026-10-01T20:15:05.440376+00:00"}
+[15m] kronos run 1: final 84694.7 P(up) 0.045 (68s)
+[15m] kronos run 2: final 84664.3 P(up) 0.045 (61s)
+[15m] kronos run 3: final 84664.8 P(up) 0.136 (60s)
+[15m] timesfm run 1: final 84866.3 P(up) 0.689
+[15m] timesfm run 2: final 84866.3 P(up) 0.689
+[15m] timesfm run 3: final 84866.3 P(up) 0.689
+[15m] merged: {"kronos_p_up_all_paths": 0.04838709677419355, "kronos_run_p_up_spread": [0.045454545454545456, 0.13636363636363635], "timesfm_p_up": 0.6890876423862781, "timesfm_runs_identical": true, "ensemble_p_up": 0.3687373695802358, "ensemble_final": 84770.43671875, "kronos_final": 84674.6078125, "timesfm_final": 84866.265625, "direction_agree": false}
+[60m] kronos run 1: final 84555.3 P(up) 0.136 (48s)
+[60m] kronos run 2: final 84562.5 P(up) 0.227 (50s)
+[60m] kronos run 3: final 84651.3 P(up) 0.136 (48s)
+[60m] timesfm run 1: final 84691.9 P(up) 0.405
+[60m] timesfm run 2: final 84691.9 P(up) 0.405
+[60m] timesfm run 3: final 84691.9 P(up) 0.405
+[hourly] {"hour_open": 84675.36, "step_index": 8, "kronos_p_up": 0.3333333333333333, "timesfm_p_up": 0.5592955754045094, "ensemble_p_up": 0.44631445436892137}
+[60m] merged: {"kronos_p_up_all_paths": 0.14516129032258066, "kronos_run_p_up_spread": [0.13636363636363635, 0.22727272727272727], "timesfm_p_up": 0.40485548333198595, "timesfm_runs_identical": true, "ensemble_p_up": 0.2750083868272833, "ensemble_final": 84640.810546875, "kronos_final": 84589.69140625, "timesfm_final": 84691.9296875, "direction_agree": true}
+wrote /home/user/Just-for-claude-code/projects/polymarket-kronos-scalper/experiments/model-shootout/results/snapshot_1790885700.json

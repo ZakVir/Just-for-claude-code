@@ -1,0 +1,22 @@
+# secrets and local state — never commit
+.env
+.env.*
+*.pem
+*.key
+
+# data and vendored code (re-creatable)
+vendor/
+data/
+*.parquet
+*.sqlite
+*.db
+logs/
+reports/*.html
+
+__pycache__/
+.venv/
+KILL
+
+# experiment run logs (results live in the JSON/MD outputs)
+experiments/*/results/*.log
+experiments/model-shootout/results/backtest_ckpt.json
