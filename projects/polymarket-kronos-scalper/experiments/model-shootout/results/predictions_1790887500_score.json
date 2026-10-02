@@ -1,5 +1,5 @@
 {
- "scored_at": "2026-10-01T21:15:24.385039+00:00",
+ "scored_at": "2026-10-02T00:07:42.408478+00:00",
  "targets": {
   "15m": {
    "status": "resolved",
@@ -60,8 +60,33 @@
    }
   },
   "4h": {
-   "status": "pending",
-   "settles_utc": 1790899200
+   "status": "resolved",
+   "up": true,
+   "kronos": {
+    "p": 0.0484,
+    "hit": false,
+    "brier": 0.9055
+   },
+   "timesfm": {
+    "p": 0.4463,
+    "hit": false,
+    "brier": 0.3066
+   },
+   "merged": {
+    "p": 0.2474,
+    "hit": false,
+    "brier": 0.5664
+   },
+   "baseline": {
+    "p": 0.4327,
+    "hit": false,
+    "brier": 0.3218
+   },
+   "market": {
+    "p": 0.495,
+    "hit": false,
+    "brier": 0.255
+   }
   },
   "daily": {
    "status": "pending",
@@ -116,34 +141,34 @@
  ],
  "totals": {
   "kronos": {
-   "n": 2,
-   "brier_sum": 0.5811999999999999,
+   "n": 3,
+   "brier_sum": 1.4867,
    "hits": 1,
-   "mean_brier": 0.2906
+   "mean_brier": 0.4956
   },
   "timesfm": {
-   "n": 2,
-   "brier_sum": 0.41759999999999997,
+   "n": 3,
+   "brier_sum": 0.7242,
    "hits": 1,
-   "mean_brier": 0.2088
+   "mean_brier": 0.2414
   },
   "merged": {
-   "n": 2,
-   "brier_sum": 0.3711,
+   "n": 3,
+   "brier_sum": 0.9375,
    "hits": 1,
-   "mean_brier": 0.1855
+   "mean_brier": 0.3125
   },
   "baseline": {
-   "n": 2,
-   "brier_sum": 0.3208,
+   "n": 3,
+   "brier_sum": 0.6426,
    "hits": 1,
-   "mean_brier": 0.1604
+   "mean_brier": 0.2142
   },
   "market": {
-   "n": 2,
-   "brier_sum": 0.5,
+   "n": 3,
+   "brier_sum": 0.755,
    "hits": 1,
-   "mean_brier": 0.25
+   "mean_brier": 0.2517
   }
  }
 }

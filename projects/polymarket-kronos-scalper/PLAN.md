@@ -465,8 +465,10 @@ like at this sample size. The market's at-the-open price is ~0.50 by design
 (Brier ≈ 0.25), so a forecaster has to beat 0.25 *consistently*; over 96
 backtest windows neither did. Kronos also leaned bearish on almost every
 call during a mostly falling evening and was overconfident (sampled paths
-~6 bp wide vs ~19 bp typical moves). The 4-hour, daily and ladder
-predictions are scored as they settle (results folder).
+~6 bp wide vs ~19 bp typical moves). The 4-hour market (20:00–00:00 UTC)
+resolved **Up** after Kronos said P(Up) 0.05 — Brier 0.905, the cost of
+false confidence (TimesFM 0.45, options 0.43, market 0.495). Daily and
+ladder predictions are scored when they settle (results folder).
 
 **Verdict so far:** don't trade direction on these models. Keep them as
 research inputs, test any new model the same way (frozen predictions,
