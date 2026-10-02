@@ -1,0 +1,20 @@
+[
+ {
+  "id": "elcaro-btc-1h-2026-10-02",
+  "source": "Elcaro FM forecast, BTCUSD 1h, screenshot of an Elcaro livestream shared by the user",
+  "read": "Read by eye from the dotted projection on the price pane. The chart is in Pacific time (UTC-7), checked against the Sep 30 12:00 UTC spike to 85,514 and the 87,220 high at 12:00 UTC on Oct 2. Times are UTC, about +/-3 h.",
+  "asset": "BTC",
+  "tf": "1h",
+  "seen_at": "2026-10-02T14:30Z",
+  "as_of": "2026-10-02T14:00Z",
+  "trend": "up",
+  "trail": 84572.28,
+  "calls": [
+   {"type": "sell", "time": "2026-10-02T13:00Z", "counted": false,
+    "note": "Crest drawn at the chart's right edge, at screenshot time: not a forecast"},
+   {"type": "buy", "time": "2026-10-04T04:00Z", "counted": true, "note": "Main projected low"},
+   {"type": "sell", "time": "2026-10-05T06:00Z", "counted": true, "note": "Small bounce"},
+   {"type": "buy", "time": "2026-10-05T20:00Z", "counted": true, "note": "Second, higher low; path rises into Oct 7"}
+  ]
+ }
+]
