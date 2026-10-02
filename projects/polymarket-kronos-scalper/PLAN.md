@@ -467,8 +467,21 @@ backtest windows neither did. Kronos also leaned bearish on almost every
 call during a mostly falling evening and was overconfident (sampled paths
 ~6 bp wide vs ~19 bp typical moves). The 4-hour market (20:00–00:00 UTC)
 resolved **Up** after Kronos said P(Up) 0.05 — Brier 0.905, the cost of
-false confidence (TimesFM 0.45, options 0.43, market 0.495). Daily and
-ladder predictions are scored when they settle (results folder).
+false confidence (TimesFM 0.45, options 0.43, market 0.495). The daily
+market resolved **Up** (Kronos 0.11 ✗, TimesFM 0.55 ✓, options 0.67 ✓,
+market 0.66 ✓) and BTC settled between 84k and 86k at noon, so Kronos's
+"84k: 15%" call also missed (options 0.73, market 0.70).
+
+Full multi-horizon scorecard (20:45 UTC predictions, all settled):
+
+| Mean Brier (lower = better) | Kronos | TimesFM 3 | merged | non-ML baseline* | market |
+|---|---:|---:|---:|---:|---:|
+| 4 Up/Down markets (15m, 1h, 4h, daily) | 0.568 | 0.232 | 0.346 | **0.188** | 0.219 |
+| All 15 incl. 11 ladder strikes | 0.203 | 0.072 | 0.119 | **0.056** | 0.070 |
+
+\*Random walk for 15m/1h; Deribit options for 4h, daily and ladder. The
+simplest non-ML references beat both foundation models and matched or beat
+the market; Kronos was worst on every summary.
 
 **Verdict so far:** don't trade direction on these models. Keep them as
 research inputs, test any new model the same way (frozen predictions,
