@@ -409,7 +409,7 @@ function h2h() {
   $("h2hbody").innerHTML = list.map((e) => `
     <div class="panel"><div class="eyebrow">Other tool · ${e.asset} ${TF_NAME[e.tf]} · seen ${fmtDate(e.seen_at, "1h")} UTC</div>
       <div class="tablewrap"><table><tbody>${rows(e.rival)}</tbody></table></div>
-      <p class="note">${e.source}. ${e.read} Trend ${e.trend}, trail ${money(e.trail)}.</p></div>
+      <p class="note">${e.source}. ${e.read}${e.trail ? ` Trend ${e.trend}, trail ${money(e.trail)}.` : ""}</p></div>
     <div class="panel"><div class="eyebrow">Turnpoint · same bars, as of ${fmtDate(e.as_of, "1h")} UTC</div>
       <div class="tablewrap"><table><tbody>${rows(e.turnpoint.calls)}</tbody></table></div>
       <p class="note">Re-run on only the candles closed by then (price ${money(e.price_at_as_of)}): ${e.turnpoint.phase} phase, ${Math.round(e.turnpoint.period_bars)}-bar cycle, trend ${e.turnpoint.trend}. Latest close ${money(e.latest.close)} at ${fmtDate(e.latest.time, "1h")}.</p></div>`).join("");
