@@ -1,0 +1,143 @@
+[
+ {
+  "id": "elcaro-btc-1h-2026-10-02",
+  "source": "Elcaro FM forecast, BTCUSD 1h, screenshot of an Elcaro livestream shared by the user",
+  "read": "Read by eye from the dotted projection on the price pane. The chart is in Pacific time (UTC-7), checked against the Sep 30 12:00 UTC spike to 85,514 and the 87,220 high at 12:00 UTC on Oct 2. Times are UTC, about +/-3 h.",
+  "asset": "BTC",
+  "tf": "1h",
+  "seen_at": "2026-10-02T14:30Z",
+  "as_of": "2026-10-02T14:00Z",
+  "trend": "up",
+  "trail": 84572.28,
+  "calls": [
+   {
+    "type": "sell",
+    "time": "2026-10-02T13:00Z",
+    "counted": false,
+    "note": "Crest drawn at the chart's right edge, at screenshot time: not a forecast"
+   },
+   {
+    "type": "buy",
+    "time": "2026-10-04T04:00Z",
+    "counted": true,
+    "note": "Main projected low"
+   },
+   {
+    "type": "sell",
+    "time": "2026-10-05T06:00Z",
+    "counted": true,
+    "note": "Small bounce"
+   },
+   {
+    "type": "buy",
+    "time": "2026-10-05T20:00Z",
+    "counted": true,
+    "note": "Second, higher low; path rises into Oct 7"
+   }
+  ]
+ },
+ {
+  "id": "elcaro-btc-1h-2026-10-02-b",
+  "source": "Elcaro FM forecast, BTCUSD 1h, TradingView snapshot by trushkovskiy (stamped Oct 02, 2026 11:08 UTC-7) shared by the user",
+  "read": "Read by eye; chart in Pacific time (UTC-7). The vertical lines are the author's own; the projected low is read off the dotted path. Times are UTC, about +/-2 h. The chart is also labelled '1d sell' at Oct 2 ~17:00 UTC.",
+  "asset": "BTC",
+  "tf": "1h",
+  "seen_at": "2026-10-02T18:08Z",
+  "as_of": "2026-10-02T18:00Z",
+  "trend": "up",
+  "trail": 84572.28,
+  "calls": [
+   {
+    "type": "buy",
+    "time": "2026-10-01T12:00Z",
+    "counted": false,
+    "note": "Line 'we gonna buy here' on a past bar; when it was first drawn is unknown"
+   },
+   {
+    "type": "buy",
+    "time": "2026-10-03T21:00Z",
+    "counted": true,
+    "note": "Low of the dotted path (was Oct 4 04:00 at 14:30 UTC)"
+   },
+   {
+    "type": "sell",
+    "time": "2026-10-04T20:00Z",
+    "counted": true,
+    "note": "Line 'IDIOTS WILL BUY HERE', read as a top; dotted crest ~2 h earlier"
+   }
+  ]
+ },
+ {
+  "id": "elcaro-btc-4h-2026-10-02",
+  "source": "Elcaro Terminal FORECAST module, BTC 4H, screenshot of the user's trial account",
+  "read": "Dates are Elcaro's own printed labels. The app shows UTC+3 until the Oct 25 clock change and UTC+2 after: its bar '2026-10-02 19:00' (open 85,326.00, high 85,508.00) is Binance's 16:00 UTC bar. Taken during the 17:00 UTC hour. The dotted path starts from the fitted curve about 6,600 below price, so its levels are not price targets.",
+  "asset": "BTC",
+  "tf": "4h",
+  "seen_at": "2026-10-02T17:30Z",
+  "as_of": "2026-10-02T16:00Z",
+  "trend": "n/a",
+  "trail": null,
+  "calls": [
+   {
+    "type": "buy",
+    "time": "2026-10-04T16:00Z",
+    "counted": true,
+    "note": "Label '04 Oct 19:00'"
+   },
+   {
+    "type": "sell",
+    "time": "2026-10-13T08:00Z",
+    "counted": true,
+    "note": "Label '13 Oct 11:00'"
+   },
+   {
+    "type": "buy",
+    "time": "2026-10-19T12:00Z",
+    "counted": true,
+    "note": "Label '19 Oct 15:00'"
+   },
+   {
+    "type": "sell",
+    "time": "2026-10-21T12:00Z",
+    "counted": true,
+    "note": "Label '21 Oct 15:00'"
+   },
+   {
+    "type": "buy",
+    "time": "2026-10-23T20:00Z",
+    "counted": true,
+    "note": "Label '23 Oct 23:00'"
+   },
+   {
+    "type": "sell",
+    "time": "2026-10-25T00:00Z",
+    "counted": true,
+    "note": "Label '25 Oct 03:00'"
+   },
+   {
+    "type": "buy",
+    "time": "2026-10-28T04:00Z",
+    "counted": true,
+    "note": "Label '28 Oct 06:00'"
+   },
+   {
+    "type": "sell",
+    "time": "2026-11-01T04:00Z",
+    "counted": true,
+    "note": "Label '01 Nov 06:00'"
+   },
+   {
+    "type": "buy",
+    "time": "2026-11-01T16:00Z",
+    "counted": true,
+    "note": "Label '01 Nov 18:00'"
+   },
+   {
+    "type": "sell",
+    "time": "2026-11-04T12:00Z",
+    "counted": true,
+    "note": "Label '04 Nov 14:00'"
+   }
+  ]
+ }
+]
