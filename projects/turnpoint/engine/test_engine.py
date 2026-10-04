@@ -103,6 +103,9 @@ class HeadToHeadTests(unittest.TestCase):
         self.assertEqual((hit["status"], hit["error_bars"]), ("hit", -1))
         self.assertEqual(headtohead._judge(df, as_of, "buy", iso(45))["status"], "miss")
         self.assertEqual(headtohead._judge(df, as_of, "buy", iso(117))["status"], "pending")
+        # a turn on the first bar after as_of counts as the nearest turn
+        first = headtohead._judge(df, times[35], "buy", iso(37))
+        self.assertEqual((first["status"], first["nearest_turn"], first["error_bars"]), ("hit", iso(35), -2))
 
 
 class ConsensusTests(unittest.TestCase):

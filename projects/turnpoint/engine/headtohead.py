@@ -31,7 +31,8 @@ def _judge(df: pd.DataFrame, as_of: pd.Timestamp, side: str, when: str) -> dict:
     last_ok = len(close) - 1 - scoring.PIVOT  # turns after this aren't confirmed yet
     i = int(np.argmin(np.abs((times - _parse(when)).dt.total_seconds().to_numpy())))
     out = {"type": side, "time": when}
-    after = np.where(marks & (times > as_of).to_numpy() & (np.arange(len(close)) <= last_ok))[0]
+    # bars opening at or after as_of had not closed when the forecast was made
+    after = np.where(marks & (times >= as_of).to_numpy() & (np.arange(len(close)) <= last_ok))[0]
     if len(after):
         j = after[np.argmin(np.abs(after - i))]
         out["nearest_turn"] = times[j].strftime("%Y-%m-%dT%H:%MZ")
