@@ -1,0 +1,428 @@
+<title>Turnpoint</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Spectral:ital,wght@0,400;0,600;1,400&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+/* Layout: an almanac page. Masthead + coin tabs, a statement of the next turns,
+   the tide table (one row per timeframe), the chart, the gearbox, then the record. */
+:root {
+  --paper: #f2f5f4;
+  --sheet: #fbfcfc;
+  --ink: #10212b;
+  --muted: #586a72;
+  --rule: #cdd7d6;
+  --low: #1d7564;      /* low water = BUY */
+  --high: #b23a48;     /* high water = SELL */
+  --accent: #2a55b8;
+  --low-wash: #1d756418;
+  --high-wash: #b23a4818;
+  --cone: #2a55b81f;
+  --display: "Spectral", Georgia, "Times New Roman", serif;
+  --body: "IBM Plex Sans", system-ui, -apple-system, "Segoe UI", sans-serif;
+  --mono: "IBM Plex Mono", ui-monospace, "SFMono-Regular", Menlo, monospace;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --paper: #0d191e; --sheet: #12232a; --ink: #dce7e6; --muted: #8fa3a6; --rule: #24383f;
+    --low: #4fc0a6; --high: #f07d89; --accent: #86a8ff;
+    --low-wash: #4fc0a61f; --high-wash: #f07d891f; --cone: #86a8ff24; color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --paper: #0d191e; --sheet: #12232a; --ink: #dce7e6; --muted: #8fa3a6; --rule: #24383f;
+  --low: #4fc0a6; --high: #f07d89; --accent: #86a8ff;
+  --low-wash: #4fc0a61f; --high-wash: #f07d891f; --cone: #86a8ff24; color-scheme: dark;
+}
+* { box-sizing: border-box; }
+body { background: var(--paper); color: var(--ink); font: 15px/1.55 var(--body); margin: 0; }
+.wrap { max-width: 1120px; margin: 0 auto; padding-inline: 20px; padding-block: 18px 56px; display: grid; gap: 28px; }
+.mast { display: flex; flex-wrap: wrap; align-items: baseline; justify-content: space-between; gap: 10px 24px;
+  border-bottom: 2px solid var(--ink); padding-bottom: 10px; }
+.brand { font: 600 30px/1 var(--display); letter-spacing: .01em; }
+.brand small { font: 400 13px var(--body); color: var(--muted); margin-left: 10px; letter-spacing: 0; }
+.asof { font: 13px var(--mono); color: var(--muted); }
+.tabs { display: flex; flex-wrap: wrap; gap: 6px; }
+.tab { font: 500 14px var(--mono); padding: 7px 14px; border: 1px solid var(--rule); background: var(--sheet);
+  color: var(--ink); border-radius: 999px; cursor: pointer; }
+.tab[aria-selected="true"] { background: var(--ink); color: var(--paper); border-color: var(--ink); }
+.tab:focus-visible, button:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+.lede { display: grid; gap: 8px; }
+.lede h1 { font: 400 clamp(26px, 4vw, 40px)/1.2 var(--display); margin: 0; text-wrap: balance; }
+.lede h1 .low { color: var(--low); font-style: italic; }
+.lede h1 .high { color: var(--high); font-style: italic; }
+.lede p { margin: 0; color: var(--muted); max-width: 68ch; }
+.eyebrow { font: 600 11px var(--body); letter-spacing: .12em; text-transform: uppercase; color: var(--muted); }
+h2 { font: 600 22px/1.25 var(--display); margin: 0; text-wrap: balance; }
+.section { display: grid; gap: 12px; min-width: 0; }
+.tablewrap { overflow-x: auto; background: var(--sheet); border: 1px solid var(--rule); border-radius: 6px; }
+table { border-collapse: collapse; width: 100%; font-variant-numeric: tabular-nums; }
+th, td { text-align: left; padding: 10px 12px; border-bottom: 1px solid var(--rule); white-space: nowrap; vertical-align: top; }
+th { font: 600 11px var(--body); letter-spacing: .08em; text-transform: uppercase; color: var(--muted); }
+tr:last-child td { border-bottom: 0; }
+tbody tr.sel { background: var(--cone); }
+tbody tr[data-tf] { cursor: pointer; }
+.mono { font-family: var(--mono); font-size: 13.5px; }
+.when { display: block; font: 12px var(--mono); color: var(--muted); }
+.low-t { color: var(--low); font-weight: 600; }
+.high-t { color: var(--high); font-weight: 600; }
+.pill { display: inline-block; font: 600 11px var(--body); letter-spacing: .06em; text-transform: uppercase;
+  padding: 3px 9px; border-radius: 999px; border: 1px solid currentColor; }
+.pill.low { color: var(--low); background: var(--low-wash); }
+.pill.high { color: var(--high); background: var(--high-wash); }
+.pill.flat { color: var(--muted); }
+.meter { display: inline-grid; grid-template-columns: repeat(6, 7px); gap: 2px; vertical-align: middle; margin-right: 6px; }
+.meter i { height: 10px; background: var(--rule); border-radius: 1px; }
+.meter i.on { background: var(--ink); }
+.chartcard { background: var(--sheet); border: 1px solid var(--rule); border-radius: 6px; padding: 14px; display: grid; gap: 10px; min-width: 0; }
+.charthead { display: flex; flex-wrap: wrap; justify-content: space-between; gap: 8px 16px; align-items: baseline; }
+.tftabs { display: flex; gap: 4px; flex-wrap: wrap; }
+.tftabs button { font: 500 13px var(--mono); padding: 5px 11px; border: 1px solid var(--rule); background: transparent;
+  color: var(--ink); border-radius: 4px; cursor: pointer; }
+.tftabs button[aria-pressed="true"] { border-color: var(--ink); background: var(--ink); color: var(--paper); }
+svg { display: block; width: 100%; height: auto; }
+.chartscroll { overflow-x: auto; min-width: 0; }
+.chartscroll svg { min-width: 760px; }
+#h2hbody td { white-space: normal; }
+svg text { font-family: var(--mono); font-size: 11px; fill: var(--muted); }
+.legend { display: flex; flex-wrap: wrap; gap: 6px 18px; font-size: 13px; color: var(--muted); }
+.legend span::before { content: ""; display: inline-block; width: 14px; height: 3px; margin-right: 6px; vertical-align: middle; background: var(--k); }
+.grid2 { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 16px; }
+.panel { background: var(--sheet); border: 1px solid var(--rule); border-radius: 6px; padding: 16px; display: grid; gap: 10px; min-width: 0; align-content: start; }
+.steps { display: grid; gap: 0; }
+.step { display: grid; grid-template-columns: 92px 1fr; gap: 12px; padding: 10px 0; border-bottom: 1px dashed var(--rule); }
+.step:last-child { border-bottom: 0; }
+.step b { font: 600 12px var(--mono); }
+.note { font-size: 13px; color: var(--muted); max-width: 70ch; }
+.verdict { font: 600 12px var(--body); }
+.verdict.none { color: var(--muted); }
+.verdict.some { color: var(--accent); }
+.prose { max-width: 70ch; display: grid; gap: 10px; }
+.prose p { margin: 0; }
+footer { border-top: 1px solid var(--rule); padding-top: 14px; font-size: 13px; color: var(--muted); display: grid; gap: 6px; }
+@media (max-width: 560px) { .step { grid-template-columns: 1fr; gap: 2px; } .brand small { display: block; margin: 4px 0 0; } }
+@media (prefers-reduced-motion: no-preference) { .tab, .tftabs button { transition: background .15s, color .15s; } }
+</style>
+
+<div class="wrap">
+  <header class="mast">
+    <div class="brand">Turnpoint<small>cycle turn dates, scored in public</small></div>
+    <div class="asof" id="asof"></div>
+  </header>
+
+  <nav class="tabs" id="coins" aria-label="Coin"></nav>
+
+  <section class="lede" id="lede" aria-live="polite"></section>
+
+  <section class="section">
+    <div class="eyebrow">Tide table</div>
+    <h2>Next low water and high water, by timeframe</h2>
+    <div class="tablewrap"><table id="tide"></table></div>
+    <p class="note">Low water is the projected cycle trough: the BUY date. High water is the projected crest: the SELL date. Dates come from six cycle estimators, combined by averaging where each puts the cycle today. “Methods agree” is how closely they agree on that phase. Tap a row to chart it.</p>
+  </section>
+
+  <section class="chartcard">
+    <div class="charthead">
+      <div><div class="eyebrow">Chart</div><h2 id="charttitle"></h2></div>
+      <div class="tftabs" id="tfbtns" role="group" aria-label="Timeframe"></div>
+    </div>
+    <div class="chartscroll" id="chartscroll">
+      <div id="price"></div>
+      <div id="wave"></div>
+    </div>
+    <div class="legend">
+      <span style="--k: var(--ink)">Close</span>
+      <span style="--k: var(--low)">Trend trail (green up, red down)</span>
+      <span style="--k: var(--accent)">Projected cycle path (timing guide, not a price target)</span>
+      <span style="--k: var(--accent)">1σ / 2σ volatility cone</span>
+      <span style="--k: var(--low)">Low water (BUY date)</span>
+      <span style="--k: var(--high)">High water (SELL date)</span>
+    </div>
+  </section>
+
+  <div class="grid2">
+    <section class="panel">
+      <div class="eyebrow">Gearbox</div>
+      <h2>Do the timeframes agree?</h2>
+      <div class="steps" id="gear"></div>
+      <p class="note">Higher timeframes set the phase, 4H confirms it, 1H times the entry. The agreement grade shows how much the trend, cycle and volatility modules point the same way. It is not a probability: in testing, high agreement did not make the dates more accurate.</p>
+    </section>
+    <section class="panel">
+      <div class="eyebrow">Estimator spread</div>
+      <h2>What each method projects</h2>
+      <div class="tablewrap"><table id="spread"></table></div>
+      <p class="note">When the six methods disagree by days, treat the consensus date as a rough window.</p>
+    </section>
+  </div>
+
+  <section class="section" id="h2h" hidden>
+    <div class="eyebrow">Head to head</div>
+    <h2>Against another cycle tool, same moment, same rule</h2>
+    <div id="h2hbody" class="grid2"></div>
+    <p class="note" id="h2hnote"></p>
+  </section>
+
+  <section class="section" id="record">
+    <div class="eyebrow">Track record</div>
+    <h2>Do these dates beat random timing?</h2>
+    <div class="tablewrap"><table id="bt"></table></div>
+    <p class="note" id="btnote"></p>
+    <div class="tablewrap"><table id="ledger"></table></div>
+    <p class="note" id="ledgernote"></p>
+  </section>
+
+  <section class="section">
+    <div class="eyebrow">Method</div>
+    <h2>How Turnpoint works</h2>
+    <div class="prose">
+      <p>Six published cycle estimators read each chart: Ehlers' roofing filter with a Fourier spectrum, a detrended FFT, and four estimators ported from lastguru's open DominantCycle library (MESA/MAMA, Pearson autocorrelation, DFT, phase accumulation). Each finds the dominant cycle length and where today sits in it. Turnpoint averages those positions around the cycle, applies the median cycle length, and projects the next trough and crest, which always fall half a cycle apart.</p>
+      <p>Around the dates sit two context modules. The trend trail (an ATR trailing stop) shows the prevailing direction; a close through it marks a trend change. The volatility module places price in sigma zones around its 20-bar mean and draws a cone of where price would land 68% and 95% of the time if it moved randomly.</p>
+      <p>Every forecast is written to an append-only ledger before its date arrives and scored afterwards. A date counts as a hit when a real turn, a close that is the lowest or highest within five bars either side, lands within two bars of it. The same rule is applied to randomly timed dates, so every hit rate here sits next to what luck would score.</p>
+    </div>
+  </section>
+
+  <footer>
+    <div id="foot"></div>
+    <div>Educational analysis, not financial advice. Cycle projections are estimates; markets do not follow cycles reliably.</div>
+  </footer>
+</div>
+
+<script>
+const DATA = /*__TURNPOINT_DATA__*/null;
+const TFS = ["1w", "1d", "4h", "1h"];
+const TF_NAME = { "1w": "1W", "1d": "1D", "4h": "4H", "1h": "1H" };
+const METHOD_NAME = { "ehlers": "Ehlers DFT", "fft": "Detrended FFT", "lastguru-mama": "MESA/MAMA",
+  "lastguru-pearson": "Pearson autocorr.", "lastguru-dft": "DFT (lastguru)", "lastguru-phase": "Phase accum." };
+const state = { coin: "BTC", tf: "1d" };
+try { const s = JSON.parse(localStorage.getItem("turnpoint") || "{}"); Object.assign(state, s); } catch (e) {}
+
+const $ = (id) => document.getElementById(id);
+const el = (tag, attrs = {}, html = "") => { const n = document.createElement(tag); Object.entries(attrs).forEach(([k, v]) => n.setAttribute(k, v)); n.innerHTML = html; return n; };
+const toDate = (s) => new Date(s.replace("Z", ":00Z"));
+const fmtDate = (s, tf) => {
+  const d = toDate(s);
+  const day = d.toLocaleDateString("en-GB", { weekday: "short", day: "numeric", month: "short", timeZone: "UTC" });
+  return tf === "1d" || tf === "1w" ? day : `${day}, ${d.toISOString().slice(11, 16)}`;
+};
+const rel = (s) => {
+  const ms = toDate(s) - new Date(DATA.generated.replace("Z", ":00Z"));
+  const h = ms / 3.6e6;
+  if (h < 0) return "passed";
+  if (h < 48) return `in ${Math.round(h)} h`;
+  return `in ${Math.round(h / 24)} days`;
+};
+const money = (x) => x >= 1000 ? "$" + x.toLocaleString("en-US", { maximumFractionDigits: 0 }) : "$" + x.toLocaleString("en-US", { maximumFractionDigits: x < 10 ? 4 : 2 });
+const pct = (x) => x == null || isNaN(x) ? "—" : (100 * x).toFixed(1) + "%";
+const meter = (a) => { const on = Math.round(Math.max(0, Math.min(1, a)) * 6); return `<span class="meter" aria-hidden="true">${Array.from({ length: 6 }, (_, i) => `<i class="${i < on ? "on" : ""}"></i>`).join("")}</span>`; };
+const save = () => { try { localStorage.setItem("turnpoint", JSON.stringify(state)); } catch (e) {} };
+
+function coinTabs() {
+  const nav = $("coins"); nav.innerHTML = "";
+  Object.keys(DATA.assets).forEach((c) => {
+    const b = el("button", { class: "tab", role: "tab", "aria-selected": String(c === state.coin) }, `${c} <span style="opacity:.7">${money(DATA.assets[c].price)}</span>`);
+    b.onclick = () => { state.coin = c; save(); render(); };
+    nav.append(b);
+  });
+}
+
+function lede() {
+  const a = DATA.assets[state.coin], v = a.views["1d"], fm = v.fm;
+  const g = a.gearbox;
+  const bias = g.bias === "growth" ? "lean toward growth" : g.bias === "decline" ? "lean toward decline" : "show no clear lean";
+  $("lede").innerHTML = fm ? `
+    <div class="eyebrow">${state.coin} · daily cycle · ${Math.round(fm.period_bars)}-day period</div>
+    <h1>${fm.bars_to_buy <= fm.bars_to_sell
+      ? `Next <span class="low">low water ${fmtDate(fm.next_buy, "1d")}</span>, then <span class="high">high water ${fmtDate(fm.next_sell, "1d")}</span>.`
+      : `Next <span class="high">high water ${fmtDate(fm.next_sell, "1d")}</span>, then <span class="low">low water ${fmtDate(fm.next_buy, "1d")}</span>.`}</h1>
+    <p>The daily cycle is in its ${fm.phase} phase and the trend trail points ${v.trend.direction}. Across all four timeframes the modules ${bias} (${g.agreement.toLowerCase()} agreement). Check the track record below before acting on any date.</p>`
+    : `<h1>No daily cycle projection for ${state.coin} yet.</h1>`;
+}
+
+function tide() {
+  const a = DATA.assets[state.coin];
+  const rows = TFS.map((tf) => {
+    const v = a.views[tf]; const fm = v.fm;
+    if (!fm) return `<tr data-tf="${tf}"><td class="mono">${TF_NAME[tf]}</td><td colspan="7">Not enough history</td></tr>`;
+    const phase = fm.phase === "growth" ? `<span class="pill low">Growth</span>` : `<span class="pill high">Decline</span>`;
+    const trend = v.trend.direction === "up" ? `<span class="pill low">Up</span>` : `<span class="pill high">Down</span>`;
+    return `<tr data-tf="${tf}" class="${tf === state.tf ? "sel" : ""}">
+      <td class="mono">${TF_NAME[tf]}</td><td>${phase}</td>
+      <td><span class="low-t mono">${fmtDate(fm.next_buy, tf)}</span><span class="when">${rel(fm.next_buy)}</span></td>
+      <td><span class="high-t mono">${fmtDate(fm.next_sell, tf)}</span><span class="when">${rel(fm.next_sell)}</span></td>
+      <td class="mono">${Math.round(fm.period_bars)} bars</td>
+      <td>${meter(fm.agreement)}<span class="mono">${Math.round(fm.agreement * 100)}%</span></td>
+      <td>${trend}<span class="when">trail ${money(v.trend.trail)}</span></td>
+      <td><span class="mono">${v.zone.z >= 0 ? "+" : ""}${v.zone.z.toFixed(2)}σ</span><span class="when">${v.zone.label}</span></td></tr>`;
+  }).join("");
+  $("tide").innerHTML = `<thead><tr><th>Frame</th><th>Phase</th><th>Low water · BUY</th><th>High water · SELL</th><th>Cycle</th><th>Methods agree</th><th>Trend trail</th><th>Sigma zone</th></tr></thead><tbody>${rows}</tbody>`;
+  $("tide").querySelectorAll("tr[data-tf]").forEach((r) => r.onclick = () => { state.tf = r.dataset.tf; save(); render(); });
+}
+
+function tfButtons() {
+  const box = $("tfbtns"); box.innerHTML = "";
+  TFS.forEach((tf) => { const b = el("button", { type: "button", "aria-pressed": String(tf === state.tf) }, TF_NAME[tf]); b.onclick = () => { state.tf = tf; save(); render(); }; box.append(b); });
+}
+
+function niceTicks(lo, hi, n = 4) {
+  const span = hi - lo, step0 = span / n, mag = Math.pow(10, Math.floor(Math.log10(step0)));
+  const step = [1, 2, 2.5, 5, 10].map((m) => m * mag).find((s) => s >= step0) || mag * 10;
+  const out = []; for (let v = Math.ceil(lo / step) * step; v <= hi; v += step) out.push(v); return out;
+}
+
+function chart() {
+  const v = DATA.assets[state.coin].views[state.tf]; const c = v.chart, fm = v.fm;
+  $("charttitle").textContent = `${state.coin} · ${TF_NAME[state.tf]} · last ${c.close.length} bars`;
+  const W = 1000, H = 300, padL = 72, padR = 16, padT = 14, padB = 26;
+  const n = c.close.length;
+  const lastOpen = toDate(c.t[n - 1]).getTime();
+  const barOff = (s) => (toDate(s).getTime() - lastOpen) / v.bar_ms;
+  const proj = c.proj_price || [];
+  const futBars = Math.max(fm ? Math.max(fm.bars_to_buy, fm.bars_to_sell) + 4 : 0, ...v.cone.map((k) => k.h), proj.length);
+  const totalBars = n - 1 + futBars;
+  const x = (i) => padL + (i / totalBars) * (W - padL - padR);
+  const xOff = (off) => x(n - 1 + off);
+  const lo = Math.min(...c.close, ...c.trail, ...v.cone.map((k) => k.lo2), ...proj);
+  const hi = Math.max(...c.close, ...c.trail, ...v.cone.map((k) => k.hi2), ...proj);
+  const pad = (hi - lo) * 0.06;
+  const y = (p) => padT + (1 - (p - (lo - pad)) / (hi - lo + 2 * pad)) * (H - padT - padB);
+  const ticks = niceTicks(lo - pad, hi + pad);
+  let s = `<svg viewBox="0 0 ${W} ${H}" role="img" aria-label="${state.coin} ${TF_NAME[state.tf]} price with trend trail, volatility cone, projected cycle path and turn dates">`;
+  ticks.forEach((t) => { s += `<line x1="${padL}" x2="${W - padR}" y1="${y(t)}" y2="${y(t)}" stroke="var(--rule)" stroke-width="1"/><text x="${padL - 8}" y="${y(t) + 4}" text-anchor="end">${money(t)}</text>`; });
+  // volatility cone
+  const p0 = c.close[n - 1];
+  const cone = [{ h: 0, lo2: p0, lo1: p0, hi1: p0, hi2: p0 }, ...v.cone];
+  const band = (a, b) => cone.map((k) => `${xOff(k.h)},${y(k[a])}`).join(" ") + " " + cone.slice().reverse().map((k) => `${xOff(k.h)},${y(k[b])}`).join(" ");
+  s += `<polygon points="${band("hi2", "lo2")}" fill="var(--cone)"/><polygon points="${band("hi1", "lo1")}" fill="var(--cone)"/>`;
+  v.cone.forEach((k) => { s += `<text x="${xOff(k.h)}" y="${y(k.hi2) - 4}" text-anchor="middle">+${k.h}</text>`; });
+  // each method's dates as ticks on the frame edges
+  if (fm) fm.methods.forEach((m) => {
+    s += `<line x1="${xOff(barOff(m.buy))}" x2="${xOff(barOff(m.buy))}" y1="${H - padB - 10}" y2="${H - padB}" stroke="var(--low)" stroke-width="2" opacity=".55"/>`;
+    s += `<line x1="${xOff(barOff(m.sell))}" x2="${xOff(barOff(m.sell))}" y1="${padT}" y2="${padT + 10}" stroke="var(--high)" stroke-width="2" opacity=".55"/>`;
+  });
+  // consensus turn markers
+  if (fm) {
+    const bx = xOff(fm.bars_to_buy), sx = xOff(fm.bars_to_sell);
+    s += `<line x1="${bx}" x2="${bx}" y1="${padT}" y2="${H - padB}" stroke="var(--low)" stroke-width="2" stroke-dasharray="5 4"/>`;
+    s += `<line x1="${sx}" x2="${sx}" y1="${padT}" y2="${H - padB}" stroke="var(--high)" stroke-width="2" stroke-dasharray="5 4"/>`;
+    const lab = (xx, txt, col, yy) => `<text x="${Math.min(Math.max(xx, padL + 60), W - padR - 60)}" y="${yy}" text-anchor="middle" style="fill:${col};font-weight:600">${txt}</text>`;
+    s += lab(bx, `BUY ${fmtDate(fm.next_buy, state.tf)}`, "var(--low)", H - 8);
+    s += lab(sx, `SELL ${fmtDate(fm.next_sell, state.tf)}`, "var(--high)", padT + 22);
+  }
+  // trend trail, coloured by direction
+  for (let i = 1; i < n; i++) {
+    if (c.dir[i] !== c.dir[i - 1]) continue;  // a flip: the trail jumps sides
+    s += `<line x1="${x(i - 1)}" y1="${y(c.trail[i - 1])}" x2="${x(i)}" y2="${y(c.trail[i])}" stroke="${c.dir[i] > 0 ? "var(--low)" : "var(--high)"}" stroke-width="2" opacity=".8"/>`;
+  }
+  // price, then the projected cycle path from the last close
+  s += `<polyline points="${c.close.map((p, i) => `${x(i)},${y(p)}`).join(" ")}" fill="none" stroke="var(--ink)" stroke-width="1.8"/>`;
+  if (proj.length) s += `<polyline points="${[`${x(n - 1)},${y(p0)}`, ...proj.map((q, i) => `${xOff(i + 1)},${y(q)}`)].join(" ")}" fill="none" stroke="var(--accent)" stroke-width="2" stroke-dasharray="2 4" stroke-linecap="round"/>`;
+  s += `<circle cx="${x(n - 1)}" cy="${y(p0)}" r="3.5" fill="var(--ink)"/>`;
+  s += `<text x="${x(0)}" y="${H - 8}">${fmtDate(c.t[0], state.tf)}</text><text x="${x(n - 1)}" y="${H - 8}" text-anchor="middle">now</text>`;
+  $("price").innerHTML = s + "</svg>";
+
+  // cycle wave: phase shading (rising / falling), sigma bands, projection
+  const H2 = 140, wv = c.wave, pw = c.proj_wave || [];
+  const all = [...wv, ...pw];
+  const mean = wv.reduce((q, r) => q + r, 0) / wv.length;
+  const sd = Math.sqrt(wv.reduce((q, r) => q + (r - mean) ** 2, 0) / wv.length) || 1;
+  const wl = Math.min(...all, mean - 2.2 * sd), wh = Math.max(...all, mean + 2.2 * sd);
+  const y2 = (q) => 10 + (1 - (q - wl) / ((wh - wl) || 1)) * (H2 - 32);
+  let w = `<svg viewBox="0 0 ${W} ${H2}" role="img" aria-label="Cycle wave with rising and falling phases shaded, sigma bands and projection">`;
+  const seq = [...wv, ...pw];
+  let runStart = 1;
+  const rising = (i) => seq[i] >= seq[i - 1];
+  for (let i = 2; i <= seq.length; i++) {
+    if (i === seq.length || rising(i) !== rising(runStart)) {
+      const x0 = x(runStart - 1), x1 = x(i - 1);
+      w += `<rect x="${x0}" y="6" width="${Math.max(0, x1 - x0)}" height="${H2 - 26}" fill="${rising(runStart) ? "var(--low-wash)" : "var(--high-wash)"}"/>`;
+      runStart = i;
+    }
+  }
+  [[-2, "−2σ"], [-1, "−1σ"], [1, "+1σ"], [2, "+2σ"]].forEach(([k, t]) => {
+    w += `<line x1="${padL}" x2="${W - padR}" y1="${y2(mean + k * sd)}" y2="${y2(mean + k * sd)}" stroke="var(--muted)" stroke-width="1" stroke-dasharray="1 4"/><text x="${padL - 8}" y="${y2(mean + k * sd) + 4}" text-anchor="end">${t}</text>`;
+  });
+  w += `<line x1="${padL}" x2="${W - padR}" y1="${y2(mean)}" y2="${y2(mean)}" stroke="var(--rule)"/>`;
+  w += `<polyline points="${wv.map((q, i) => `${x(i)},${y2(q)}`).join(" ")}" fill="none" stroke="var(--ink)" stroke-width="1.6"/>`;
+  if (pw.length) w += `<polyline points="${[`${x(n - 1)},${y2(wv[n - 1])}`, ...pw.map((q, i) => `${xOff(i + 1)},${y2(q)}`)].join(" ")}" fill="none" stroke="var(--accent)" stroke-width="2" stroke-dasharray="2 4" stroke-linecap="round"/>`;
+  if (fm) {
+    [[fm.bars_to_buy, "var(--low)"], [fm.bars_to_sell, "var(--high)"]].forEach(([b, col]) => { w += `<line x1="${xOff(b)}" x2="${xOff(b)}" y1="6" y2="${H2 - 20}" stroke="${col}" stroke-width="2" stroke-dasharray="5 4"/>`; });
+  }
+  w += `<text x="${W - padR}" y="${H2 - 4}" text-anchor="end">cycle oscillator · green rising, red falling · dotted: projected ${fm ? Math.round(fm.period_bars) : "–"}-bar cycle</text>`;
+  $("wave").innerHTML = w + "</svg>";
+  const sc = $("chartscroll"); sc.scrollLeft = sc.scrollWidth;  // on narrow screens, open at "now"
+}
+
+function gear() {
+  const g = DATA.assets[state.coin].gearbox;
+  const ph = (p) => p === "growth" ? `<span class="pill low">Growth</span>` : p === "decline" ? `<span class="pill high">Decline</span>` : `<span class="pill flat">Mixed</span>`;
+  const grade = g.bias === "growth" ? "low" : g.bias === "decline" ? "high" : "flat";
+  $("gear").innerHTML = `
+    <div class="step"><b>1W + 1D</b><div>Phase: ${ph(g.higher_tf_phase)}</div></div>
+    <div class="step"><b>4H</b><div>${g.four_hour_confirms ? "Confirms the higher-timeframe phase" : "Does not confirm"}</div></div>
+    <div class="step"><b>1H</b><div>${g.one_hour_entry ? `Entry timing: <span class="mono">${fmtDate(g.one_hour_entry, "1h")}</span> <span class="when">${rel(g.one_hour_entry)}</span>` : "No entry timing (phase not confirmed)"}</div></div>
+    <div class="step"><b>Agreement</b><div><span class="pill ${grade}">${g.agreement}${g.bias === "none" ? "" : " · " + g.bias}</span> <span class="when">score ${g.score >= 0 ? "+" : ""}${g.score.toFixed(2)} on a −1 to +1 scale</span></div></div>`;
+}
+
+function spread() {
+  const v = DATA.assets[state.coin].views[state.tf]; const fm = v.fm;
+  if (!fm) { $("spread").innerHTML = "<tbody><tr><td>Not enough history</td></tr></tbody>"; return; }
+  $("spread").innerHTML = `<thead><tr><th>Method · ${TF_NAME[state.tf]}</th><th>BUY</th><th>SELL</th><th>Cycle</th></tr></thead><tbody>` +
+    fm.methods.map((m) => `<tr><td>${METHOD_NAME[m.name] || m.name}</td><td class="mono low-t">${fmtDate(m.buy, state.tf)}</td><td class="mono high-t">${fmtDate(m.sell, state.tf)}</td><td class="mono">${Math.round(m.period)}</td></tr>`).join("") +
+    `<tr><td><b>Consensus</b></td><td class="mono low-t">${fmtDate(fm.next_buy, state.tf)}</td><td class="mono high-t">${fmtDate(fm.next_sell, state.tf)}</td><td class="mono">${Math.round(fm.period_bars)}</td></tr></tbody>`;
+}
+
+function record() {
+  const bt = DATA.assets[state.coin].backtest || {};
+  const verdict = (r) => {
+    if (!r || r.too_short) return `<span class="verdict none">Too little history</span>`;
+    const sig = [r.buy_p, r.sell_p].filter((p) => p <= 0.05).length;
+    return sig === 2 ? `<span class="verdict some">Beat random on both</span>` : sig === 1 ? `<span class="verdict some">One side beat random</span>` : `<span class="verdict none">No edge over random</span>`;
+  };
+  const rows = ["1d", "4h", "1h"].map((tf) => {
+    const r = bt[tf];
+    if (!r || r.too_short) return `<tr><td class="mono">${TF_NAME[tf]}</td><td colspan="5">${r ? "Too little history" : "Not computed"}</td></tr>`;
+    return `<tr><td class="mono">${TF_NAME[tf]}<span class="when">since ${r.from.slice(0, 10)}</span></td>
+      <td class="mono">${pct(r.buy_hit)}<span class="when">random ${pct(r.buy_random)} · p ${r.buy_p.toFixed(2)}</span></td>
+      <td class="mono">${pct(r.sell_hit)}<span class="when">random ${pct(r.sell_random)} · p ${r.sell_p.toFixed(2)}</span></td>
+      <td class="mono">${r.follow_logret >= 0 ? "+" : ""}${(100 * (Math.exp(r.follow_logret) - 1)).toFixed(0)}%<span class="when">buy &amp; hold ${(100 * (Math.exp(r.hold_logret) - 1)).toFixed(0)}%</span></td>
+      <td class="mono">${r.n_forecasts.toLocaleString()}</td><td>${verdict(r)}</td></tr>`;
+  }).join("");
+  $("bt").innerHTML = `<thead><tr><th>${state.coin} · backtest</th><th>BUY dates hit</th><th>SELL dates hit</th><th>Following the dates</th><th>Forecasts</th><th>Verdict</th></tr></thead><tbody>${rows}</tbody>`;
+  $("btnote").textContent = "Walk-forward: each forecast uses only data available at the time. \"Random\" is the same forecasts with their timing scrambled 300 times; p is the share of scrambled runs that did at least as well. With many timeframes and coins tested, an occasional p below 0.05 is expected by luck alone. Following the dates means holding the coin while the cycle is rising, with a 0.1% fee per trade.";
+  const L = DATA.ledger, sc = L.scores || {};
+  const lrows = ["1w", "1d", "4h", "1h"].map((tf) => {
+    const r = sc[tf] || {};
+    const b = r.buy_n ? `${r.buy_hits}/${r.buy_n} (${pct(r.buy_rate)})` : "—", s2 = r.sell_n ? `${r.sell_hits}/${r.sell_n} (${pct(r.sell_rate)})` : "—";
+    return `<tr><td class="mono">${TF_NAME[tf]}</td><td class="mono">${b}</td><td class="mono">${s2}</td><td class="mono">${pct(r.chance)}</td><td class="mono">${r.pending || 0}</td></tr>`;
+  }).join("");
+  $("ledger").innerHTML = `<thead><tr><th>Live ledger · all coins</th><th>BUY dates hit</th><th>SELL dates hit</th><th>Random date scores</th><th>Awaiting</th></tr></thead><tbody>${lrows}</tbody>`;
+  $("ledgernote").textContent = `${L.entries} forecasts logged since ${L.first ? fmtDate(L.first, "1h") + " UTC" : "this build"}. Each is written down before its date and scored once five bars have passed it. The ledger is append-only and versioned, so past forecasts can't be edited.`;
+}
+
+function h2h() {
+  const list = (DATA.head_to_head || []);
+  $("h2h").hidden = !list.length;
+  if (!list.length) return;
+  const st = (c) => c.status === "hit" ? `<span class="pill low">Hit</span>` : c.status === "miss" ? `<span class="pill high">Miss</span>`
+    : c.status === "pending" ? `<span class="pill flat">Pending</span>` : `<span class="pill flat">Not counted</span>`;
+  const near = (c) => c.nearest_turn ? `<span class="when">nearest real ${c.type === "buy" ? "low" : "high"}: ${fmtDate(c.nearest_turn, "1h")} (${c.error_bars > 0 ? "+" : ""}${c.error_bars} bars)</span>` : "";
+  const rows = (calls) => calls.map((c) => `<tr><td class="mono ${c.type === "buy" ? "low-t" : "high-t"}">${c.type.toUpperCase()}</td><td class="mono">${fmtDate(c.time, "1h")}${c.note ? `<span class="when">${c.note}</span>` : ""}${near(c)}</td><td>${st(c)}</td></tr>`).join("");
+  $("h2hbody").innerHTML = list.map((e) => `
+    <div class="panel"><div class="eyebrow">Other tool · ${e.asset} ${TF_NAME[e.tf]} · seen ${fmtDate(e.seen_at, "1h")} UTC</div>
+      <div class="tablewrap"><table><tbody>${rows(e.rival)}</tbody></table></div>
+      <p class="note">${e.source}. ${e.read}${e.trail ? ` Trend ${e.trend}, trail ${money(e.trail)}.` : ""}</p></div>
+    <div class="panel"><div class="eyebrow">Turnpoint · same bars, as of ${fmtDate(e.as_of, "1h")} UTC</div>
+      <div class="tablewrap"><table><tbody>${rows(e.turnpoint.calls)}</tbody></table></div>
+      <p class="note">Re-run on only the candles closed by then (price ${money(e.price_at_as_of)}): ${e.turnpoint.phase} phase, ${Math.round(e.turnpoint.period_bars)}-bar cycle, trend ${e.turnpoint.trend}. Latest close ${money(e.latest.close)} at ${fmtDate(e.latest.time, "1h")}.</p></div>`).join("");
+  $("h2hnote").textContent = "Each date hits if a real turn lands within two bars of it. A call can only be scored five bars after its date, when the turn is confirmed. One or two calls prove nothing either way; head-to-heads are only meaningful after dozens.";
+}
+
+function render() {
+  if (!DATA) { $("lede").innerHTML = "<h1>No forecast data in this build.</h1>"; return; }
+  if (!DATA.assets[state.coin]) state.coin = Object.keys(DATA.assets)[0];
+  if (!TFS.includes(state.tf)) state.tf = "1d";
+  $("asof").textContent = `Forecasts as of ${DATA.generated.replace("T", " ").replace("Z", " UTC")}`;
+  coinTabs(); lede(); tide(); tfButtons(); chart(); gear(); spread(); h2h(); record();
+  $("foot").textContent = `Data: Binance spot candles (USDT pairs). Estimators: ${DATA.rules.estimators.join(", ")}.`;
+}
+render();
+</script>
