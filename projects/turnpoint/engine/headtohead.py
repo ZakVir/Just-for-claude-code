@@ -31,6 +31,10 @@ def _judge(df: pd.DataFrame, as_of: pd.Timestamp, side: str, when: str) -> dict:
     last_ok = len(close) - 1 - scoring.PIVOT  # turns after this aren't confirmed yet
     i = int(np.argmin(np.abs((times - _parse(when)).dt.total_seconds().to_numpy())))
     out = {"type": side, "time": when}
+    if i + scoring.HIT_W > last_ok:
+        out["status"] = "pending"
+        return out  # no "nearest turn" yet: it would point at a turn far from an unresolved date
+    out["status"] = "hit" if marks[max(0, i - scoring.HIT_W): i + scoring.HIT_W + 1].any() else "miss"
     # bars opening at or after as_of had not closed when the forecast was made
     after = np.where(marks & (times >= as_of).to_numpy() & (np.arange(len(close)) <= last_ok))[0]
     if len(after):
@@ -38,10 +42,6 @@ def _judge(df: pd.DataFrame, as_of: pd.Timestamp, side: str, when: str) -> dict:
         out["nearest_turn"] = times[j].strftime("%Y-%m-%dT%H:%MZ")
         out["nearest_turn_price"] = float(close[j])
         out["error_bars"] = int(j - i)
-    if i + scoring.HIT_W > last_ok:
-        out["status"] = "pending"
-    else:
-        out["status"] = "hit" if marks[max(0, i - scoring.HIT_W): i + scoring.HIT_W + 1].any() else "miss"
     return out
 
 
