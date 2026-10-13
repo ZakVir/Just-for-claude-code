@@ -1,0 +1,107 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, user-scalable=no" />
+<title>Glass Welcome</title>
+<style>
+@font-face { font-family: 'Source Serif 4'; font-weight: 400; src: url(__FONT_400__) format('truetype'); font-display: block; }
+@font-face { font-family: 'Source Serif 4'; font-weight: 500; src: url(__FONT_500__) format('truetype'); font-display: block; }
+:root {
+  --page: #E9E7DF; --bg: #F5F4EF; --ink: #141413; --secondary: #5E5D59; --muted: #8F8D85;
+  --cta-bg: #141413; --cta-ink: #FAF9F5; --bezel: #1B1B1A; --chip: rgba(20,20,19,.06);
+  color-scheme: light;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --page: #1A1A19; --bg: #262624; --ink: #FAF9F5; --secondary: #C2C0B6; --muted: #8F8D85;
+    --cta-bg: #FAF9F5; --cta-ink: #141413; --bezel: #0B0B0A; --chip: rgba(250,249,245,.08);
+    color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --page: #1A1A19; --bg: #262624; --ink: #FAF9F5; --secondary: #C2C0B6; --muted: #8F8D85;
+  --cta-bg: #FAF9F5; --cta-ink: #141413; --bezel: #0B0B0A; --chip: rgba(250,249,245,.08);
+  color-scheme: dark;
+}
+* { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+html, body { margin: 0; height: 100%; background: var(--page); color: var(--ink);
+  font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Text', Inter, system-ui, sans-serif; }
+body { display: grid; place-items: center; overflow: hidden; }
+.stage { display: flex; flex-direction: column; align-items: center; gap: 14px; }
+#device { position: relative; width: 393px; height: 852px; overflow: hidden; background: var(--bg);
+  touch-action: none; user-select: none; -webkit-user-select: none; }
+#device.framed { border-radius: 55px; box-shadow: 0 0 0 11px var(--bezel), 0 0 0 12px #3a3a38, 0 30px 80px rgba(0,0,0,.25); }
+#device canvas { position: absolute; inset: 0; width: 100%; height: 100%; }
+#overlay { pointer-events: none; }
+.status { position: absolute; top: 0; left: 0; right: 0; height: 54px; display: flex; justify-content: space-between;
+  align-items: center; padding: 6px 34px 0 50px; font: 600 17px/1 -apple-system, system-ui, sans-serif; color: var(--ink); pointer-events: none; z-index: 3; }
+.island { position: absolute; top: 11px; left: 50%; width: 126px; height: 37px; margin-left: -63px; border-radius: 20px; background: #000; z-index: 4; pointer-events: none; }
+.status svg { display: block; fill: var(--ink); }
+.status .icons { display: flex; gap: 6px; align-items: center; }
+.home-ind { position: absolute; bottom: 8px; left: 50%; width: 139px; height: 5px; margin-left: -70px; border-radius: 3px; background: var(--ink); opacity: .9; z-index: 3; pointer-events: none; }
+#cta { position: absolute; left: 24px; right: 24px; bottom: 46px; display: flex; flex-direction: column; gap: 4px; opacity: 0; pointer-events: none; z-index: 2; }
+#cta.on { pointer-events: auto; }
+#cta button { appearance: none; border: 0; cursor: pointer; font: inherit; transition: transform 120ms cubic-bezier(.23,1,.32,1), opacity 120ms; }
+#cta .primary { height: 54px; border-radius: 27px; background: var(--cta-bg); color: var(--cta-ink); font-size: 17px; font-weight: 600; letter-spacing: -.2px; }
+#cta .primary:active { transform: scale(.97); }
+#cta .secondary { height: 44px; background: transparent; color: var(--secondary); font-size: 15px; font-weight: 500; }
+#cta .secondary:active { opacity: .4; }
+.toast { position: absolute; left: 50%; bottom: 120px; transform: translate(-50%, 8px); opacity: 0; background: var(--cta-bg); color: var(--cta-ink);
+  padding: 10px 16px; border-radius: 20px; font-size: 14px; transition: opacity 200ms, transform 200ms cubic-bezier(.23,1,.32,1); pointer-events: none; z-index: 5; white-space: nowrap; }
+.toast.on { opacity: 1; transform: translate(-50%, 0); }
+.controls { display: flex; gap: 8px; }
+.controls button { appearance: none; border: 0; border-radius: 16px; padding: 8px 14px; background: var(--chip); color: var(--ink);
+  font: 500 13px/1 -apple-system, system-ui, sans-serif; cursor: pointer; }
+.controls button[aria-pressed="true"] { background: var(--ink); color: var(--bg); }
+.note { font-size: 12px; color: var(--muted); max-width: 393px; text-align: center; line-height: 1.4; }
+@media (max-width: 520px), (max-height: 700px) {
+  body { display: block; }
+  .stage { display: block; }
+  #device { width: 100vw; height: 100dvh; }
+  .status, .island, .home-ind { display: none; }
+  .controls { position: fixed; top: max(8px, env(safe-area-inset-top)); right: 8px; z-index: 10; }
+  .controls button { padding: 6px 10px; font-size: 12px; }
+  .note { display: none; }
+}
+</style>
+</head>
+<body>
+<div class="stage">
+  <div id="device" class="framed" aria-label="Welcome screen preview">
+    <canvas id="gl"></canvas>
+    <canvas id="overlay"></canvas>
+    <div class="island"></div>
+    <div class="status"><span>9:41</span><span class="icons">
+      <svg width="18" height="12" viewBox="0 0 18 12"><rect x="0" y="8" width="3" height="4" rx="1"/><rect x="5" y="5.5" width="3" height="6.5" rx="1"/><rect x="10" y="3" width="3" height="9" rx="1"/><rect x="15" y="0" width="3" height="12" rx="1"/></svg>
+      <svg width="16" height="12" viewBox="0 0 16 12"><path d="M8 2.5c2.2 0 4.2.9 5.7 2.3l1.1-1.1A9.6 9.6 0 0 0 8 1 9.6 9.6 0 0 0 1.2 3.7l1.1 1.1A8 8 0 0 1 8 2.5Zm0 3c1.4 0 2.6.5 3.6 1.4l1.1-1.1A6.6 6.6 0 0 0 8 4a6.6 6.6 0 0 0-4.7 1.8l1.1 1.1c1-.9 2.2-1.4 3.6-1.4Zm0 3c.6 0 1.1.2 1.5.6L8 10.6 6.5 9.1c.4-.4.9-.6 1.5-.6Z"/></svg>
+      <svg width="27" height="13" viewBox="0 0 27 13"><rect x=".5" y=".5" width="23" height="12" rx="3.5" fill="none" stroke="currentColor" opacity=".4"/><rect x="2" y="2" width="20" height="9" rx="2"/><rect x="25" y="4.5" width="1.5" height="4" rx=".75" opacity=".4"/></svg>
+    </span></div>
+    <div id="cta">
+      <button class="primary" type="button" id="start">Get started</button>
+      <button class="secondary" type="button" id="signin">I already have an account</button>
+    </div>
+    <div class="toast" id="toast">Onboarding would continue here</div>
+    <div class="home-ind"></div>
+  </div>
+  <div class="controls">
+    <button id="replay" type="button">Replay</button>
+    <button id="theme" type="button">Light / Dark</button>
+    <button id="motion" type="button" aria-pressed="false">Reduce Motion</button>
+  </div>
+  <p class="note">Swipe the dome up to enter, or tap it. Then drag the glass bead: it bends the headline, shoves the bubbles and springs home.</p>
+</div>
+<script>
+var TOKEN_URLS = __TOKENS__;
+(function () {
+  var d = document.getElementById('device');
+  if (matchMedia('(max-width: 520px), (max-height: 700px)').matches) d.classList.remove('framed');
+  var t = document.getElementById('toast'), h;
+  function toast(msg) { t.textContent = msg; t.classList.add('on'); clearTimeout(h); h = setTimeout(function () { t.classList.remove('on'); }, 1600); }
+  document.getElementById('start').addEventListener('click', function () { toast('Onboarding would continue here'); });
+  document.getElementById('signin').addEventListener('click', function () { toast('Sign-in sheet would open here'); });
+})();
+</script>
+<script>__BUNDLE__</script>
+</body>
+</html>
